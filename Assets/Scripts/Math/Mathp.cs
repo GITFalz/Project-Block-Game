@@ -22,4 +22,25 @@ public static class Mathp
 
         return new Vector3Int(chunk_x, chunk_y, chunk_z);
     }
+    
+    public static float PLerp(float min, float max, float value)
+    {
+        float midpoint = (min + max) / 2;
+        if (value < min || value > max)
+            return 0;
+
+        float distanceFromMidpoint = Mathf.Abs(value - midpoint);
+        float totalDistance = (max - min) / 2;
+        
+        float proximityValue = 1 - (distanceFromMidpoint / totalDistance);
+
+        return proximityValue;
+    }
+    
+    public static float SLerp(float min, float max, float value)
+    {
+        if (value <= min) return 0f;
+        if (value >= max) return 1f;
+        return (value - min) / (max - min); // Linear interpolation
+    }
 }
