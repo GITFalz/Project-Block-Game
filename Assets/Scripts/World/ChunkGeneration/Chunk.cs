@@ -13,11 +13,14 @@ public class Chunk : MonoBehaviour
     public BiomeSO biome;
     public BlockManager blockManager;
     public GameObject chunkPrefab;
+    
+    public List<Vector3Int> chunksToAdd;
 
     private int chunkSize = 32768;
     private uint[] blockMap;
     private Block[] blocks;
     public Texture2D texture;
+    public World worldScript;
 
     public bool generateSingle;
 
@@ -240,6 +243,36 @@ public class Chunk : MonoBehaviour
         }
 
         return hasFace;
+    }
+    
+    
+    public void AddChunks()
+    {
+        foreach (var pos in chunksToAdd)
+        {
+            MeshData meshData = new MeshData();
+            ChunkData chunkData = new ChunkData(pos);
+
+            uint[] slices = new uint[32 * 32];
+            blocks = new Block[32 * 32 * 32];
+        
+            GenerateTerrain(pos);
+            GenerateBlocks();
+            
+            chunkData.blocks = blocks;
+            
+            GenerateMesh(chunkData);
+
+            if (worldScript.AddChunk(pos, chunkData))
+            {
+                GameObject newChunk = Instantiate(chunkPrefab, pos, Quaternion.identity);
+                newChunk.GetComponent<ChunkRenderer>().RenderChunk(meshData);
+            }
+            
+            meshData.Clear();
+        }
+        
+        chunksToAdd.Clear();
     }
     
 

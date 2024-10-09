@@ -63,6 +63,17 @@ public class World : MonoBehaviour
 
         //frustumCulling.Cull(worldData);
     }
+    
+    
+    public ChunkData GetChunk(Vector3Int chunkPos)
+    {
+        return worldData.activeChunkData.TryGetValue(chunkPos, out ChunkData chunk) ? chunk : null;
+    }
+
+    public bool AddChunk(Vector3Int chunkPos, ChunkData chunk)
+    {
+        return worldData.activeChunkData.TryAdd(chunkPos, chunk);
+    }
 
     private void ManageGeneration()
     {

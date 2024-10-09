@@ -69,7 +69,7 @@ public class ShaderTest : MonoBehaviour
         {
             for (int x = 0; x < 32; x++)
             {
-                float noise = (Noise.Generate((float)x / 50f, (float)z / 50f) + 1) / 3f;
+                float noise = (Noise.HeightMapNoise((float)x / 50f, (float)z / 50f, 5, 27) + 1) / 3f;
                 int height = (int)Mathf.Lerp(5, 27, noise);
                 
                 Debug.Log(noise + " " + height);
