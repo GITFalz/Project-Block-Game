@@ -9,6 +9,8 @@ using UnityEngine;
 public class WMWriter : MonoBehaviour
 {
     public static WMWriter instance;
+
+    public string msg = "";
     
     
     public TMP_Text inputField;
@@ -77,15 +79,26 @@ public class WMWriter : MonoBehaviour
         }
         Debug.Log("---------------------------------");
 
-        string message = "";
+        LoopTypes();
+    }
 
-        while (index < lines.Length)
-        {
-            message = CommandTest(index, types);
+    public bool LoopTypes()
+    {
+        string message = CommandTest(index, types);
             
-            if (message.Equals("error"))
-                Debug.Log($"There is an error at string index {index}");
+        if (message.Equals("error"))
+        {
+            Debug.Log($"There is an error at string index {index}");
+            return false;
         }
+
+        if (index < lines.Length)
+        {
+            index++;
+            LoopTypes();
+        }
+
+        return true;
     }
     
     public string CommandTest(int index, Dictionary<string, Func<string>> commands)
@@ -119,6 +132,7 @@ public class WMWriter : MonoBehaviour
     private string Error(string message)
     {
         Debug.Log(message + " at string index : " + index);
+        msg = message;
         return "error";
     }
 
@@ -183,6 +197,8 @@ public class WMWriter : MonoBehaviour
                 Debug.Log("options test start... " + lines[index]);
                 message = CommandTest(index, options);
                 Debug.Log("options test end");
+                
+                Debug.Log("Error message is equal to : " + message);
 
                 if (message.Equals("error"))
                     return Error("label error");
@@ -190,10 +206,13 @@ public class WMWriter : MonoBehaviour
             Debug.Log("option done");
             index++;
 
+            if (index == lines.Length)
+                return "";
+
             if (lines[index].Equals("}"))
                 return Error("Extra '}' found");
         }
-        return "error";
+        return "";
     } 
     
     public string On_Biome() { return ""; }
@@ -255,7 +274,13 @@ public class WMWriter : MonoBehaviour
         index++;
 
         if (!masks.TryGetValue(lines[index], out CWorldMask mask))
-            return Error("No valid min float value");
+        {
+            string value = Error("No valid min float value");
+            Debug.Log(value);
+            return value;
+        }
+
+        Debug.Log("Helloooooooo");
 
         masks[currentName].mask = mask;
         
@@ -368,48 +393,19 @@ public class WMWriter : MonoBehaviour
 
     public string On_TSmooth()
     {
-        if (!MaxIndex(2))
-            return Error("Not enough parameters in the option section");
-        
-        index++;
-        
-        if (!lines[index].Equals(":")) 
-            return Error("':' expected");
-        index++;
-
-        if (!bool.TryParse(lines[index], out bool smooth))
-            return Error("Not a correct bool value");
-
-        masks[currentName].noise.t_smooth = smooth;
-        
-        if (!lines[index].Equals(","))
+        if (currentType.Equals("Mask"))
         {
-            return "";
+            masks[currentName].noise.t_smooth = true;
         }
-            
+
         return "";
     }
 
     public string On_TSlide()
     {
-        
-        if (!MaxIndex(2))
-            return Error("Not enough parameters in the option section");
-        
-        index++;
-        
-        if (!lines[index].Equals(":")) 
-            return Error("':' expected");
-        index++;
-
-        if (!bool.TryParse(lines[index], out bool slide))
-            return Error("Not a correct bool value");
-
-        masks[currentName].noise.t_slide = slide;
-        
-        if (!lines[index].Equals(","))
+        if (currentType.Equals("Mask"))
         {
-            return "";
+            masks[currentName].noise.t_slide = true;
         }
 
         return "";
@@ -417,6 +413,11 @@ public class WMWriter : MonoBehaviour
 
     public string On_Invert()
     {
+        if (currentType.Equals("Mask"))
+        {
+            masks[currentName].noise.invert = true;
+        }
+
         return "";
     }
 
@@ -424,10 +425,7 @@ public class WMWriter : MonoBehaviour
     {
         if (currentType.Equals("Mask"))
         {
-            if (masks.TryGetValue(currentName, out CWorldMask mask))
-            {
-                textureGeneration.UpdateTexture(masks[currentName]);
-            }
+            textureGeneration.UpdateTexture(masks[currentName]);
         }
 
         return "";
@@ -462,9 +460,6 @@ public class WMWriter : MonoBehaviour
                     return Error("label error");
             }
             Debug.Log("setting done");
-            
-            if (lines[index+1].Equals("}"))
-                return Error("Extra '}' found");
         }
 
         return "";
@@ -546,6 +541,7 @@ public class CWorldNoise
 
     public bool t_smooth;
     public bool t_slide;
+    public bool invert;
 
     public CWorldNoise()
     {
@@ -575,6 +571,8 @@ public class CWorldNoise
             height = Mathp.PLerp(t_min, t_max, height);
         if (t_slide)
             height = Mathp.SLerp(t_min, t_max, height);
+        if (invert)
+            height = 1 - height;
 
         return height;
     }
