@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -79,26 +80,22 @@ public class WMWriter : MonoBehaviour
         }
         Debug.Log("---------------------------------");
 
-        LoopTypes();
-    }
-
-    public bool LoopTypes()
-    {
-        string message = CommandTest(index, types);
+        while (index <= lines.Length)
+        {
+            if (index == lines.Length)
+                break;
+        
+            Debug.Log("hello");
+            string message = CommandTest(index, types);
             
-        if (message.Equals("error"))
-        {
-            Debug.Log($"There is an error at string index {index}");
-            return false;
-        }
+            if (message.Equals("error"))
+            {
+                Debug.Log($"There is an error at string index {index}");
+                break;
+            }
 
-        if (index < lines.Length)
-        {
             index++;
-            LoopTypes();
         }
-
-        return true;
     }
     
     public string CommandTest(int index, Dictionary<string, Func<string>> commands)
@@ -197,23 +194,26 @@ public class WMWriter : MonoBehaviour
                 Debug.Log("options test start... " + lines[index]);
                 message = CommandTest(index, options);
                 Debug.Log("options test end");
-                
-                Debug.Log("Error message is equal to : " + message);
 
                 if (message.Equals("error"))
                     return Error("label error");
             }
             Debug.Log("option done");
-            index++;
 
             if (index == lines.Length)
-                return "";
-
-            if (lines[index].Equals("}"))
-                return Error("Extra '}' found");
+                return "error";
+            
+            if (index + 1 < lines.Length)
+                if (lines[index + 1].Equals("}"))
+                    return Error("Extra '}' found");
         }
         return "";
-    } 
+    }
+
+    public string On_Sample()
+    {
+        return "";
+    }
     
     public string On_Biome() { return ""; }
 
@@ -336,15 +336,18 @@ public class WMWriter : MonoBehaviour
             return Error("':' expected");
         index++;
 
-        if (!float.TryParse(lines[index], out float min))
+        if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float min))
+        {
+            Debug.Log(lines[index]);
             return Error("No valid min float value");
+        }
         index++;
         
         if (!lines[index].Equals(",")) 
             return Error("At least one more value expectec");
         index++;
         
-        if (!float.TryParse(lines[index], out float max))
+        if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float max))
             return Error("No valid min float value");
 
         masks[currentName].noise.t_min = min;
@@ -468,6 +471,7 @@ public class WMWriter : MonoBehaviour
     public Dictionary<string, Func<string>> types = new Dictionary<string, Func<string>>()
     {
         { "Mask", () => instance.On_Mask() },
+        { "Sample", () => instance.On_Sample() },
         { "Biome", () => instance.On_Biome() },
     };
 
