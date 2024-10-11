@@ -1,143 +1,143 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CWorldHandler : MonoBehaviour
 {
+    public List<C
+    public List<CNode> nodes = new List<CNode>();
+    
     public Block GetBlock(int x, int y, int z)
     {
-        Block block = null;
+        foreach (CNode node in nodes)
+        {
+            Block block = node.GetBlock(x, y, z);
+            if (block != null) return block;
+        }
 
-        return block;
+        return null;
     }
 }
 
-public abstract class TypeNode
+public abstract class CNode
 {
-    public abstract NodeData Go(int x, int y, int z);
+    public abstract Block GetBlock(int x, int y, int z);
 }
 
-public class MaskNode : TypeNode
+public class CBiomeNode : CNode
 {
-    public override int Get(int x, int y, int z)
-    {
-        return 0;
-    }
-    
-    public override float Set(float a)
-    {
-        return 0;
-    }
-}
+    public List<CBlockHeightSequence> blocks;
 
-public class SampleNode : TypeNode
-{
-    public NoiseSetting noise;
-    
-    public override int Get(int x, int y, int z)
+    public CSampleNode mask;
+    public CSampleNode sample;
+    public CNoiseSettings noise;
+
+    public float t_min;
+    public float t_max;
+
+    public float minHeight;
+    public float maxHeight;
+
+    public CBiomeNode()
     {
-        return 0;
-    }
-    
-    public override float Set(float a)
-    {
-        return 0;
+        t_min = 0;
+        t_max = 1;
     }
 
-    public float GetNoise(int x, int y, int z) { }
-}
-
-public class BiomeNode : TypeNode
-{
-    public TypeNode sample;
-    public TypeNode mask;
-
-    public BiomeNode()
+    public override Block GetBlock(int x, int y, int z)
     {
-        sample = null;
-        mask = null;
-    }
-    
-    public override int Get(int x, int y, int z)
-    {
-        return 0;
-    }
-    
-    public override float Set(float a)
-    {
-        return 0;
+        return GetBlock(x, y, z, noise.GetNoiseValue(x, z));
     }
 
-    public int GetBlock(int x, int y, int z, TypeNode sample)
+    public Block GetBlock(int x, int y, int z, float n)
     {
-        (SampleNode)sample.
+        int height = Mathf.FloorToInt(Mathf.Lerp(minHeight, maxHeight, mask?.GetNoise(x, z, n) ?? n));
+        
+        foreach (var block in blocks)
+        {
+            Block b = block.IsBlock(x, y, z, height);
+            if (b != null) return b;
+        }
+        return null;
     }
 }
 
-public class TreeNode : TypeNode
+
+public abstract class CInit
 {
-    public override int Get(int x, int y, int z)
+    public abstract void Init(int x, int z);
+}
+
+
+public class CSampleNode : CInit
+{
+    public CNoiseSettings noise;
+    public float noiseValue;
+
+    public override void Init(int x, int z)
     {
-        return 0;
-    }
-    
-    public override float Set(float a)
-    {
-        return 0;
+        noiseValue = noise.GetNoiseValue(x, z);
     }
 }
 
-public class BlockNode : TypeNode
+public struct CBlockHeightSequence
 {
-    public override int Get(int x, int y, int z)
-    {
-        return 0;
-    }
+    public int minHeight;
+    public int maxHeight;
     
-    public override float Set(float a)
-    {
-        return 0;
-    }
-}
-
-public class NodeData
-{
-    public float height;
+    public int minDepth;
+    public int maxDepth;
+    
     public Block block;
+
+    public Block IsBlock(int x, int y, int z, int height)
+    {
+        if (y < minHeight || y > maxHeight) return null;
+
+        int minD = minDepth == -1 ? height : height - minDepth;
+        int maxD = maxDepth == -1 ? minHeight : height - maxDepth;
+        
+        return y > minD || y < maxD ? null : block;
+    }
 }
 
-public class NoiseSetting
+public abstract class CSettings
 {
-    public int sizeX;
-    public int sizeY;
-
-    public int t_min;
-    public int t_max;  
     
-    public int c_min;
-    public int c_max;
+}
 
-    public bool t_slide;
+public class CNoiseSettings : CSettings
+{
+    public float sizeX;
+    public float sizeY;
+
+    public float t_min;
+    public float t_max;
+
+    public float c_min;
+    public float c_max;
+
     public bool t_smooth;
+    public bool t_slide;
     public bool invert;
 
-    public NoiseSetting()
+    public CNoiseSettings()
     {
-        sizeX = 0;
-        sizeY = 0;
+        sizeX = 20;
+        sizeY = 20;
         
         t_min = 0;
         t_max = 1;
-        
+
         c_min = 0;
         c_max = 1;
-        
-        t_slide = false;
+
         t_smooth = false;
-        invert = false;
+        t_slide = false;
     }
     
-    public float GetNoise(int x, int y, int z)
+    public float GetNoiseValue(int x, int z)
     {
-        float height = Mathf.Clamp(Mathf.PerlinNoise((float)((float)x / sizeX + 0.001f), (float)((float)y / sizeY + 0.001f)), c_min, c_max);
+        float height = Mathf.Clamp(Mathf.PerlinNoise((float)((float)x / sizeX + 0.001f), (float)((float)z / sizeY + 0.001f)), c_min, c_max);
         
         if (t_smooth)
             height = Mathp.PLerp(t_min, t_max, height);

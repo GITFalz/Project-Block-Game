@@ -17,6 +17,7 @@ public class WMWriter : MonoBehaviour
     public TMP_Text inputField;
     public TMP_Text log;
     public TextureGeneration textureGeneration;
+    public CWorldHandler handler;
     
     
     private string[] lines;
@@ -168,8 +169,12 @@ public class WMWriter : MonoBehaviour
                     return Error("label error");
                 
                 if (message.Equals("name"))
+                {
                     if (!masks.TryAdd(lines[index], new CWorldMask(lines[index])))
                         return Error("Failed to create new mask");
+                    
+                    masks[lines[index]].
+                }
             }
 
             Debug.Log("label done");
