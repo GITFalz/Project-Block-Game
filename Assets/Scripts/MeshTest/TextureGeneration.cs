@@ -16,14 +16,14 @@ public class TextureGeneration : MonoBehaviour
 
     private void Start()
     {
-        UpdateTexture(new CWorldMask("", new CWorldNoise()));
+        
     }
     
 
-    public void UpdateTexture(CWorldMask mask)
+    public void UpdateTexture(CSampleNode sample)
     {
         noiseTexture = new Texture2D(textureSize, textureSize);
-        GenerateNoise(mask);
+        GenerateNoise(sample);
         image.texture = noiseTexture;
     }
     
@@ -45,7 +45,7 @@ public class TextureGeneration : MonoBehaviour
         noiseTexture.Apply();
     }
 
-    private void GenerateNoise(CWorldMask mask)
+    private void GenerateNoise(CSampleNode sample)
     {
         for (int i = 0; i < textureSize; i++)
         {

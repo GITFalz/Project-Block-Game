@@ -25,8 +25,9 @@ public class WMWriter : MonoBehaviour
     private bool showChunkGen = false;
     private char[] charactersToReplace = new char[] { '(', ')', '=', '{', '}', ',', ':', '/'};
 
+    private CNode currentNode;
 
-    private Dictionary<string, CWorldMask> masks;
+    private Dictionary<string, > samples;
 
     private string currentName = "";
     private string currentType = "";
@@ -87,9 +88,9 @@ public class WMWriter : MonoBehaviour
                 break;
         
             Debug.Log("hello");
-            string message = CommandTest(index, types);
+            int message = CommandTest(index, types);
             
-            if (message.Equals("error"))
+            if (message == -1)
             {
                 Debug.Log($"There is an error at string index {index}");
                 break;
@@ -99,15 +100,15 @@ public class WMWriter : MonoBehaviour
         }
     }
     
-    public string CommandTest(int index, Dictionary<string, Func<string>> commands)
+    public int CommandTest(int index, Dictionary<string, Func<int>> commands)
     {
         string command = lines[index];
         Debug.Log("Command : " + command);
-        if (commands.TryGetValue(command, out Func<string> func))
+        if (commands.TryGetValue(command, out Func<int> func))
         {
             return func();
         }
-        return $"Invalid command: {command}";
+        return -1;
     }
 
     public int IsComment(int index)
@@ -127,11 +128,11 @@ public class WMWriter : MonoBehaviour
         return index;
     }
 
-    private string Error(string message)
+    private int Error(string message)
     {
         Debug.Log(message + " at string index : " + index);
         msg = message;
-        return "error";
+        return -1;
     }
 
     private bool MaxIndex(int i)
@@ -140,89 +141,134 @@ public class WMWriter : MonoBehaviour
     }
     
 
-    public string On_Mask()
+    public int CommandsTest(Dictionary<string, Func<int>> commands)
     {
-        Debug.Log("Mask start...");
-        currentType = "Mask";
-        string message;
-        
-        index++;
-        if (lines[index].Equals("("))
+        bool done = false;
+        while (!done)
         {
-            Debug.Log("label start...");
-            
-            while (index < lines.Length)
-            {
-                index++;
-                
-                if (lines[index].Equals(")"))
-                    break;
-                
-                if (!MaxIndex(3)) 
-                    return Error("not enough parameters in the label section");
-                
-                Debug.Log("label test start...");
-                message = CommandTest(index, labels);
-                Debug.Log("label test end");
-
-                if (message.Equals("error"))
-                    return Error("label error");
-                
-                if (message.Equals("name"))
-                {
-                    if (!masks.TryAdd(lines[index], new CWorldMask(lines[index])))
-                        return Error("Failed to create new mask");
-                    
-                    masks[lines[index]].
-                }
-            }
-
-            Debug.Log("label done");
-            index++;
+            int message = CommandTest(index, commands);
+            if(message == -1) return Error("Problem in the label found");
+            if(message == 1) done = true;
         }
-        
-        Debug.Log(lines[index]);
-        
-        if (lines[index].Equals("{"))
-        {
-            Debug.Log("option start...");
-            while (index < lines.Length)
-            {
-                index++;
-                
-                if (lines[index].Equals("{"))
-                    return Error("Extra '{' found");
-                
-                if (lines[index].Equals("}"))
-                    break;
-                
-                Debug.Log("options test start... " + lines[index]);
-                message = CommandTest(index, options);
-                Debug.Log("options test end");
-
-                if (message.Equals("error"))
-                    return Error("label error");
-            }
-            Debug.Log("option done");
-
-            if (index == lines.Length)
-                return "error";
-            
-            if (index + 1 < lines.Length)
-                if (lines[index + 1].Equals("}"))
-                    return Error("Extra '}' found");
-        }
-        return "";
+        return 0;
     }
 
-    public string On_Sample()
+    public int On_Sample()
     {
-        return "";
+        if (CommandsTest(sampleLabel) == -1) return Error("Problem in the sample label found");
+        if (CommandsTest(sampleSettings) == -1) return Error("Problem in the sample settings found");
+        return 0;
+    }
+
+    public int On_SampleName()
+    {
+        index++;
+        
+    }
+
+    public int On_SampleNoise()
+    {
+        
+    }
+
+    #region noise settings
+    public int On_SampleNoiseSize()
+    {
+        if (GetNext2Floats(out Vector2 floats) == -1)
+            return Error("A problem was found while writing the size");
+        
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+
+        sampleNode.noise.sizeX = floats.x;
+        sampleNode.noise.sizeY = floats.y;
+
+        return 0;
+    }
+
+    public int On_SampleNoiseThreshold()
+    {
+        if (GetNext2Floats(out Vector2 floats) == -1)
+            return Error("A problem was found while writing the threshold");
+        
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+
+        sampleNode.noise.t_min = floats.x;
+        sampleNode.noise.t_max = floats.y;
+
+        return 0;
+    }
+
+    public int On_SampleNoiseClamp()
+    {
+        if (GetNext2Floats(out Vector2 floats) == -1)
+            return Error("A problem was found while writing the clamp");
+        
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+
+        sampleNode.noise.c_min = floats.x;
+        sampleNode.noise.c_max = floats.y;
+
+        return 0;
+    }
+
+    public int On_SampleNoiseSlide()
+    {
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+        sampleNode.noise.t_slide = true;
+        return 0;
+    }
+
+    public int On_SampleNoiseSmooth()
+    {
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+        sampleNode.noise.t_smooth = true;
+        return 0;
+    }
+
+    public int On_SampleNoiseInvert()
+    {
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+        sampleNode.noise.invert = true;
+        return 0;
+    }
+    #endregion
+    
+    public int GetNext2Floats(out Vector2 floats)
+    {
+        floats = Vector2.zero;
+
+        try
+        {
+            index++;
+            if (!float.TryParse(lines[index], out float x)) return Error("No valid min value found");
+            index++;
+            if (!lines[index].Equals(",")) return Error("',' is missing");
+            index++;
+            if (!float.TryParse(lines[index], out float y)) return Error("No valid max value found");
+
+            floats.x = x;
+            floats.y = y;
+            return 0;
+        }
+        catch (IndexOutOfRangeException)
+        {
+            return Error("There are missing parameters, the line should be written like: 'option : value1, value2'");
+        }
+        
+        catch (Exception ex)
+        {
+            return Error($"Error {ex}");
+        }
+    }
+
+    public int On_SampleSettings()
+    {
+        
     }
     
-    public string On_Biome() { return ""; }
+    public int On_Biome() { return 0; }
 
-    public string On_Name()
+    public int On_Name()
     {
         Debug.Log("Name test");
         index++;
@@ -238,15 +284,15 @@ public class WMWriter : MonoBehaviour
             return Error("'name' expected but ) found");
         
         currentName = lines[index];
-        return "name";
+        return 2;
     } 
     
     
-    public string On_Override() { return ""; }
+    public int On_Override() { return 0; }
 
-    public string On_Noise()
+    public int On_Noise()
     {
-        string message = "";
+        int message;
         Debug.Log(currentType + " " + currentName);
         if (currentType.Equals("Mask"))
         {
@@ -258,16 +304,16 @@ public class WMWriter : MonoBehaviour
             message = Handle_Options(4);
         }
 
-        return "";
+        return 0;
     } 
-    public string On_Specifics() { return ""; }
+    public int On_Specifics() { return 0; }
 
-    public string On_Do()
+    public int On_Do()
     {
         return Handle_Options(0);
     }
 
-    public string On_S_Mask()
+    public int On_S_Mask()
     {
         if (!MaxIndex(2))
             return Error("Not enough parameters in the option section");
@@ -280,9 +326,9 @@ public class WMWriter : MonoBehaviour
 
         if (!masks.TryGetValue(lines[index], out CWorldMask mask))
         {
-            string value = Error("No valid min float value");
+            int value = Error("No valid min float value");
             Debug.Log(value);
-            return value;
+            return 0;
         }
 
         Debug.Log("Helloooooooo");
@@ -291,13 +337,13 @@ public class WMWriter : MonoBehaviour
         
         if (!lines[index].Equals(","))
         {
-            return "";
+            return 0;
         }
             
-        return "";
+        return 0;
     }
 
-    public string On_Parameters()
+    public int On_Parameters()
     {
         if (!MaxIndex(4))
             return Error("Not enough parameters in the option section");
@@ -324,13 +370,13 @@ public class WMWriter : MonoBehaviour
         
         if (!lines[index].Equals(","))
         {
-            return "";
+            return 0;
         }
             
-        return "";
+        return 0;
     }
 
-    public string On_Threshold()
+    public int On_Threshold()
     {
         if (!MaxIndex(4))
             return Error("Not enough parameters in the option section");
@@ -360,13 +406,13 @@ public class WMWriter : MonoBehaviour
         
         if (!lines[index].Equals(","))
         {
-            return "";
+            return 0;
         }
             
-        return "";
+        return 0;
     }
 
-    public string On_Clamp()
+    public int On_Clamp()
     {
         if (!MaxIndex(4))
             return Error("Not enough parameters in the option section");
@@ -393,56 +439,56 @@ public class WMWriter : MonoBehaviour
         
         if (!lines[index].Equals(","))
         {
-            return "";
+            return 0;
         }
             
-        return "";
+        return 0;
     }
 
-    public string On_TSmooth()
+    public int On_TSmooth()
     {
         if (currentType.Equals("Mask"))
         {
             masks[currentName].noise.t_smooth = true;
         }
 
-        return "";
+        return 0;
     }
 
-    public string On_TSlide()
+    public int On_TSlide()
     {
         if (currentType.Equals("Mask"))
         {
             masks[currentName].noise.t_slide = true;
         }
 
-        return "";
+        return 0;
     }
 
-    public string On_Invert()
+    public int On_Invert()
     {
         if (currentType.Equals("Mask"))
         {
             masks[currentName].noise.invert = true;
         }
 
-        return "";
+        return 0;
     }
 
-    public string On_Display()
+    public int On_Display()
     {
         if (currentType.Equals("Mask"))
         {
             textureGeneration.UpdateTexture(masks[currentName]);
         }
 
-        return "";
+        return 0;
     }
 
 
-    public string Handle_Options(int maxIndex)
+    public int Handle_Options(int maxIndex)
     {
-        string message = "";
+        int message;
         index++;
         if (lines[index].Equals("{"))
         {
@@ -470,22 +516,47 @@ public class WMWriter : MonoBehaviour
             Debug.Log("setting done");
         }
 
-        return "";
+        return 0;
     }
     
-    public Dictionary<string, Func<string>> types = new Dictionary<string, Func<string>>()
+    public Dictionary<string, Func<int>> types = new Dictionary<string, Func<int>>()
     {
-        { "Mask", () => instance.On_Mask() },
         { "Sample", () => instance.On_Sample() },
         { "Biome", () => instance.On_Biome() },
     };
+    
+    public Dictionary<string, Func<int>> sampleLabel = new Dictionary<string, Func<int>>()
+    {
+        { "(", () => { instance.index++; return 0; } },
+        { "name", () => instance.On_SampleName() },
+        { ")", () => { instance.index++; return 1; } },
+    };
+    
+    public Dictionary<string, Func<int>> sampleSettings = new Dictionary<string, Func<int>>()
+    {
+        { "{", () => { instance.index++; return 0; } },
+        { "override", () => instance.On_SampleSettings() },
+        { "noise", () => instance.On_SampleNoise() },
+        { "display", () => instance.On_Display() },
+        { "}", () => { instance.index++; return 1; } },
+    };
 
-    public Dictionary<string, Func<string>> labels = new Dictionary<string, Func<string>>()
+    public Dictionary<string, Func<int>> sampleNoiseOptions = new Dictionary<string, Func<int>>()
+    {
+        { "size", () => instance.On_SampleNoiseSize() },
+        { "threshold", () => instance.On_SampleNoiseThreshold() },
+        { "clamp", () => instance.On_SampleNoiseClamp() },
+        { "slide", () => instance.On_SampleNoiseSlide() },
+        { "smooth", () => instance.On_SampleNoiseSmooth() },
+        { "invert", () => instance.On_SampleNoiseInvert() },
+    };
+
+    public Dictionary<string, Func<int>> labels = new Dictionary<string, Func<int>>()
     {
         { "name", () => instance.On_Name() },
     };
 
-    public Dictionary<string, Func<string>> options = new Dictionary<string, Func<string>>()
+    public Dictionary<string, Func<int>> options = new Dictionary<string, Func<int>>()
     {
         { "override", () => instance.On_Override() },
         { "noise", () => instance.On_Noise() },
@@ -493,7 +564,7 @@ public class WMWriter : MonoBehaviour
         { "do", () => instance.On_Do() },
     };
 
-    public Dictionary<string, Func<string>> settings = new Dictionary<string, Func<string>>()
+    public Dictionary<string, Func<int>> settings = new Dictionary<string, Func<int>>()
     {
         { "mask", () => instance.On_S_Mask() },
         { "parameters", () => instance.On_Parameters() },

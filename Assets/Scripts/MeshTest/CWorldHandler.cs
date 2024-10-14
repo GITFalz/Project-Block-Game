@@ -3,14 +3,14 @@ using UnityEngine;
 
 public class CWorldHandler : MonoBehaviour
 {
-    public List<C
-    public List<CNode> nodes = new List<CNode>();
+    public List<CInit> initializers = new List<CInit>();
+    public List<CExecute> executes = new List<CExecute>();
     
     public Block GetBlock(int x, int y, int z)
     {
-        foreach (CNode node in nodes)
+        foreach (CExecute execute in executes)
         {
-            Block block = node.GetBlock(x, y, z);
+            Block block = execute.GetBlock(x, y, z);
             if (block != null) return block;
         }
 
@@ -20,16 +20,21 @@ public class CWorldHandler : MonoBehaviour
 
 public abstract class CNode
 {
+    
+}
+
+public abstract class CExecute : CNode
+{
     public abstract Block GetBlock(int x, int y, int z);
 }
 
-public class CBiomeNode : CNode
+public class CBiomeNode : CExecute
 {
     public List<CBlockHeightSequence> blocks;
 
     public CSampleNode mask;
     public CSampleNode sample;
-    public CNoiseSettings noise;
+    public CNoiseNode noise;
 
     public float t_min;
     public float t_max;
@@ -41,6 +46,10 @@ public class CBiomeNode : CNode
     {
         t_min = 0;
         t_max = 1;
+
+        mask = new CSampleNode();
+        sample = new CSampleNode();
+        noise = new CNoiseNode();
     }
 
     public override Block GetBlock(int x, int y, int z)
@@ -50,19 +59,19 @@ public class CBiomeNode : CNode
 
     public Block GetBlock(int x, int y, int z, float n)
     {
-        int height = Mathf.FloorToInt(Mathf.Lerp(minHeight, maxHeight, mask?.GetNoise(x, z, n) ?? n));
+        //int height = Mathf.FloorToInt(Mathf.Lerp(minHeight, maxHeight, mask?.GetNoise(x, z, n) ?? n));
         
         foreach (var block in blocks)
         {
-            Block b = block.IsBlock(x, y, z, height);
-            if (b != null) return b;
+            //Block b = block.IsBlock(x, y, z, height);
+            //if (b != null) return b;
         }
         return null;
     }
 }
 
 
-public abstract class CInit
+public abstract class CInit : CNode
 {
     public abstract void Init(int x, int z);
 }
@@ -70,12 +79,58 @@ public abstract class CInit
 
 public class CSampleNode : CInit
 {
-    public CNoiseSettings noise;
+    public CSampleNode mask;
+    public COverrideNode oride;
+    public CNoiseNode noise;
     public float noiseValue;
+
+    public CSampleNode()
+    {
+        mask = null;
+        
+        noise = new CNoiseNode();
+        noiseValue = 0;
+    }
 
     public override void Init(int x, int z)
     {
         noiseValue = noise.GetNoiseValue(x, z);
+    }
+
+    public float GetNoise(int x, int z)
+    {
+        float height = noise.GetNoiseValue(x, z);
+
+        if (sample != null)
+        {
+            
+        }
+    }
+}
+
+public class COverrideNode
+{
+    public float t_min;
+    public float t_max;
+
+    public float c_min;
+    public float c_max;
+
+    public bool t_smooth;
+    public bool t_slide;
+    public bool invert;
+    
+    public COverrideNode()
+    {
+        t_min = 0;
+        t_max = 1;
+
+        c_min = 0;
+        c_max = 1;
+
+        t_smooth = false;
+        t_slide = false;
+        invert = false;
     }
 }
 
@@ -100,12 +155,12 @@ public struct CBlockHeightSequence
     }
 }
 
-public abstract class CSettings
+public abstract class CSettings : CNode
 {
     
 }
 
-public class CNoiseSettings : CSettings
+public class CNoiseNode : CSettings
 {
     public float sizeX;
     public float sizeY;
@@ -120,10 +175,10 @@ public class CNoiseSettings : CSettings
     public bool t_slide;
     public bool invert;
 
-    public CNoiseSettings()
+    public CNoiseNode()
     {
-        sizeX = 20;
-        sizeY = 20;
+        sizeX = 0;
+        sizeY = 0;
         
         t_min = 0;
         t_max = 1;
@@ -133,6 +188,7 @@ public class CNoiseSettings : CSettings
 
         t_smooth = false;
         t_slide = false;
+        invert = false;
     }
     
     public float GetNoiseValue(int x, int z)

@@ -22,6 +22,11 @@ public static class Mathp
 
         return new Vector3Int(chunk_x, chunk_y, chunk_z);
     }
+
+    public static int Round(float value, float midPoint)
+    {
+        return value < midPoint ? 0 : 1;
+    }
     
     public static float PLerp(float min, float max, float value)
     {
@@ -41,6 +46,6 @@ public static class Mathp
     {
         if (value <= min) return 0f;
         if (value >= max) return 1f;
-        return (value - min) / (max - min); // Linear interpolation
+        return (value - min) / (max - min);
     }
 }
