@@ -247,6 +247,19 @@ public class WMWriter : MonoBehaviour
         return 0;
     }
 
+    public int On_SampleNoiseAmplitude()
+    {
+        index++;
+        if (GetNextFloat(out float value) == -1)
+            return Error("A problem was found while writing the amplitude");
+        
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+
+        sampleNode.noise.amplitude = value;
+
+        return 0;
+    }
+
     public int On_SampleNoiseInvert()
     {
         index++;
@@ -284,6 +297,30 @@ public class WMWriter : MonoBehaviour
             return Error($"Error {ex}");
         }
     }
+    
+    public int GetNextFloat(out float value)
+    {
+        value = 0;
+
+        try
+        {
+            index++;
+            if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float amplitude)) return Error("No valid amplitude value found");
+            index++;
+
+            value = amplitude;
+            return 0;
+        }
+        catch (IndexOutOfRangeException)
+        {
+            return Error("There are missing parameters, the line should be written like: 'option : value1, value2'");
+        }
+        
+        catch (Exception ex)
+        {
+            return Error($"Error {ex}");
+        }
+    }
 
     public int On_SampleSettings()
     {
@@ -292,7 +329,34 @@ public class WMWriter : MonoBehaviour
 
     public int On_SampleOverride()
     {
-        return Error("not implemented");
+        index++;
+        if (CommandsTest(sampleOverrideOptions) == -1) return Error("Problem in the sample settings found");
+        return 0;
+    }
+
+    public int On_SampleOverrideSample()
+    {
+        index++;
+        return 0;
+    }
+
+    public int On_SampleOverrideAdd()
+    {
+        index++;
+        if (!lines[index].Equals(":"))
+            return Error("':' expected");
+        
+        index++;
+        if (!samples.ContainsKey(lines[index]))
+            return Error("There is no such sample");
+        
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+
+        sampleNode.add.Add(samples[lines[index]]);
+        
+        index++;
+
+        return 0;
     }
     
     public int On_Biome() { return 0; }
@@ -349,7 +413,7 @@ public class WMWriter : MonoBehaviour
         { "override", () => instance.On_SampleOverride() },
         { "noise", () => instance.On_SampleNoise() },
         { "display", () => instance.On_Display() },
-        { "}", () => instance.Increment(1, 1) },
+        { "}", () => instance.Increment(0, 1) },
     };
 
     public Dictionary<string, Func<int>> sampleNoiseOptions = new Dictionary<string, Func<int>>()
@@ -358,10 +422,19 @@ public class WMWriter : MonoBehaviour
         { "size", () => instance.On_SampleNoiseSize() },
         { "threshold", () => instance.On_SampleNoiseThreshold() },
         { "clamp", () => instance.On_SampleNoiseClamp() },
+        { "amplitude", () => instance.On_SampleNoiseAmplitude() },
         { "slide", () => instance.On_SampleNoiseSlide() },
         { "smooth", () => instance.On_SampleNoiseSmooth() },
         { "invert", () => instance.On_SampleNoiseInvert() },
-        {"}", () => instance.Increment(1, 1) }
+        { "}", () => instance.Increment(1, 1) }
+    };
+
+    public Dictionary<string, Func<int>> sampleOverrideOptions = new Dictionary<string, Func<int>>()
+    {
+        { "{", () => instance.Increment(1, 0) },
+        { "sample", () => instance.On_SampleOverrideSample() },
+        { "add", () => instance.On_SampleOverrideAdd() },
+        { "}", () => instance.Increment(1, 1) }
     };
 
     public Dictionary<string, Func<int>> labels = new Dictionary<string, Func<int>>()

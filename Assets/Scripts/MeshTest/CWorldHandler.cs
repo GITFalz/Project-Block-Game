@@ -79,6 +79,7 @@ public abstract class CInit : CNode
 
 public class CSampleNode : CInit
 {
+    public List<CSampleNode> add;
     public CSampleNode mask;
     public COverrideNode oride;
     public CNoiseNode noise;
@@ -87,6 +88,7 @@ public class CSampleNode : CInit
     public CSampleNode()
     {
         mask = null;
+        add = new List<CSampleNode>();
         
         noise = new CNoiseNode();
         noiseValue = 0;
@@ -100,6 +102,15 @@ public class CSampleNode : CInit
     public float GetNoise(int x, int z)
     {
         float height = noise.GetNoiseValue(x, z);
+
+        if (add.Count > 0)
+        {
+            foreach (CSampleNode node in add)
+            {
+                height += node.GetNoise(x, z);
+            }
+        }
+        
         return height;
     }
 }
@@ -167,6 +178,8 @@ public class CNoiseNode : CSettings
     public float c_min;
     public float c_max;
 
+    public float amplitude;
+
     public bool t_smooth;
     public bool t_slide;
     public bool invert;
@@ -181,6 +194,8 @@ public class CNoiseNode : CSettings
 
         c_min = 0;
         c_max = 1;
+
+        amplitude = 1;
 
         t_smooth = false;
         t_slide = false;
@@ -197,7 +212,7 @@ public class CNoiseNode : CSettings
             height = Mathp.SLerp(t_min, t_max, height);
         if (invert)
             height = 1 - height;
-
-        return height;
+        
+        return height * amplitude;
     }
 }
