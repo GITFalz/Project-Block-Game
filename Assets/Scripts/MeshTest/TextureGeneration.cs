@@ -51,7 +51,7 @@ public class TextureGeneration : MonoBehaviour
         {
             for (int j = 0; j < textureSize; j++)
             {
-                float height = mask.GetNoiseValue(i, j);
+                float height = sample.GetNoise(i, j);
                 noiseTexture.SetPixel(i, j, new Color(height, height, height));
             }
         }

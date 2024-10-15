@@ -27,14 +27,14 @@ public class WMWriter : MonoBehaviour
 
     private CNode currentNode;
 
-    private Dictionary<string, > samples;
+    private Dictionary<string, CSampleNode> samples;
 
     private string currentName = "";
     private string currentType = "";
 
     private void Start()
     {
-        masks = new Dictionary<string, CWorldMask>();
+        samples = new Dictionary<string, CSampleNode>();
     }
 
     private void Awake()
@@ -45,7 +45,7 @@ public class WMWriter : MonoBehaviour
 
     public void ExecuteCode()
     {
-        masks.Clear();
+        samples.Clear();
         index = 0;
         currentName = "";
         currentType = "";
@@ -155,25 +155,43 @@ public class WMWriter : MonoBehaviour
 
     public int On_Sample()
     {
-        if (CommandsTest(sampleLabel) == -1) return Error("Problem in the sample label found");
+        index++;
+        if (CommandsTest(sampleLabel) == -1) return Error("Problem in the label found");
+        if (!samples.TryAdd(currentName, new CSampleNode()))
+            return Error("name is used twice");
+        currentNode = samples[currentName];
         if (CommandsTest(sampleSettings) == -1) return Error("Problem in the sample settings found");
         return 0;
     }
 
     public int On_SampleName()
     {
+        Debug.Log("Name test");
         index++;
         
+        if (!lines[index].Equals("="))
+            return Error("No '=' found");
+        index++;
+
+        if (lines[index].Equals(")"))
+            return Error("'name' expected but ) found");
+        currentName = lines[index];
+        index++;
+        return 2;
     }
 
     public int On_SampleNoise()
     {
-        
+        index++;
+        samples[currentName].noise = new CNoiseNode();
+        if (CommandsTest(sampleNoiseOptions) == -1) return Error("Problem in the sample settings found");
+        return 0;
     }
 
     #region noise settings
     public int On_SampleNoiseSize()
     {
+        index++;
         if (GetNext2Floats(out Vector2 floats) == -1)
             return Error("A problem was found while writing the size");
         
@@ -187,6 +205,7 @@ public class WMWriter : MonoBehaviour
 
     public int On_SampleNoiseThreshold()
     {
+        index++;
         if (GetNext2Floats(out Vector2 floats) == -1)
             return Error("A problem was found while writing the threshold");
         
@@ -200,6 +219,7 @@ public class WMWriter : MonoBehaviour
 
     public int On_SampleNoiseClamp()
     {
+        index++;
         if (GetNext2Floats(out Vector2 floats) == -1)
             return Error("A problem was found while writing the clamp");
         
@@ -213,6 +233,7 @@ public class WMWriter : MonoBehaviour
 
     public int On_SampleNoiseSlide()
     {
+        index++;
         if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
         sampleNode.noise.t_slide = true;
         return 0;
@@ -220,6 +241,7 @@ public class WMWriter : MonoBehaviour
 
     public int On_SampleNoiseSmooth()
     {
+        index++;
         if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
         sampleNode.noise.t_smooth = true;
         return 0;
@@ -227,6 +249,7 @@ public class WMWriter : MonoBehaviour
 
     public int On_SampleNoiseInvert()
     {
+        index++;
         if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
         sampleNode.noise.invert = true;
         return 0;
@@ -240,11 +263,12 @@ public class WMWriter : MonoBehaviour
         try
         {
             index++;
-            if (!float.TryParse(lines[index], out float x)) return Error("No valid min value found");
+            if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float x)) return Error("No valid min value found");
             index++;
-            if (!lines[index].Equals(",")) return Error("',' is missing");
+            if (!lines[index].Equals(","))return Error("',' is missing");
             index++;
-            if (!float.TryParse(lines[index], out float y)) return Error("No valid max value found");
+            if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float y)) return Error("No valid max value found");
+            index++;
 
             floats.x = x;
             floats.y = y;
@@ -263,7 +287,12 @@ public class WMWriter : MonoBehaviour
 
     public int On_SampleSettings()
     {
-        
+        return Error("not implemented");
+    }
+
+    public int On_SampleOverride()
+    {
+        return Error("not implemented");
     }
     
     public int On_Biome() { return 0; }
@@ -274,7 +303,7 @@ public class WMWriter : MonoBehaviour
         index++;
         
         if (lines[index].Equals(")"))
-            return Error("'= name' expected but ')' found");
+            return Error("'name = sample_name' expected but ')' found");
         
         if (!lines[index].Equals("="))
             return Error("No '=' found");
@@ -282,239 +311,21 @@ public class WMWriter : MonoBehaviour
 
         if (lines[index].Equals(")"))
             return Error("'name' expected but ) found");
-        
         currentName = lines[index];
         return 2;
-    } 
-    
-    
-    public int On_Override() { return 0; }
-
-    public int On_Noise()
-    {
-        int message;
-        Debug.Log(currentType + " " + currentName);
-        if (currentType.Equals("Mask"))
-        {
-            if (currentName.Equals(""))
-                return Error("A name is expected when doing a Mask 'Mask ( name = 'name' )'");
-            
-            masks[currentName].noise = new CWorldNoise();
-
-            message = Handle_Options(4);
-        }
-
-        return 0;
-    } 
-    public int On_Specifics() { return 0; }
-
-    public int On_Do()
-    {
-        return Handle_Options(0);
     }
 
-    public int On_S_Mask()
+    public int Increment(int i, int result)
     {
-        if (!MaxIndex(2))
-            return Error("Not enough parameters in the option section");
-        
-        index++;
-        
-        if (!lines[index].Equals(":")) 
-            return Error("':' expected");
-        index++;
-
-        if (!masks.TryGetValue(lines[index], out CWorldMask mask))
-        {
-            int value = Error("No valid min float value");
-            Debug.Log(value);
-            return 0;
-        }
-
-        Debug.Log("Helloooooooo");
-
-        masks[currentName].mask = mask;
-        
-        if (!lines[index].Equals(","))
-        {
-            return 0;
-        }
-            
-        return 0;
-    }
-
-    public int On_Parameters()
-    {
-        if (!MaxIndex(4))
-            return Error("Not enough parameters in the option section");
-        
-        index++;
-        
-        if (!lines[index].Equals(":")) 
-            return Error("':' expected");
-        index++;
-
-        if (!float.TryParse(lines[index], out float x))
-            return Error("No valid x float value");
-        index++;
-        
-        if (!lines[index].Equals(",")) 
-            return Error("At least one more value expectec");
-        index++;
-        
-        if (!float.TryParse(lines[index], out float y))
-            return Error("No valid y float value");
-
-        masks[currentName].noise.sizeX = x;
-        masks[currentName].noise.sizeY = y;
-        
-        if (!lines[index].Equals(","))
-        {
-            return 0;
-        }
-            
-        return 0;
-    }
-
-    public int On_Threshold()
-    {
-        if (!MaxIndex(4))
-            return Error("Not enough parameters in the option section");
-        
-        index++;
-        
-        if (!lines[index].Equals(":")) 
-            return Error("':' expected");
-        index++;
-
-        if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float min))
-        {
-            Debug.Log(lines[index]);
-            return Error("No valid min float value");
-        }
-        index++;
-        
-        if (!lines[index].Equals(",")) 
-            return Error("At least one more value expectec");
-        index++;
-        
-        if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float max))
-            return Error("No valid min float value");
-
-        masks[currentName].noise.t_min = min;
-        masks[currentName].noise.t_max = max;
-        
-        if (!lines[index].Equals(","))
-        {
-            return 0;
-        }
-            
-        return 0;
-    }
-
-    public int On_Clamp()
-    {
-        if (!MaxIndex(4))
-            return Error("Not enough parameters in the option section");
-        
-        index++;
-        
-        if (!lines[index].Equals(":")) 
-            return Error("':' expected");
-        index++;
-
-        if (!float.TryParse(lines[index], out float min))
-            return Error("No valid min float value");
-        index++;
-        
-        if (!lines[index].Equals(",")) 
-            return Error("At least one more value expectec");
-        index++;
-        
-        if (!float.TryParse(lines[index], out float max))
-            return Error("No valid min float value");
-
-        masks[currentName].noise.c_min = min;
-        masks[currentName].noise.c_max = max;
-        
-        if (!lines[index].Equals(","))
-        {
-            return 0;
-        }
-            
-        return 0;
-    }
-
-    public int On_TSmooth()
-    {
-        if (currentType.Equals("Mask"))
-        {
-            masks[currentName].noise.t_smooth = true;
-        }
-
-        return 0;
-    }
-
-    public int On_TSlide()
-    {
-        if (currentType.Equals("Mask"))
-        {
-            masks[currentName].noise.t_slide = true;
-        }
-
-        return 0;
-    }
-
-    public int On_Invert()
-    {
-        if (currentType.Equals("Mask"))
-        {
-            masks[currentName].noise.invert = true;
-        }
-
-        return 0;
+        Debug.Log("Increment by : " + i);
+        index += i;
+        return result;
     }
 
     public int On_Display()
     {
-        if (currentType.Equals("Mask"))
-        {
-            textureGeneration.UpdateTexture(masks[currentName]);
-        }
-
-        return 0;
-    }
-
-
-    public int Handle_Options(int maxIndex)
-    {
-        int message;
         index++;
-        if (lines[index].Equals("{"))
-        {
-            Debug.Log("setting start...");
-            while (index < lines.Length)
-            {
-                index++;
-                
-                if (lines[index].Equals("{"))
-                    return Error("Extra '{' found");
-            
-                if (lines[index].Equals("}"))
-                    break;
-            
-                if (!MaxIndex(maxIndex)) 
-                    return Error("not enough parameters in the settings section");
-            
-                Debug.Log("settings test start...");
-                message = CommandTest(index, settings);
-                Debug.Log("settings test end");
-
-                if (message.Equals("error"))
-                    return Error("label error");
-            }
-            Debug.Log("setting done");
-        }
+        textureGeneration.UpdateTexture(samples[currentName]);
 
         return 0;
     }
@@ -527,53 +338,35 @@ public class WMWriter : MonoBehaviour
     
     public Dictionary<string, Func<int>> sampleLabel = new Dictionary<string, Func<int>>()
     {
-        { "(", () => { instance.index++; return 0; } },
+        { "(", () => instance.Increment(1, 0) },
         { "name", () => instance.On_SampleName() },
-        { ")", () => { instance.index++; return 1; } },
+        { ")", () => instance.Increment(1, 1) },
     };
     
     public Dictionary<string, Func<int>> sampleSettings = new Dictionary<string, Func<int>>()
     {
-        { "{", () => { instance.index++; return 0; } },
-        { "override", () => instance.On_SampleSettings() },
+        { "{", () => instance.Increment(1, 0) },
+        { "override", () => instance.On_SampleOverride() },
         { "noise", () => instance.On_SampleNoise() },
         { "display", () => instance.On_Display() },
-        { "}", () => { instance.index++; return 1; } },
+        { "}", () => instance.Increment(1, 1) },
     };
 
     public Dictionary<string, Func<int>> sampleNoiseOptions = new Dictionary<string, Func<int>>()
     {
+        { "{", () => instance.Increment(1, 0) },
         { "size", () => instance.On_SampleNoiseSize() },
         { "threshold", () => instance.On_SampleNoiseThreshold() },
         { "clamp", () => instance.On_SampleNoiseClamp() },
         { "slide", () => instance.On_SampleNoiseSlide() },
         { "smooth", () => instance.On_SampleNoiseSmooth() },
         { "invert", () => instance.On_SampleNoiseInvert() },
+        {"}", () => instance.Increment(1, 1) }
     };
 
     public Dictionary<string, Func<int>> labels = new Dictionary<string, Func<int>>()
     {
         { "name", () => instance.On_Name() },
-    };
-
-    public Dictionary<string, Func<int>> options = new Dictionary<string, Func<int>>()
-    {
-        { "override", () => instance.On_Override() },
-        { "noise", () => instance.On_Noise() },
-        { "specifics", () => instance.On_Specifics() },
-        { "do", () => instance.On_Do() },
-    };
-
-    public Dictionary<string, Func<int>> settings = new Dictionary<string, Func<int>>()
-    {
-        { "mask", () => instance.On_S_Mask() },
-        { "parameters", () => instance.On_Parameters() },
-        { "threshold", () => instance.On_Threshold() },
-        { "clamp", () => instance.On_Clamp() },
-        { "t-smooth", () => instance.On_TSmooth() },
-        { "t-slide", () => instance.On_TSlide() },
-        { "invert", () => instance.On_Invert()},
-        { "display", () => instance.On_Display() },
     };
 }
 

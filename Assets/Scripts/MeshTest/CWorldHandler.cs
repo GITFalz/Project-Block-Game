@@ -100,11 +100,7 @@ public class CSampleNode : CInit
     public float GetNoise(int x, int z)
     {
         float height = noise.GetNoiseValue(x, z);
-
-        if (sample != null)
-        {
-            
-        }
+        return height;
     }
 }
 
