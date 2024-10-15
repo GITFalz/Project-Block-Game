@@ -330,6 +330,7 @@ public class WMWriter : MonoBehaviour
     public int On_SampleOverride()
     {
         index++;
+        samples[currentName].overRide = new COverrideNode();
         if (CommandsTest(sampleOverrideOptions) == -1) return Error("Problem in the sample settings found");
         return 0;
     }
@@ -356,6 +357,58 @@ public class WMWriter : MonoBehaviour
         
         index++;
 
+        return 0;
+    }
+    
+    public int On_SampleOverrideThreshold()
+    {
+        index++;
+        if (GetNext2Floats(out Vector2 floats) == -1)
+            return Error("A problem was found while writing the threshold");
+        
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+
+        sampleNode.overRide.t_min = floats.x;
+        sampleNode.overRide.t_max = floats.y;
+
+        return 0;
+    }
+
+    public int On_SampleOverrideClamp()
+    {
+        index++;
+        if (GetNext2Floats(out Vector2 floats) == -1)
+            return Error("A problem was found while writing the clamp");
+        
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+
+        sampleNode.overRide.c_min = floats.x;
+        sampleNode.overRide.c_max = floats.y;
+
+        return 0;
+    }
+
+    public int On_SampleOverrideSlide()
+    {
+        index++;
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+        sampleNode.overRide.t_slide = true;
+        return 0;
+    }
+
+    public int On_SampleOverrideSmooth()
+    {
+        index++;
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+        sampleNode.overRide.t_smooth = true;
+        return 0;
+    }
+
+    public int On_SampleOverrideInvert()
+    {
+        index++;
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+        sampleNode.overRide.invert = true;
         return 0;
     }
     
@@ -434,6 +487,11 @@ public class WMWriter : MonoBehaviour
         { "{", () => instance.Increment(1, 0) },
         { "sample", () => instance.On_SampleOverrideSample() },
         { "add", () => instance.On_SampleOverrideAdd() },
+        { "threshold", () => instance.On_SampleOverrideThreshold() },
+        { "clamp", () => instance.On_SampleOverrideClamp() },
+        { "slide", () => instance.On_SampleOverrideSlide() },
+        { "smooth", () => instance.On_SampleOverrideSmooth() },
+        { "invert", () => instance.On_SampleOverrideInvert() },
         { "}", () => instance.Increment(1, 1) }
     };
 

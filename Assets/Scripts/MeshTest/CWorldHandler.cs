@@ -81,7 +81,7 @@ public class CSampleNode : CInit
 {
     public List<CSampleNode> add;
     public CSampleNode mask;
-    public COverrideNode oride;
+    public COverrideNode overRide;
     public CNoiseNode noise;
     public float noiseValue;
 
@@ -89,8 +89,6 @@ public class CSampleNode : CInit
     {
         mask = null;
         add = new List<CSampleNode>();
-        
-        noise = new CNoiseNode();
         noiseValue = 0;
     }
 
@@ -109,6 +107,17 @@ public class CSampleNode : CInit
             {
                 height += node.GetNoise(x, z);
             }
+        }
+
+        if (overRide != null)
+        {
+            height = Mathf.Clamp(height, overRide.c_min, overRide.c_max);
+            if (overRide.t_smooth)
+                height = Mathp.PLerp(overRide.t_min, overRide.t_max, height);
+            if (overRide.t_slide)
+                height = Mathp.SLerp(overRide.t_min, overRide.t_max, height);
+            if (overRide.invert)
+                height = 1 - height;
         }
         
         return height;
