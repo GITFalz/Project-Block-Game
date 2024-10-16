@@ -27,14 +27,14 @@ public class WMWriter : MonoBehaviour
 
     private CNode currentNode;
 
-    private Dictionary<string, CSampleNode> samples;
-
     private string currentName = "";
     private string currentType = "";
 
+    private string displayName = "";
+
     private void Start()
     {
-        samples = new Dictionary<string, CSampleNode>();
+        
     }
 
     private void Awake()
@@ -45,10 +45,13 @@ public class WMWriter : MonoBehaviour
 
     public void ExecuteCode()
     {
-        samples.Clear();
+        handler.executes.Clear();
+        handler.initializers.Clear();
+        
         index = 0;
         currentName = "";
         currentType = "";
+        displayName = "";
         
         string input = inputField.text;
         input = Regex.Replace(input, @"\u200B", "").Trim();
@@ -97,6 +100,11 @@ public class WMWriter : MonoBehaviour
             }
 
             index++;
+        }
+
+        if (!displayName.Equals(""))
+        {
+            textureGeneration.UpdateTexture(displayName);
         }
     }
     
@@ -157,11 +165,63 @@ public class WMWriter : MonoBehaviour
     {
         index++;
         if (CommandsTest(sampleLabel) == -1) return Error("Problem in the label found");
-        if (!samples.TryAdd(currentName, new CSampleNode()))
+        if (!handler.initializers.TryAdd(currentName, new CSampleNode()))
             return Error("name is used twice");
-        currentNode = samples[currentName];
+        currentNode = handler.initializers[currentName];
         if (CommandsTest(sampleSettings) == -1) return Error("Problem in the sample settings found");
         return 0;
+    }
+    
+    public int GetNextFloat(out float value)
+    {
+        value = 0;
+
+        try
+        {
+            index++;
+            if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float amplitude)) return Error("No valid amplitude value found");
+            index++;
+
+            value = amplitude;
+            return 0;
+        }
+        catch (IndexOutOfRangeException)
+        {
+            return Error("There are missing parameters, the line should be written like: 'option : value1, value2'");
+        }
+        
+        catch (Exception ex)
+        {
+            return Error($"Error {ex}");
+        }
+    }
+    public int GetNext2Floats(out Vector2 floats)
+    {
+        floats = Vector2.zero;
+
+        try
+        {
+            index++;
+            if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float x)) return Error("No valid min value found");
+            index++;
+            if (!lines[index].Equals(","))return Error("',' is missing");
+            index++;
+            if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float y)) return Error("No valid max value found");
+            index++;
+
+            floats.x = x;
+            floats.y = y;
+            return 0;
+        }
+        catch (IndexOutOfRangeException)
+        {
+            return Error("There are missing parameters, the line should be written like: 'option : value1, value2'");
+        }
+        
+        catch (Exception ex)
+        {
+            return Error($"Error {ex}");
+        }
     }
 
     public int On_SampleName()
@@ -183,7 +243,6 @@ public class WMWriter : MonoBehaviour
     public int On_SampleNoise()
     {
         index++;
-        samples[currentName].noise = new CNoiseNode();
         if (CommandsTest(sampleNoiseOptions) == -1) return Error("Problem in the sample settings found");
         return 0;
     }
@@ -269,68 +328,9 @@ public class WMWriter : MonoBehaviour
     }
     #endregion
     
-    public int GetNext2Floats(out Vector2 floats)
-    {
-        floats = Vector2.zero;
-
-        try
-        {
-            index++;
-            if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float x)) return Error("No valid min value found");
-            index++;
-            if (!lines[index].Equals(","))return Error("',' is missing");
-            index++;
-            if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float y)) return Error("No valid max value found");
-            index++;
-
-            floats.x = x;
-            floats.y = y;
-            return 0;
-        }
-        catch (IndexOutOfRangeException)
-        {
-            return Error("There are missing parameters, the line should be written like: 'option : value1, value2'");
-        }
-        
-        catch (Exception ex)
-        {
-            return Error($"Error {ex}");
-        }
-    }
-    
-    public int GetNextFloat(out float value)
-    {
-        value = 0;
-
-        try
-        {
-            index++;
-            if (!float.TryParse(lines[index], NumberStyles.Float, CultureInfo.InvariantCulture, out float amplitude)) return Error("No valid amplitude value found");
-            index++;
-
-            value = amplitude;
-            return 0;
-        }
-        catch (IndexOutOfRangeException)
-        {
-            return Error("There are missing parameters, the line should be written like: 'option : value1, value2'");
-        }
-        
-        catch (Exception ex)
-        {
-            return Error($"Error {ex}");
-        }
-    }
-
-    public int On_SampleSettings()
-    {
-        return Error("not implemented");
-    }
-
     public int On_SampleOverride()
     {
         index++;
-        samples[currentName].overRide = new COverrideNode();
         if (CommandsTest(sampleOverrideOptions) == -1) return Error("Problem in the sample settings found");
         return 0;
     }
@@ -348,12 +348,14 @@ public class WMWriter : MonoBehaviour
             return Error("':' expected");
         
         index++;
-        if (!samples.ContainsKey(lines[index]))
-            return Error("There is no such sample");
-        
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
 
-        sampleNode.add.Add(samples[lines[index]]);
+        if (handler.initializers.TryGetValue(lines[index], out CInit init))
+        {
+            if (currentNode is CSampleNode sampleNode && init is CSampleNode sampleNode2)
+                    sampleNode.add.Add(sampleNode2);
+            else
+                return Error("Something went wrong");
+        }
         
         index++;
 
@@ -411,8 +413,50 @@ public class WMWriter : MonoBehaviour
         sampleNode.overRide.invert = true;
         return 0;
     }
+
     
-    public int On_Biome() { return 0; }
+    
+    
+    
+    public int On_Biome()
+    {
+        index++;
+        if (CommandsTest(biomeLabel) == -1) return Error("Problem in the label found");
+        if (!handler.executes.TryAdd(currentName, new CBiomeNode()))
+            return Error("name is used twice");
+        currentNode = handler.executes[currentName];
+        if (CommandsTest(biomeSettings) == -1) return Error("Problem in the sample settings found");
+        return 0;
+    }
+    
+    public int On_BiomeOverride()
+    {
+        index++;
+        if (CommandsTest(biomeOverrideOptions) == -1) return Error("Problem in the biome settings found");
+        return 0;
+    }
+
+    public int On_BiomeOverrideSample()
+    {
+        index++;
+        if (!lines[index].Equals(":"))
+            return Error("':' expected");
+        
+        index++;
+        
+        if (handler.initializers.TryGetValue(lines[index], out CInit init))
+        {
+            if (currentNode is CBiomeNode biomeNode && init is CSampleNode sampleNode2)
+                biomeNode.sample = sampleNode2;
+            else
+                return Error("Something went wrong");
+        }
+        
+        index++;
+
+        return 0;
+    }
+    
 
     public int On_Name()
     {
@@ -442,7 +486,7 @@ public class WMWriter : MonoBehaviour
     public int On_Display()
     {
         index++;
-        textureGeneration.UpdateTexture(samples[currentName]);
+        displayName = currentName;
 
         return 0;
     }
@@ -494,6 +538,30 @@ public class WMWriter : MonoBehaviour
         { "invert", () => instance.On_SampleOverrideInvert() },
         { "}", () => instance.Increment(1, 1) }
     };
+    
+    
+    public Dictionary<string, Func<int>> biomeLabel = new Dictionary<string, Func<int>>()
+    {
+        { "(", () => instance.Increment(1, 0) },
+        { "name", () => instance.On_SampleName() },
+        { ")", () => instance.Increment(1, 1) },
+    };
+    
+    public Dictionary<string, Func<int>> biomeSettings = new Dictionary<string, Func<int>>()
+    {
+        { "{", () => instance.Increment(1, 0) },
+        { "override", () => instance.On_BiomeOverride() },
+        { "display", () => instance.On_Display() },
+        { "}", () => instance.Increment(0, 1) },
+    };
+    
+    public Dictionary<string, Func<int>> biomeOverrideOptions = new Dictionary<string, Func<int>>()
+    {
+        { "{", () => instance.Increment(1, 0) },
+        { "sample", () => instance.On_BiomeOverrideSample() },
+        { "}", () => instance.Increment(1, 1) }
+    };
+    
 
     public Dictionary<string, Func<int>> labels = new Dictionary<string, Func<int>>()
     {

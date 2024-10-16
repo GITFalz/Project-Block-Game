@@ -1,20 +1,68 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CWorldHandler : MonoBehaviour
 {
-    public List<CInit> initializers = new List<CInit>();
-    public List<CExecute> executes = new List<CExecute>();
+    public Dictionary<string, CInit> initializers;
+    public Dictionary<string, CExecute> executes;
+
+    private void Start()
+    {
+        initializers = new Dictionary<string, CInit>();
+        executes = new Dictionary<string, CExecute>();
+    }
+
+    public float GetTextureNoise(int x, int z)
+    {
+        foreach (var i in initializers.Values)
+        {
+            i.Init(x, z);
+        }
+
+        float height = 0;
+
+        foreach (CExecute e in executes.Values)
+        {
+            float noise = e.GetNoise();
+            if (noise > height)
+                height = noise;
+        }
+
+        return height;
+    }
+
+    public float GetSampleNoise(int x, int z, string sampleName)
+    {
+        Init(x, z);
+        
+        if (initializers.TryGetValue(sampleName, out CInit i))
+        {
+            return i.GetNoise();
+        }
+        return 0;
+    }
+
+    public void Init(int x, int z)
+    {
+        foreach (var i in initializers.Values)
+        {
+            i.Init(x, z);
+        }
+    }
     
     public Block GetBlock(int x, int y, int z)
     {
-        foreach (CExecute execute in executes)
+        Block block = null;
+        foreach (CExecute execute in executes.Values)
         {
-            Block block = execute.GetBlock(x, y, z);
-            if (block != null) return block;
+            Block b = execute.GetBlock(x, y, z);
+            if (b != null) block = b;
         }
 
-        return null;
+        return block;
     }
 }
 
@@ -25,16 +73,15 @@ public abstract class CNode
 
 public abstract class CExecute : CNode
 {
+    public abstract float GetNoise();
     public abstract Block GetBlock(int x, int y, int z);
 }
 
 public class CBiomeNode : CExecute
 {
     public List<CBlockHeightSequence> blocks;
-
-    public CSampleNode mask;
+    
     public CSampleNode sample;
-    public CNoiseNode noise;
 
     public float t_min;
     public float t_max;
@@ -46,15 +93,18 @@ public class CBiomeNode : CExecute
     {
         t_min = 0;
         t_max = 1;
-
-        mask = new CSampleNode();
+        
         sample = new CSampleNode();
-        noise = new CNoiseNode();
+    }
+    
+    public override float GetNoise()
+    {
+        return sample.GetNoise();
     }
 
     public override Block GetBlock(int x, int y, int z)
     {
-        return GetBlock(x, y, z, noise.GetNoiseValue(x, z));
+        return GetBlock(x, y, z, sample.GetNoise());
     }
 
     public Block GetBlock(int x, int y, int z, float n)
@@ -74,6 +124,7 @@ public class CBiomeNode : CExecute
 public abstract class CInit : CNode
 {
     public abstract void Init(int x, int z);
+    public abstract float GetNoise();
 }
 
 
@@ -89,6 +140,8 @@ public class CSampleNode : CInit
     {
         mask = null;
         add = new List<CSampleNode>();
+        overRide = new COverrideNode();
+        noise = new CNoiseNode();
         noiseValue = 0;
     }
 
@@ -97,15 +150,15 @@ public class CSampleNode : CInit
         noiseValue = noise.GetNoiseValue(x, z);
     }
 
-    public float GetNoise(int x, int z)
+    public override float GetNoise()
     {
-        float height = noise.GetNoiseValue(x, z);
+        float height = noiseValue;
 
         if (add.Count > 0)
         {
             foreach (CSampleNode node in add)
             {
-                height += node.GetNoise(x, z);
+                height += node.noiseValue;
             }
         }
 
