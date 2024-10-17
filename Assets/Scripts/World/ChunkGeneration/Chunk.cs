@@ -22,6 +22,8 @@ public class Chunk : MonoBehaviour
     public Texture2D texture;
     public World worldScript;
 
+    public CWorldHandler handler;
+
     public bool generateSingle;
 
     private Vector3Int chunkPos;
@@ -73,6 +75,20 @@ public class Chunk : MonoBehaviour
 
         return newChunkData;
     }
+    
+    public ChunkData CreateChunk(ChunkData newChunkData, Vector3Int position, string sampleName)
+    {
+        newChunkData.meshData = new MeshData();
+        
+        blockMap = GenerateTerrain(position, sampleName);
+        blocks = GenerateBlocks();
+        newChunkData.SetBlocks(blocks);
+        
+        //World.WriteChunkData(chunkData, writer);
+        GenerateMesh(newChunkData);
+
+        return newChunkData;
+    }
 
     public uint[] GenerateTerrain(Vector3Int position)
     {
@@ -84,6 +100,28 @@ public class Chunk : MonoBehaviour
             for (int x = 0; x < 32; x++)
             {
                 int height = (int)Mathf.Clamp((GetTerrainHeight(x + position.x, z + position.z, terrainNoise) + 1) - position.y, 0, 32);
+                if (height < 32)
+                    blockMap[index] = (1u << height) - 1;
+                else
+                    blockMap[index] = ~0u;
+                index++;
+            }
+        }
+
+        return blockMap;
+    }
+    
+    public uint[] GenerateTerrain(Vector3Int position, string sampleName)
+    {
+        uint[] blockMap = new uint[32 * 32];
+
+        int index = 0;
+        for (int z = 0; z < 32; z++)
+        {
+            for (int x = 0; x < 32; x++)
+            {
+                float value = handler.GetSampleNoise(x + position.x, z + position.z, sampleName);
+                int height = (int)Mathf.Clamp((Mathf.Lerp(WorldInfo.worldMinTerrainHeight, WorldInfo.worldMaxTerrainHeight, value) + 1) - position.y, 0, 32);
                 if (height < 32)
                     blockMap[index] = (1u << height) - 1;
                 else
@@ -106,12 +144,33 @@ public class Chunk : MonoBehaviour
                 for (int x = 0; x < 32; x++)
                 {
                     newBlocks[index] = biome.GetBlock(blockMap, x, y, z);
+                    if (newBlocks[index] != null) newBlocks[index].occlusion = GetOcclusion(blockMap, x, y, z);
                     index++;
                 }
             }
         }
 
         return newBlocks;
+    }
+
+    private byte GetOcclusion(uint[] blockMap, int x, int y, int z)
+    {
+        byte occlusion = 0;
+
+        int pos = x + z * 32;
+        
+        for (int i = 0; i < 6; i++)
+        {
+            int index = pos + sideBlockCheck[i, 0];
+            int height = y + sideBlockCheck[i, 1];
+            
+            if (index < 0 || index >= 1024 || height < 0 || height >= 32)
+                occlusion |= (byte)(1 << i);
+            else
+                occlusion |= (byte)(((blockMap[index] >> height) & 1u) << i);
+        }
+
+        return occlusion;
     }
 
     public void SetPixels()
@@ -148,10 +207,8 @@ public class Chunk : MonoBehaviour
                     
                     if (block != null)
                     {
-                        if (GetOcclusion(chunkData, index, x, y, z))
-                        {
+                        if (block.occlusion < 0b00111111) 
                             AddBlockToMesh(chunkData, block, x, y, z);
-                        }
                     }
                     
                     index++;
@@ -185,6 +242,7 @@ public class Chunk : MonoBehaviour
         }
     }
 
+    
     
     /**
      * Update the chunk if a new chunk is generated next to it
@@ -244,6 +302,12 @@ public class Chunk : MonoBehaviour
 
         return hasFace;
     }
+
+
+    public void GreedyMesh()
+    {
+        
+    }
     
     
     public void AddChunks()
@@ -274,6 +338,11 @@ public class Chunk : MonoBehaviour
         
         chunksToAdd.Clear();
     }
+
+    public int[,] sideBlockCheck = new[,]
+    {
+        { -32, 0 }, { 1, 0 }, { 0, 1 }, { -1, 0 }, { 0, -1 }, { 32, 0 },
+    };
     
 
     public static Func<int, int, int, bool>[] occlusionOffset = new Func<int, int, int, bool>[]

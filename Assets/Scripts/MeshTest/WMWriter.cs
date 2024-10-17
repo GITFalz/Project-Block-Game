@@ -289,6 +289,21 @@ public class WMWriter : MonoBehaviour
 
         return 0;
     }
+    
+    public int On_SampleNoiseLerp()
+    {
+        index++;
+        if (GetNext2Floats(out Vector2 floats) == -1)
+            return Error("A problem was found while writing the lerp");
+        
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+
+        sampleNode.noise.l_min = floats.x;
+        sampleNode.noise.l_max = floats.y;
+        sampleNode.noise.lerp = true;
+
+        return 0;
+    }
 
     public int On_SampleNoiseSlide()
     {
@@ -373,6 +388,21 @@ public class WMWriter : MonoBehaviour
         sampleNode.overRide.t_min = floats.x;
         sampleNode.overRide.t_max = floats.y;
 
+        return 0;
+    }
+    
+    public int On_SampleOverrideLerp()
+    {
+        index++;
+        if (GetNext2Floats(out Vector2 floats) == -1)
+            return Error("A problem was found while writing the lerp");
+        
+        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+
+        sampleNode.overRide.l_min = floats.x;
+        sampleNode.overRide.l_max = floats.y;
+        sampleNode.overRide.lerp = true;
+        
         return 0;
     }
 
@@ -519,6 +549,7 @@ public class WMWriter : MonoBehaviour
         { "size", () => instance.On_SampleNoiseSize() },
         { "threshold", () => instance.On_SampleNoiseThreshold() },
         { "clamp", () => instance.On_SampleNoiseClamp() },
+        { "lerp", () => instance.On_SampleNoiseLerp() },
         { "amplitude", () => instance.On_SampleNoiseAmplitude() },
         { "slide", () => instance.On_SampleNoiseSlide() },
         { "smooth", () => instance.On_SampleNoiseSmooth() },
@@ -533,6 +564,7 @@ public class WMWriter : MonoBehaviour
         { "add", () => instance.On_SampleOverrideAdd() },
         { "threshold", () => instance.On_SampleOverrideThreshold() },
         { "clamp", () => instance.On_SampleOverrideClamp() },
+        { "lerp", () => instance.On_SampleOverrideLerp() },
         { "slide", () => instance.On_SampleOverrideSlide() },
         { "smooth", () => instance.On_SampleOverrideSmooth() },
         { "invert", () => instance.On_SampleOverrideInvert() },

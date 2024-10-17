@@ -131,14 +131,12 @@ public abstract class CInit : CNode
 public class CSampleNode : CInit
 {
     public List<CSampleNode> add;
-    public CSampleNode mask;
     public COverrideNode overRide;
     public CNoiseNode noise;
     public float noiseValue;
 
     public CSampleNode()
     {
-        mask = null;
         add = new List<CSampleNode>();
         overRide = new COverrideNode();
         noise = new CNoiseNode();
@@ -164,13 +162,16 @@ public class CSampleNode : CInit
 
         if (overRide != null)
         {
-            height = Mathf.Clamp(height, overRide.c_min, overRide.c_max);
             if (overRide.t_smooth)
                 height = Mathp.PLerp(overRide.t_min, overRide.t_max, height);
             if (overRide.t_slide)
                 height = Mathp.SLerp(overRide.t_min, overRide.t_max, height);
             if (overRide.invert)
                 height = 1 - height;
+            if (overRide.lerp)
+                height = Mathf.Lerp(overRide.l_min, overRide.l_max, height);
+            
+            height = Mathf.Clamp(height, overRide.c_min, overRide.c_max);
         }
         
         return height;
@@ -185,9 +186,14 @@ public class COverrideNode
     public float c_min;
     public float c_max;
 
+    public float l_min;
+    public float l_max;
+
     public bool t_smooth;
     public bool t_slide;
     public bool invert;
+
+    public bool lerp;
     
     public COverrideNode()
     {
@@ -197,9 +203,14 @@ public class COverrideNode
         c_min = 0;
         c_max = 1;
 
+        l_min = 0;
+        l_max = 1;
+
         t_smooth = false;
         t_slide = false;
         invert = false;
+
+        lerp = false;
     }
 }
 
@@ -240,11 +251,16 @@ public class CNoiseNode : CSettings
     public float c_min;
     public float c_max;
 
+    public float l_min;
+    public float l_max;
+
     public float amplitude;
 
     public bool t_smooth;
     public bool t_slide;
     public bool invert;
+
+    public bool lerp;
 
     public CNoiseNode()
     {
@@ -257,6 +273,9 @@ public class CNoiseNode : CSettings
         c_min = 0;
         c_max = 1;
 
+        l_min = 0;
+        l_max = 1;
+
         amplitude = 1;
 
         t_smooth = false;
@@ -266,7 +285,7 @@ public class CNoiseNode : CSettings
     
     public float GetNoiseValue(int x, int z)
     {
-        float height = Mathf.Clamp(Mathf.PerlinNoise((float)((float)x / sizeX + 0.001f), (float)((float)z / sizeY + 0.001f)), c_min, c_max);
+        float height = Mathf.PerlinNoise((float)((float)x / sizeX + 0.001f), (float)((float)z / sizeY + 0.001f));
         
         if (t_smooth)
             height = Mathp.PLerp(t_min, t_max, height);
@@ -274,6 +293,11 @@ public class CNoiseNode : CSettings
             height = Mathp.SLerp(t_min, t_max, height);
         if (invert)
             height = 1 - height;
+        
+        if (lerp)
+            height = Mathf.Lerp(l_min, l_max, height);
+        
+        height = Mathf.Clamp(height, c_min, c_max);
         
         return height * amplitude;
     }

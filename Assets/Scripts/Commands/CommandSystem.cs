@@ -13,6 +13,9 @@ public class CommandSystem : MonoBehaviour
 
     public World worldScript;
     public Chunk chunkScript;
+    public CWorldHandler handler;
+
+    public Transform parentChunk;
 
     public GameObject chunkPrefab;
     
@@ -115,47 +118,62 @@ public class CommandSystem : MonoBehaviour
 
     public string Do_Generate_Box()
     {
-        if (IsNumericValue(2, out int x1))
+        if (IsNumericValue(2, out int x1) && 
+            IsNumericValue(3, out int y1) && 
+            IsNumericValue(4, out int z1) &&
+            IsNumericValue(5, out int x2) && 
+            IsNumericValue(6, out int y2) && 
+            IsNumericValue(7, out int z2)) 
         {
-            if (IsNumericValue(3, out int y1))
+            x1 -= x1 & 31;
+            y1 -= y1 & 31; 
+            z1 -= z1 & 31;
+            
+            for (int x = 0; x < x2; x++)
             {
-                if (IsNumericValue(4, out int z1))
+                for (int y = 0; y < y2; y++)
                 {
-                    x1 -= x1 & 31;
-                    y1 -= y1 & 31; 
-                    z1 -= z1 & 31;
-                    
-                    if (IsNumericValue(5, out int x2))
+                    for (int z = 0; z < z2; z++)
                     {
-                        if (IsNumericValue(6, out int y2))
+                        if (args.Length > 8)
                         {
-                            if (IsNumericValue(7, out int z2))
+                            if (args[8].Trim().Equals("sample"))
                             {
-                                for (int x = 0; x < x2; x++)
-                                {
-                                    for (int y = 0; y < y2; y++)
-                                    {
-                                        for (int z = 0; z < z2; z++)
-                                        {
-                                            Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
-                                            ChunkData chunkData = new ChunkData(position);
-                                            chunkScript.CreateChunk(chunkData, position);
+                                Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
+                                ChunkData chunkData = new ChunkData(position);
+                                chunkScript.CreateChunk(chunkData, position, args[9]);
 
-                                            GameObject newChunk = Instantiate(chunkPrefab, position, Quaternion.identity);
-                                            newChunk.GetComponent<ChunkRenderer>().RenderChunk(chunkData);
-                                        }
-                                    }
-                                }
-                                
-                                return "Done";
+                                GameObject newChunk = Instantiate(chunkPrefab, position, Quaternion.identity, parentChunk);
+                                newChunk.GetComponent<ChunkRenderer>().RenderChunk(chunkData);
                             }
+                        }
+                        else
+                        {
+                            Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
+                            ChunkData chunkData = new ChunkData(position);
+                            chunkScript.CreateChunk(chunkData, position);
+
+                            GameObject newChunk = Instantiate(chunkPrefab, position, Quaternion.identity, parentChunk);
+                            newChunk.GetComponent<ChunkRenderer>().RenderChunk(chunkData);
                         }
                     }
                 }
             }
+            
+            return "Done";
         }
 
         return "The values set are not valid";
+    }
+
+    public string Do_Generate_Clear()
+    {
+        foreach (Transform child in parentChunk)
+        {
+            Destroy(child.gameObject);
+        }
+
+        return "Done";
     }
     
 
@@ -203,5 +221,6 @@ public class CommandSystem : MonoBehaviour
     private Dictionary<string, Func<string>> generateCommands = new Dictionary<string, Func<string>>
     {
         { "box", () => instance.Do_Generate_Box() },
+        { "clear", () => instance.Do_Generate_Clear() },
     };
 }
