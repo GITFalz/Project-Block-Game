@@ -130,7 +130,7 @@ public class World : MonoBehaviour
                 chunkData.sideChunks[i] = sideChunkData;
                 worldData.activeChunkData[chunkData.position] = chunkData;
                 
-                SideUpdate sideUpdate = new SideUpdate(chunkData, sideChunkData);
+                SideUpdate sideUpdate = new SideUpdate(chunkData, sideChunkData, 0);
                 chunkUpdateQueue.Enqueue(sideUpdate);
             }
             else

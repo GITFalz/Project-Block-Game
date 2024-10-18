@@ -255,11 +255,39 @@ public class Chunk : MonoBehaviour
         
         GenerateMesh(sideUpdate.mainChunk);
         GenerateMesh(sideUpdate.sideChunk);
-        
 
         return sideUpdate;
     }
     
+    /**
+     * Updates the side of two chunks facing each other
+     */
+    public SideUpdate UpdateSides(SideUpdate sideUpdate)
+    {
+        return sideUpdate;
+    }
+
+    /**
+     * Loop trough the blocks on the side of the chunk and checks if a blocks is in the chunk next to it
+     */
+    public SideUpdate UpdateSideMesh(SideUpdate sideUpdate)
+    {
+        int mainFace = sideUpdate.mainFace;
+        int sideFace = SpacialData.oppositeFace[mainFace];
+
+        Block[] mainBlocks = sideUpdate.mainChunk.blocks;
+        Block[] sideBlocks = sideUpdate.sideChunk.blocks;
+        
+        for (int i = 0; i < 32; i++)
+        {
+            for (int j = 0; j < 32; j++)
+            {
+                if ()
+            }
+        }
+
+        return sideUpdate;
+    }
     
     /**
      * Get the occlusion of each face of a block based on the blocks beside it
@@ -339,6 +367,16 @@ public class Chunk : MonoBehaviour
         chunksToAdd.Clear();
     }
 
+    public Func<int, int, int>[] sideIndex = new Func<int, int, int>[]
+    {
+        (i, j) => { return i + j * 1024; },
+        (i, j) => { return i * 32 + j * 1024 + 31; },
+        (i, j) => { return i + j * 32 + 31744; }, //31744
+        (i, j) => { return i * 32 + j * 1024; },
+        (i, j) => { return i + j * 32; },
+        (i, j) => { return i + j * 1024 + 992; },
+    };
+
     public int[,] sideBlockCheck = new[,]
     {
         { -32, 0 }, { 1, 0 }, { 0, 1 }, { -1, 0 }, { 0, -1 }, { 32, 0 },
@@ -357,12 +395,12 @@ public class Chunk : MonoBehaviour
 
     public static Func<Block[], int, bool>[] sideChunkBlockCheck = new Func<Block[], int, bool>[]
     {
-        (blocks, index) => { return blocks[index + 1024] != null; },
-        (blocks, index) => { return blocks[index - 32] != null; },
-        (blocks, index) => { return blocks[index - 32768] != null; },
-        (blocks, index) => { return blocks[index + 32] != null; },
-        (blocks, index) => { return blocks[index + 32768] != null; },
-        (blocks, index) => { return blocks[index - 1024] != null; },
+        (blocks, index) => { return blocks[index + 992] != null; },
+        (blocks, index) => { return blocks[index - 31] != null; },
+        (blocks, index) => { return blocks[index - 31744] != null; },
+        (blocks, index) => { return blocks[index + 31] != null; },
+        (blocks, index) => { return blocks[index + 31744] != null; },
+        (blocks, index) => { return blocks[index - 992] != null; },
     };
     
     static float GetTerrainHeight(int x, int z, NoiseSettings noise)

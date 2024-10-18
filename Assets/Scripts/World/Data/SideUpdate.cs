@@ -2,11 +2,13 @@
 {
     public ChunkData mainChunk;
     public ChunkData sideChunk;
+    public int mainFace;
 
-    public SideUpdate(ChunkData mainChunk, ChunkData sideChunk)
+    public SideUpdate(ChunkData mainChunk, ChunkData sideChunk, int mainFace)
     {
         this.mainChunk = mainChunk;
         this.sideChunk = sideChunk;
+        this.mainFace = mainFace;
     }
 
     public void Clear()
