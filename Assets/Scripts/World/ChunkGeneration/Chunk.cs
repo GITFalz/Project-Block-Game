@@ -18,6 +18,7 @@ public class Chunk : MonoBehaviour
 
     private int chunkSize = 32768;
     private uint[] blockMap;
+    private uint[][] greedyMap;
     private Block[] blocks;
     public Texture2D texture;
     public World worldScript;
@@ -79,6 +80,11 @@ public class Chunk : MonoBehaviour
     public ChunkData CreateChunk(ChunkData newChunkData, Vector3Int position, string sampleName)
     {
         newChunkData.meshData = new MeshData();
+
+        greedyMap = new uint[6][];
+
+        for (int i = 0; i < 6; i++)
+            greedyMap[i] = new uint[32 * 32];
         
         blockMap = GenerateTerrain(position, sampleName);
         blocks = GenerateBlocks();
@@ -144,7 +150,10 @@ public class Chunk : MonoBehaviour
                 for (int x = 0; x < 32; x++)
                 {
                     newBlocks[index] = biome.GetBlock(blockMap, x, y, z);
-                    if (newBlocks[index] != null) newBlocks[index].occlusion = GetOcclusion(blockMap, x, y, z);
+                    if (newBlocks[index] != null)
+                    {
+                        newBlocks[index].occlusion = GetOcclusion(blockMap, x, y, z);
+                    }
                     index++;
                 }
             }
@@ -164,14 +173,40 @@ public class Chunk : MonoBehaviour
             int index = pos + sideBlockCheck[i, 0];
             int height = y + sideBlockCheck[i, 1];
             
-            if (index < 0 || index >= 1024 || height < 0 || height >= 32)
-                occlusion |= (byte)(1 << i);
+            if (chunkSide[i](x, z, xzSides[i]) || height < 0 || height >= 32)
+            {
+                //occlusion |= (byte)(1 << i);
+            }
             else
-                occlusion |= (byte)(((blockMap[index] >> height) & 1u) << i);
+            {
+                try
+                {
+                    occlusion |= (byte)(((blockMap[index] >> height) & 1u) << i);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(i);
+                }
+            }
         }
 
         return occlusion;
     }
+
+    public Func<int, int, int, bool>[] chunkSide = new Func<int, int, int, bool>[]
+    {
+        (x, z, offset) => { int i = z + offset; return i is < 0 or >= 32; },
+        (x, z, offset) => { int i = x + offset; return i is < 0 or >= 32; },
+        (x, z, offset) => false,
+        (x, z, offset) => { int i = x + offset; return i is < 0 or >= 32; },
+        (x, z, offset) => false,
+        (x, z, offset) => { int i = z + offset; return i is < 0 or >= 32; }
+    };
+
+    public int[] xzSides = new[]
+    {
+        -1, 1, 0, -1, 0, 1
+    };
 
     public void SetPixels()
     {
@@ -207,8 +242,99 @@ public class Chunk : MonoBehaviour
                     
                     if (block != null)
                     {
-                        if (block.occlusion < 0b00111111) 
-                            AddBlockToMesh(chunkData, block, x, y, z);
+                        for (int side = 0; side < 6; side++)
+                        {
+                            if (((block.check >> side) & 1) == 0 && ((block.occlusion >> side) & 1) == 0)
+                            {
+                                for (int tris = 0; tris < 6; tris++)
+                                {
+                                    chunkData.meshData.tris.Add(VoxelData.trisIndexTable[tris] +
+                                                                chunkData.meshData.Count());
+                                }
+
+                                block.occlusion |= 1 << 7;
+                                int i = index;
+                                int loop = firstLoop[side](y, z);
+                                int height = 1;
+                                int width = 1;
+                                while (loop > 0)
+                                {
+                                    i += firstOffset[side];
+                                    try
+                                    {
+                                        if (chunkData.blocks[i] == null)
+                                            break;
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Debug.Log("i: " + i + " side: " + side);
+                                    }
+
+                                    if (((chunkData.blocks[i].check >> side) & 1) == 1 ||
+                                        ((chunkData.blocks[i].occlusion >> side) & 1) == 1)
+                                        break;
+
+                                    chunkData.blocks[i].check |= (byte)(1 << side);
+
+                                    height++;
+                                    loop--;
+                                }
+
+                                i = index;
+                                loop = secondLoop[side](x, z);
+                                
+                                bool quit = false;
+                                
+                                while (loop > 0)
+                                {
+                                    i += secondOffset[side];
+                                    int up = i;
+                                    for (int j = 0; j < height; j++)
+                                    {
+                                        try
+                                        {
+                                            if (chunkData.blocks[up] == null)
+                                            {
+                                                quit = true;
+                                                break;
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Debug.Log("i: " + i + " side: " + side);
+                                        }
+
+                                        if (((chunkData.blocks[up].check >> side) & 1) == 1 ||
+                                            ((chunkData.blocks[up].occlusion >> side) & 1) == 1)
+                                        {
+                                            quit = true;
+                                            break;
+                                        }
+                                        
+                                        up += firstOffset[side];
+                                    }
+                                    
+                                    if (quit) break;
+                                    
+                                    up = i;
+                                    for (int j = 0; j < height; j++) {
+                                        chunkData.blocks[up].check |= (byte)(1 << side);
+                                        up += firstOffset[side];
+                                    }
+
+                                    width++;
+                                    loop--;
+                                }
+
+                                Vector3[] positions = positionOffset[side](width, height);
+                                Vector3 position = new Vector3(x, y, z);
+
+                                chunkData.meshData.verts.Add(position + positions[0]);
+                                chunkData.meshData.verts.Add(position + positions[1]);
+                                chunkData.meshData.verts.Add(position + positions[2]);
+                                chunkData.meshData.verts.Add(position + positions[3]);
+                            }
+                        }
                     }
                     
                     index++;
@@ -216,6 +342,46 @@ public class Chunk : MonoBehaviour
             }
         }
     }
+
+    public int[] firstOffset = new[]
+    {
+        1024, 1024, 32, 1024, 32, 1024
+    };
+    
+    public int[] secondOffset = new[]
+    {
+        1, 32, 1, 32, 1, 32
+    };
+
+    public Func<int, int, int>[] firstLoop = new Func<int, int, int>[]
+    {
+        (y, z) => 31 - y,
+        (y, z) => 31 - y,
+        (y, z) => 31 - z,
+        (y, z) => 31 - y,
+        (y, z) => 31 - z,
+        (y, z) => 31 - y,
+    };
+    
+    public Func<int, int, int>[] secondLoop = new Func<int, int, int>[]
+    {
+        (x, z) => 31 - x,
+        (x, z) => 31 - z,
+        (x, z) => 31 - x,
+        (x, z) => 31 - z,
+        (x, z) => 31 - x,
+        (x, z) => 31 - z,
+    };
+
+    public Func<int, int, Vector3[]>[] positionOffset = new Func<int, int, Vector3[]>[]
+    {
+        (width, height) => new Vector3[] { new Vector3(0, 0, 0), new Vector3(0, height, 0), new Vector3(width, height, 0), new Vector3(width, 0, 0), },
+        (width, height) => new Vector3[] { new Vector3(1, 0, 0), new Vector3(1, height, 0), new Vector3(1, height, width), new Vector3(1, 0, width), },
+        (width, height) => new Vector3[] { new Vector3(0, 1, 0), new Vector3(0, 1, height), new Vector3(width, 1, height), new Vector3(width, 1, 0), },
+        (width, height) => new Vector3[] { new Vector3(0, 0, width), new Vector3(0, height, width), new Vector3(0, height, 0), new Vector3(0, 0, 0), },
+        (width, height) => new Vector3[] { new Vector3(width, 0, 0), new Vector3(width, 0, height), new Vector3(0, 0, height), new Vector3(0, 0, 0), },
+        (width, height) => new Vector3[] { new Vector3(width, 0, 1), new Vector3(width, height, 1), new Vector3(0, height, 1), new Vector3(0, 0, 1), },
+    };
     
     /**
      * Add a certain block to the mesh based on it's x, y, z coords and what face to occlude
@@ -282,7 +448,7 @@ public class Chunk : MonoBehaviour
         {
             for (int j = 0; j < 32; j++)
             {
-                if ()
+
             }
         }
 
@@ -330,13 +496,36 @@ public class Chunk : MonoBehaviour
 
         return hasFace;
     }
-
-
-    public void GreedyMesh()
+    
+    
+    public int TrailingZeros(uint pillar)
     {
-        
+        if (pillar == 0) return 32;
+        int y = 0;
+        while ((pillar >> y & 1u) == 0)
+            y++;
+        return y;
     }
     
+    public int TrailingOnes(uint pillar)
+    {
+        int y = 0;
+        while ((pillar >> y & 1u) == 1)
+            y++;
+        return y;
+    }
+    
+    public uint HAsMask(uint h)
+    {
+        if (h >= 32)
+        {
+            return 0xFFFFFFFF; // Return all bits set to 1 if h >= 32 (since shifting by 32 or more bits is invalid)
+        }
+        else
+        {
+            return (1u << (int)h) - 1; // Perform the shift and subtract 1
+        }
+    }
     
     public void AddChunks()
     {
@@ -416,6 +605,6 @@ public struct GreedyQuad
 {
     public int x;
     public int y;
-    public int i;
-    public int j;
+    public int w;
+    public int h;
 }

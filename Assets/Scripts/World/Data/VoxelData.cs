@@ -35,8 +35,25 @@ public static class VoxelData
         0, 1, 2, 2, 3, 0
     };
     
-    
+    public static readonly float2[] uvTable = new float2[]
+    {
+        new float2( 0, 0),
+        new float2( 0, 1),
+        new float2( 1, 1),
+        new float2( 1, 0),
+    }; 
 
+    public static readonly int3[] SurroundingVectors = new int3[6]
+    {
+        new int3( 0, 0,-1 ),
+        new int3( 1, 0, 0 ),
+        new int3( 0, 1, 0 ),
+        new int3(-1, 0, 0 ),
+        new int3( 0,-1, 0 ),
+        new int3( 0, 0, 1 ),
+    };
+    
+    /**
     public static readonly Func<GreedyQuad, float3[]>[] greedyOffsetTable = new Func<GreedyQuad, float3[]>[6]
     {
         quad => new float3[]
@@ -133,24 +150,6 @@ public static class VoxelData
         },
     };
 
-    public static readonly float2[] uvTable = new float2[]
-    {
-        new float2( 0, 0),
-        new float2( 0, 1),
-        new float2( 1, 1),
-        new float2( 1, 0),
-    }; 
-
-    public static readonly int3[] SurroundingVectors = new int3[6]
-    {
-        new int3( 0, 0,-1 ),
-        new int3( 1, 0, 0 ),
-        new int3( 0, 1, 0 ),
-        new int3(-1, 0, 0 ),
-        new int3( 0,-1, 0 ),
-        new int3( 0, 0, 1 ),
-    };
-
     public static readonly int3[,] greedyMeshScaleTable = new int3[6, 2]
     {
         { new int3( 1, 1, 0), new int3(0, 0, 0) },
@@ -205,8 +204,8 @@ public static class VoxelData
         float3[] offsets = greedyOffsetTable1[direction](quad);
         float3 vert = height_offset + offsets[0];
 
-        int width = quad.i;
-        int height = quad.j;
+        int width = quad.w;
+        int height = quad.h;
 
         int vIndex = meshData.verts.Count;
 
@@ -262,4 +261,3 @@ public static class VoxelData
 
     }
     */
-}

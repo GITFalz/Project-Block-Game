@@ -131,6 +131,9 @@ public abstract class CInit : CNode
 public class CSampleNode : CInit
 {
     public List<CSampleNode> add;
+    public List<CSampleNode> mul;
+    public List<CSampleNode> sub;
+    
     public COverrideNode overRide;
     public CNoiseNode noise;
     public float noiseValue;
@@ -138,6 +141,9 @@ public class CSampleNode : CInit
     public CSampleNode()
     {
         add = new List<CSampleNode>();
+        mul = new List<CSampleNode>();
+        sub = new List<CSampleNode>();
+                
         overRide = new COverrideNode();
         noise = new CNoiseNode();
         noiseValue = 0;
@@ -152,33 +158,23 @@ public class CSampleNode : CInit
     {
         float height = noiseValue;
 
-        if (add.Count > 0)
+        if (overRide != null) 
         {
             foreach (CSampleNode node in add)
-            {
                 height += node.noiseValue;
-            }
-        }
+            foreach (CSampleNode node in mul)
+                height *= node.noiseValue;
+            foreach (CSampleNode node in sub)
+                height -= node.noiseValue;
 
-        if (overRide != null)
-        {
-            if (overRide.t_smooth)
-                height = Mathp.PLerp(overRide.t_min, overRide.t_max, height);
-            if (overRide.t_slide)
-                height = Mathp.SLerp(overRide.t_min, overRide.t_max, height);
-            if (overRide.invert)
-                height = 1 - height;
-            if (overRide.lerp)
-                height = Mathf.Lerp(overRide.l_min, overRide.l_max, height);
-            
-            height = Mathf.Clamp(height, overRide.c_min, overRide.c_max);
+            height = overRide.Apply(height);
         }
         
         return height;
     }
 }
 
-public class COverrideNode
+public class COverrideNode : CSettings
 {
     public float t_min;
     public float t_max;
@@ -192,7 +188,6 @@ public class COverrideNode
     public bool t_smooth;
     public bool t_slide;
     public bool invert;
-
     public bool lerp;
     
     public COverrideNode()
@@ -209,8 +204,23 @@ public class COverrideNode
         t_smooth = false;
         t_slide = false;
         invert = false;
-
         lerp = false;
+    }
+
+    public float Apply(float height)
+    {
+        if (t_smooth)
+            height = Mathp.PLerp(t_min, t_max, height);
+        if (t_slide)
+            height = Mathp.SLerp(t_min, t_max, height);
+        if (invert)
+            height = 1 - height;
+        if (lerp)
+            height = Mathf.Lerp(l_min, l_max, height);
+        
+        height = Mathf.Clamp(height, c_min, c_max);
+        
+        return height;
     }
 }
 
@@ -293,7 +303,6 @@ public class CNoiseNode : CSettings
             height = Mathp.SLerp(t_min, t_max, height);
         if (invert)
             height = 1 - height;
-        
         if (lerp)
             height = Mathf.Lerp(l_min, l_max, height);
         

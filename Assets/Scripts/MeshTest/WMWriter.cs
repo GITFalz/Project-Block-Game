@@ -26,6 +26,7 @@ public class WMWriter : MonoBehaviour
     private char[] charactersToReplace = new char[] { '(', ')', '=', '{', '}', ',', ':', '/'};
 
     private CNode currentNode;
+    private CWorldSampleNode worldSampleNode;
 
     private string currentName = "";
     private string currentType = "";
@@ -34,7 +35,8 @@ public class WMWriter : MonoBehaviour
 
     private void Start()
     {
-        
+        worldSampleNode = new CWorldSampleNode();
+        worldSampleNode.writer = this;
     }
 
     private void Awake()
@@ -108,13 +110,13 @@ public class WMWriter : MonoBehaviour
         }
     }
     
-    public int CommandTest(int index, Dictionary<string, Func<int>> commands)
+    public int CommandTest(int index, Dictionary<string, Func<WMWriter, int>> commands)
     {
         string command = lines[index];
         Debug.Log("Command : " + command);
-        if (commands.TryGetValue(command, out Func<int> func))
+        if (commands.TryGetValue(command, out Func<WMWriter, int> func))
         {
-            return func();
+            return func(this);
         }
         return -1;
     }
@@ -136,7 +138,7 @@ public class WMWriter : MonoBehaviour
         return index;
     }
 
-    private int Error(string message)
+    public int Error(string message)
     {
         Debug.Log(message + " at string index : " + index);
         msg = message;
@@ -149,7 +151,7 @@ public class WMWriter : MonoBehaviour
     }
     
 
-    public int CommandsTest(Dictionary<string, Func<int>> commands)
+    public int CommandsTest(Dictionary<string, Func<WMWriter, int>> commands)
     {
         bool done = false;
         while (!done)
@@ -164,11 +166,13 @@ public class WMWriter : MonoBehaviour
     public int On_Sample()
     {
         index++;
-        if (CommandsTest(sampleLabel) == -1) return Error("Problem in the label found");
-        if (!handler.initializers.TryAdd(currentName, new CSampleNode()))
+        worldSampleNode.SetSample(new CSampleNode());
+        
+        if (CommandsTest(worldSampleNode.labels) == -1) return Error("Problem in the label found");
+        if (!handler.initializers.TryAdd(currentName, worldSampleNode.sampleNode))
             return Error("name is used twice");
         currentNode = handler.initializers[currentName];
-        if (CommandsTest(sampleSettings) == -1) return Error("Problem in the sample settings found");
+        if (CommandsTest(worldSampleNode.settings) == -1) return Error("Problem in the sample settings found");
         return 0;
     }
     
@@ -239,15 +243,7 @@ public class WMWriter : MonoBehaviour
         index++;
         return 2;
     }
-
-    public int On_SampleNoise()
-    {
-        index++;
-        if (CommandsTest(sampleNoiseOptions) == -1) return Error("Problem in the sample settings found");
-        return 0;
-    }
-
-    #region noise settings
+    
     public int On_SampleNoiseSize()
     {
         index++;
@@ -262,188 +258,49 @@ public class WMWriter : MonoBehaviour
         return 0;
     }
 
-    public int On_SampleNoiseThreshold()
+    public int On_Settings(Dictionary<string, Func<WMWriter, int>> commands)
     {
         index++;
-        if (GetNext2Floats(out Vector2 floats) == -1)
-            return Error("A problem was found while writing the threshold");
-        
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-
-        sampleNode.noise.t_min = floats.x;
-        sampleNode.noise.t_max = floats.y;
-
-        return 0;
+        return CommandsTest(commands) == -1 ? Error("Problem with the settings") : 0;
     }
 
-    public int On_SampleNoiseClamp()
+    public int On_SampleListAdd(List<CSampleNode> list)
     {
-        index++;
-        if (GetNext2Floats(out Vector2 floats) == -1)
-            return Error("A problem was found while writing the clamp");
-        
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-
-        sampleNode.noise.c_min = floats.x;
-        sampleNode.noise.c_max = floats.y;
-
-        return 0;
-    }
-    
-    public int On_SampleNoiseLerp()
-    {
-        index++;
-        if (GetNext2Floats(out Vector2 floats) == -1)
-            return Error("A problem was found while writing the lerp");
-        
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-
-        sampleNode.noise.l_min = floats.x;
-        sampleNode.noise.l_max = floats.y;
-        sampleNode.noise.lerp = true;
-
-        return 0;
-    }
-
-    public int On_SampleNoiseSlide()
-    {
-        index++;
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-        sampleNode.noise.t_slide = true;
-        return 0;
-    }
-
-    public int On_SampleNoiseSmooth()
-    {
-        index++;
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-        sampleNode.noise.t_smooth = true;
-        return 0;
-    }
-
-    public int On_SampleNoiseAmplitude()
-    {
-        index++;
-        if (GetNextFloat(out float value) == -1)
-            return Error("A problem was found while writing the amplitude");
-        
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-
-        sampleNode.noise.amplitude = value;
-
-        return 0;
-    }
-
-    public int On_SampleNoiseInvert()
-    {
-        index++;
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-        sampleNode.noise.invert = true;
-        return 0;
-    }
-    #endregion
-    
-    public int On_SampleOverride()
-    {
-        index++;
-        if (CommandsTest(sampleOverrideOptions) == -1) return Error("Problem in the sample settings found");
-        return 0;
-    }
-
-    public int On_SampleOverrideSample()
-    {
-        index++;
-        return 0;
-    }
-
-    public int On_SampleOverrideAdd()
-    {
-        index++;
-        if (!lines[index].Equals(":"))
-            return Error("':' expected");
-        
-        index++;
-
-        if (handler.initializers.TryGetValue(lines[index], out CInit init))
+        while (true)
         {
-            if (currentNode is CSampleNode sampleNode && init is CSampleNode sampleNode2)
-                    sampleNode.add.Add(sampleNode2);
-            else
-                return Error("Something went wrong");
+            index++;
+            if (handler.initializers.TryGetValue(lines[index], out var init))
+            {
+                if (init is CSampleNode sampleNode) list.Add(sampleNode);
+                else return Error("Sample node not found (handler > get init)");
+            }
+
+            index++;
+            if (lines[index].Equals(",")) continue;
+            return 0;
         }
-        
-        index++;
-
-        return 0;
     }
     
-    public int On_SampleOverrideThreshold()
+    public int On_AssingNext2Floats(ref float param1, ref float param2)
     {
         index++;
-        if (GetNext2Floats(out Vector2 floats) == -1)
+        if (GetNext2Floats(out Vector2 floats) == -1) 
             return Error("A problem was found while writing the threshold");
-        
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-
-        sampleNode.overRide.t_min = floats.x;
-        sampleNode.overRide.t_max = floats.y;
-
-        return 0;
+        param1 = floats.x; param2 = floats.y; return 0;
     }
     
-    public int On_SampleOverrideLerp()
+    public int On_AssingNextFloat(ref float param1)
     {
         index++;
-        if (GetNext2Floats(out Vector2 floats) == -1)
-            return Error("A problem was found while writing the lerp");
-        
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-
-        sampleNode.overRide.l_min = floats.x;
-        sampleNode.overRide.l_max = floats.y;
-        sampleNode.overRide.lerp = true;
-        
-        return 0;
+        if (GetNextFloat(out float value) == -1) 
+            return Error("A problem was found while writing the threshold");
+        param1 = value; return 0;
     }
 
-    public int On_SampleOverrideClamp()
+    public int On_SetTrue(ref bool value)
     {
-        index++;
-        if (GetNext2Floats(out Vector2 floats) == -1)
-            return Error("A problem was found while writing the clamp");
-        
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-
-        sampleNode.overRide.c_min = floats.x;
-        sampleNode.overRide.c_max = floats.y;
-
-        return 0;
+        index++; value = true; return 0;
     }
-
-    public int On_SampleOverrideSlide()
-    {
-        index++;
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-        sampleNode.overRide.t_slide = true;
-        return 0;
-    }
-
-    public int On_SampleOverrideSmooth()
-    {
-        index++;
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-        sampleNode.overRide.t_smooth = true;
-        return 0;
-    }
-
-    public int On_SampleOverrideInvert()
-    {
-        index++;
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
-        sampleNode.overRide.invert = true;
-        return 0;
-    }
-
     
     
     
@@ -521,163 +378,31 @@ public class WMWriter : MonoBehaviour
         return 0;
     }
     
-    public Dictionary<string, Func<int>> types = new Dictionary<string, Func<int>>()
+    public Dictionary<string, Func<WMWriter, int>> types = new Dictionary<string, Func<WMWriter, int>>()
     {
-        { "Sample", () => instance.On_Sample() },
-        { "Biome", () => instance.On_Biome() },
+        { "Sample", (w) => w.On_Sample() },
+        { "Biome", (w) => w.On_Biome() },
     };
     
-    public Dictionary<string, Func<int>> sampleLabel = new Dictionary<string, Func<int>>()
+    public Dictionary<string, Func<WMWriter, int>> biomeLabel = new Dictionary<string, Func<WMWriter, int>>()
     {
-        { "(", () => instance.Increment(1, 0) },
-        { "name", () => instance.On_SampleName() },
-        { ")", () => instance.Increment(1, 1) },
+        { "(", (w) => w.Increment(1, 0) },
+        { "name", (w) => w.On_SampleName() },
+        { ")", (w) => w.Increment(1, 1) },
     };
     
-    public Dictionary<string, Func<int>> sampleSettings = new Dictionary<string, Func<int>>()
+    public Dictionary<string, Func<WMWriter, int>> biomeSettings = new Dictionary<string, Func<WMWriter, int>>()
     {
-        { "{", () => instance.Increment(1, 0) },
-        { "override", () => instance.On_SampleOverride() },
-        { "noise", () => instance.On_SampleNoise() },
-        { "display", () => instance.On_Display() },
-        { "}", () => instance.Increment(0, 1) },
-    };
-
-    public Dictionary<string, Func<int>> sampleNoiseOptions = new Dictionary<string, Func<int>>()
-    {
-        { "{", () => instance.Increment(1, 0) },
-        { "size", () => instance.On_SampleNoiseSize() },
-        { "threshold", () => instance.On_SampleNoiseThreshold() },
-        { "clamp", () => instance.On_SampleNoiseClamp() },
-        { "lerp", () => instance.On_SampleNoiseLerp() },
-        { "amplitude", () => instance.On_SampleNoiseAmplitude() },
-        { "slide", () => instance.On_SampleNoiseSlide() },
-        { "smooth", () => instance.On_SampleNoiseSmooth() },
-        { "invert", () => instance.On_SampleNoiseInvert() },
-        { "}", () => instance.Increment(1, 1) }
-    };
-
-    public Dictionary<string, Func<int>> sampleOverrideOptions = new Dictionary<string, Func<int>>()
-    {
-        { "{", () => instance.Increment(1, 0) },
-        { "sample", () => instance.On_SampleOverrideSample() },
-        { "add", () => instance.On_SampleOverrideAdd() },
-        { "threshold", () => instance.On_SampleOverrideThreshold() },
-        { "clamp", () => instance.On_SampleOverrideClamp() },
-        { "lerp", () => instance.On_SampleOverrideLerp() },
-        { "slide", () => instance.On_SampleOverrideSlide() },
-        { "smooth", () => instance.On_SampleOverrideSmooth() },
-        { "invert", () => instance.On_SampleOverrideInvert() },
-        { "}", () => instance.Increment(1, 1) }
+        { "{", (w) => w.Increment(1, 0) },
+        { "override", (w) => w.On_BiomeOverride() },
+        { "display", (w) => w.On_Display() },
+        { "}", (w) => w.Increment(0, 1) },
     };
     
-    
-    public Dictionary<string, Func<int>> biomeLabel = new Dictionary<string, Func<int>>()
+    public Dictionary<string, Func<WMWriter, int>> biomeOverrideOptions = new Dictionary<string, Func<WMWriter, int>>()
     {
-        { "(", () => instance.Increment(1, 0) },
-        { "name", () => instance.On_SampleName() },
-        { ")", () => instance.Increment(1, 1) },
+        { "{", (w) => w.Increment(1, 0) },
+        { "sample", (w) => w.On_BiomeOverrideSample() },
+        { "}", (w) => w.Increment(1, 1) }
     };
-    
-    public Dictionary<string, Func<int>> biomeSettings = new Dictionary<string, Func<int>>()
-    {
-        { "{", () => instance.Increment(1, 0) },
-        { "override", () => instance.On_BiomeOverride() },
-        { "display", () => instance.On_Display() },
-        { "}", () => instance.Increment(0, 1) },
-    };
-    
-    public Dictionary<string, Func<int>> biomeOverrideOptions = new Dictionary<string, Func<int>>()
-    {
-        { "{", () => instance.Increment(1, 0) },
-        { "sample", () => instance.On_BiomeOverrideSample() },
-        { "}", () => instance.Increment(1, 1) }
-    };
-    
-
-    public Dictionary<string, Func<int>> labels = new Dictionary<string, Func<int>>()
-    {
-        { "name", () => instance.On_Name() },
-    };
-}
-
-public class CWorldMask
-{
-    public string name;
-    public CWorldNoise noise;
-    public CWorldMask mask;
-
-    public CWorldMask(string name)
-    {
-        this.name = name;
-        noise = null;
-        mask = null;
-    }
-    
-    public CWorldMask(string name, CWorldNoise noise)
-    {
-        this.name = name;
-        this.noise = noise;
-        mask = null;
-    }
-
-    public float GetNoiseValue(int x, int y)
-    {
-        float value = noise.GetNoiseValue(x, y);
-
-        if (mask != null)
-            value *= mask.GetNoiseValue(x, y);
-
-        return value;
-    }
-}
-
-public class CWorldNoise
-{
-    public float sizeX;
-    public float sizeY;
-
-    public float t_min;
-    public float t_max;
-
-    public float c_min;
-    public float c_max;
-
-    public bool t_smooth;
-    public bool t_slide;
-    public bool invert;
-
-    public CWorldNoise()
-    {
-        sizeX = 20;
-        sizeY = 20;
-        
-        t_min = 0;
-        t_max = 1;
-
-        c_min = 0;
-        c_max = 1;
-
-        t_smooth = false;
-        t_slide = false;
-    }
-
-    public override string ToString()
-    {
-        return $"{sizeX}, {sizeY}, {t_min}, {t_max}, {c_min}, {c_max},";
-    }
-    
-    public float GetNoiseValue(int x, int y)
-    {
-        float height = Mathf.Clamp(Mathf.PerlinNoise((float)((float)x / sizeX + 0.001f), (float)((float)y / sizeY + 0.001f)), c_min, c_max);
-        
-        if (t_smooth)
-            height = Mathp.PLerp(t_min, t_max, height);
-        if (t_slide)
-            height = Mathp.SLerp(t_min, t_max, height);
-        if (invert)
-            height = 1 - height;
-
-        return height;
-    }
 }
