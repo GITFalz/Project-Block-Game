@@ -175,7 +175,7 @@ public class Chunk : MonoBehaviour
             
             if (chunkSide[i](x, z, xzSides[i]) || height < 0 || height >= 32)
             {
-                //occlusion |= (byte)(1 << i);
+                occlusion |= (byte)(1 << i);
             }
             else
             {

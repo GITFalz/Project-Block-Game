@@ -17,6 +17,7 @@ public class StateMachine : MonoBehaviour
     public PlayerRotationManager playerRotationManager;
 
     public GameObject menu;
+    public MainMenu mainMenu;
 
     //Player Data
     public PlayerData playerData;

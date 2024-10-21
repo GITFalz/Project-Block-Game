@@ -98,6 +98,15 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Shift"",
+                    ""type"": ""Button"",
+                    ""id"": ""0a880d98-8d8a-4bb6-a1db-884ec9a86a88"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -232,6 +241,17 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
                     ""action"": ""Inventory"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b4a35f30-4da8-4f40-b5a1-c5db0a64e63b"",
+                    ""path"": ""<Keyboard>/shift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Shift"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -265,6 +285,7 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
         m_Controls_LeftClick = m_Controls.FindAction("LeftClick", throwIfNotFound: true);
         m_Controls_SwitchCam = m_Controls.FindAction("SwitchCam", throwIfNotFound: true);
         m_Controls_Inventory = m_Controls.FindAction("Inventory", throwIfNotFound: true);
+        m_Controls_Shift = m_Controls.FindAction("Shift", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -334,6 +355,7 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
     private readonly InputAction m_Controls_LeftClick;
     private readonly InputAction m_Controls_SwitchCam;
     private readonly InputAction m_Controls_Inventory;
+    private readonly InputAction m_Controls_Shift;
     public struct ControlsActions
     {
         private @PlayerController m_Wrapper;
@@ -346,6 +368,7 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
         public InputAction @LeftClick => m_Wrapper.m_Controls_LeftClick;
         public InputAction @SwitchCam => m_Wrapper.m_Controls_SwitchCam;
         public InputAction @Inventory => m_Wrapper.m_Controls_Inventory;
+        public InputAction @Shift => m_Wrapper.m_Controls_Shift;
         public InputActionMap Get() { return m_Wrapper.m_Controls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -379,6 +402,9 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
             @Inventory.started += instance.OnInventory;
             @Inventory.performed += instance.OnInventory;
             @Inventory.canceled += instance.OnInventory;
+            @Shift.started += instance.OnShift;
+            @Shift.performed += instance.OnShift;
+            @Shift.canceled += instance.OnShift;
         }
 
         private void UnregisterCallbacks(IControlsActions instance)
@@ -407,6 +433,9 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
             @Inventory.started -= instance.OnInventory;
             @Inventory.performed -= instance.OnInventory;
             @Inventory.canceled -= instance.OnInventory;
+            @Shift.started -= instance.OnShift;
+            @Shift.performed -= instance.OnShift;
+            @Shift.canceled -= instance.OnShift;
         }
 
         public void RemoveCallbacks(IControlsActions instance)
@@ -443,5 +472,6 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
         void OnLeftClick(InputAction.CallbackContext context);
         void OnSwitchCam(InputAction.CallbackContext context);
         void OnInventory(InputAction.CallbackContext context);
+        void OnShift(InputAction.CallbackContext context);
     }
 }

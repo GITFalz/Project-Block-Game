@@ -91,6 +91,11 @@ public static class InputManager
         return inputs.inputs.Jump.ReadValue<float>() > .5f;
     }
 
+    public static bool ShiftInput()
+    {
+        return inputs.inputs.Shift.ReadValue<float>() > .5f;
+    }
+
     public static bool ControlInput()
     {
         return inputs.inputs.Control.ReadValue<float>() > .5f;

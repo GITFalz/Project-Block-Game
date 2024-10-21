@@ -27,4 +27,10 @@ public class MainMenu : MonoBehaviour
         currentMenu.SetActive(false);
         cworld.SetActive(true);
     }
+
+    public void CloseAll()
+    {
+        cworld.SetActive(false);
+        commands.SetActive(false);
+    }
 }

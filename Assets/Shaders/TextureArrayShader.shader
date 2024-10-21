@@ -2,7 +2,7 @@ Shader "Custom/TextureArrayShader"
 {
     Properties
     {
-        _MainTex("Albedo", 2DArray) = "white" {}
+        _mainTexture("Albedo", 2DArray) = "white" {}
     }
     SubShader
     {
@@ -15,7 +15,7 @@ Shader "Custom/TextureArrayShader"
             #pragma exclude_renderers gles xbox360 ps3
 
             // Define the texture array
-            UNITY_DECLARE_TEX2DARRAY(_MainTex);
+            UNITY_DECLARE_TEX2DARRAY(_mainTexture);
 
             // Vertex input structure
             struct appdata
@@ -46,7 +46,7 @@ Shader "Custom/TextureArrayShader"
             half4 frag(v2f i) : SV_Target
             {
                 // Sample the texture array
-                half4 c = UNITY_SAMPLE_TEX2DARRAY(_MainTex, float3(i.uv_MainTex, i.arrayIndex));
+                half4 c = UNITY_SAMPLE_TEX2DARRAY(_mainTexture, float3(i.uv_MainTex, i.arrayIndex));
                 return c;
             }
             ENDCG

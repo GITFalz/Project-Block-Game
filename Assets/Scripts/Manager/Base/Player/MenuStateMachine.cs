@@ -34,6 +34,7 @@ public class MenuStateMachine : BaseState
 
     public override void ExitState(StateMachine state)
     {
-        return;
+        state.menu.SetActive(false);
+        state.mainMenu.CloseAll();
     }
 }

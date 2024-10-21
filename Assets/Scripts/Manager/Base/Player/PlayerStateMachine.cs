@@ -17,6 +17,8 @@ public class PlayerStateMachine : BaseState
     public PlayerFallingState fallingState = new();
     public PlayerDashState dashState = new();
     
+    public PlayerAdminState adminState = new();
+    
     public UtilityManager manager;
     
     public RigidbodyManager rigidbodyManager;
@@ -36,6 +38,7 @@ public class PlayerStateMachine : BaseState
     public Func<bool> jumpInput;
     public Func<bool> controlInput;
     public Func<bool> rightClickInput;
+    public Func<bool> shiftInput;
 
     //Player Data
     public PlayerData playerData;
@@ -72,6 +75,7 @@ public class PlayerStateMachine : BaseState
         jumpInput = InputManager.JumpInput;
         controlInput = InputManager.ControlInput;
         rightClickInput = InputManager.RightClickInput;
+        shiftInput = InputManager.ShiftInput;
 
         jumpSwitch = new Switch(jumpInput);
         dashSwitch = new Switch(rightClickInput);
@@ -87,14 +91,12 @@ public class PlayerStateMachine : BaseState
         dashDirection = playerY.forward;
 
         afterJumpState = idleState;
-        currentState = idleState;
+        currentState = adminState;
     }
 
     public override void EnterState(StateMachine state)
     {
         Debug.Log("player is in playmode");
-
-        state.menu.SetActive(false);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -161,6 +163,11 @@ public class PlayerStateMachine : BaseState
         }
         
         Debug.Log("2: " + velocity);
+    }
+
+    public void Move(Vector3 direction, float maxSpeed)
+    {
+        player.position += maxSpeed * Time.deltaTime * direction;
     }
 
     public void HandleVelocity()

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -18,6 +19,8 @@ public class WMWriter : MonoBehaviour
     public TMP_Text log;
     public TextureGeneration textureGeneration;
     public CWorldHandler handler;
+
+    public FileManager fileManager;
     
     
     private string[] lines;
@@ -56,6 +59,21 @@ public class WMWriter : MonoBehaviour
         displayName = "";
         
         string input = inputField.text;
+        
+        string[] worldFiles = Directory.GetFiles(fileManager.worldPacksFolderPath, "*.cworldFormat");
+
+        if (worldFiles.Length > 0)
+        {
+            Debug.Log("Found " + worldFiles.Length + " .cworldFormat files:");
+            foreach (string file in worldFiles)
+            {
+                Debug.Log(file);
+            }
+        }
+        
+        string fileContent = File.ReadAllText(fileManager.worldPacksFolderPath);
+        Debug.Log("File Content: " + fileContent);
+        
         input = Regex.Replace(input, @"\u200B", "").Trim();
 
         StringBuilder result = new StringBuilder();
