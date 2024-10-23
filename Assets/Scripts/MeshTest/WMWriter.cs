@@ -28,7 +28,7 @@ public class WMWriter : MonoBehaviour
     private bool showChunkGen = false;
     private char[] charactersToReplace = new char[] { '(', ')', '=', '{', '}', ',', ':', '/'};
 
-    private CNode currentNode;
+    private CWAOperatorNode currentNode;
     private CWorldSampleNode worldSampleNode;
 
     private string currentName = "";
@@ -62,17 +62,20 @@ public class WMWriter : MonoBehaviour
         
         string[] worldFiles = Directory.GetFiles(fileManager.worldPacksFolderPath, "*.cworldFormat");
 
-        if (worldFiles.Length > 0)
+        if (false)
         {
-            Debug.Log("Found " + worldFiles.Length + " .cworldFormat files:");
-            foreach (string file in worldFiles)
+            if (worldFiles.Length > 0)
             {
-                Debug.Log(file);
+                Debug.Log("Found " + worldFiles.Length + " .cworldFormat files:");
+                foreach (string file in worldFiles)
+                {
+                    Debug.Log(file);
+                }
             }
+
+            string fileContent = File.ReadAllText(fileManager.worldPacksFolderPath);
+            Debug.Log("File Content: " + fileContent);
         }
-        
-        string fileContent = File.ReadAllText(fileManager.worldPacksFolderPath);
-        Debug.Log("File Content: " + fileContent);
         
         input = Regex.Replace(input, @"\u200B", "").Trim();
 
@@ -184,7 +187,7 @@ public class WMWriter : MonoBehaviour
     public int On_Sample()
     {
         index++;
-        worldSampleNode.SetSample(new CSampleNode());
+        worldSampleNode.SetSample(new CWOISampleNode());
         
         if (CommandsTest(worldSampleNode.labels) == -1) return Error("Problem in the label found");
         if (!handler.initializers.TryAdd(currentName, worldSampleNode.sampleNode))
@@ -268,10 +271,10 @@ public class WMWriter : MonoBehaviour
         if (GetNext2Floats(out Vector2 floats) == -1)
             return Error("A problem was found while writing the size");
         
-        if (currentNode is not CSampleNode sampleNode) return Error("Something went wrong");
+        if (currentNode is not CWOISampleNode sampleNode) return Error("Something went wrong");
 
-        sampleNode.noise.sizeX = floats.x;
-        sampleNode.noise.sizeY = floats.y;
+        sampleNode.noiseNode.sizeX = floats.x;
+        sampleNode.noiseNode.sizeY = floats.y;
 
         return 0;
     }
@@ -282,14 +285,14 @@ public class WMWriter : MonoBehaviour
         return CommandsTest(commands) == -1 ? Error("Problem with the settings") : 0;
     }
 
-    public int On_SampleListAdd(List<CSampleNode> list)
+    public int On_SampleListAdd(List<CWOISampleNode> list)
     {
         while (true)
         {
             index++;
             if (handler.initializers.TryGetValue(lines[index], out var init))
             {
-                if (init is CSampleNode sampleNode) list.Add(sampleNode);
+                if (init is CWOISampleNode sampleNode) list.Add(sampleNode);
                 else return Error("Sample node not found (handler > get init)");
             }
 
@@ -305,6 +308,14 @@ public class WMWriter : MonoBehaviour
         if (GetNext2Floats(out Vector2 floats) == -1) 
             return Error("A problem was found while writing the threshold");
         param1 = floats.x; param2 = floats.y; return 0;
+    }
+    
+    public int On_AssingNext2Floats(out Vector2 floats)
+    {
+        index++;
+        if (GetNext2Floats(out floats) == -1) 
+            return Error("A problem was found while writing the threshold");
+        return 0;
     }
     
     public int On_AssingNextFloat(ref float param1)
@@ -327,7 +338,7 @@ public class WMWriter : MonoBehaviour
     {
         index++;
         if (CommandsTest(biomeLabel) == -1) return Error("Problem in the label found");
-        if (!handler.executes.TryAdd(currentName, new CBiomeNode()))
+        if (!handler.executes.TryAdd(currentName, new CWOEBiomeNode()))
             return Error("name is used twice");
         currentNode = handler.executes[currentName];
         if (CommandsTest(biomeSettings) == -1) return Error("Problem in the sample settings found");
@@ -349,9 +360,9 @@ public class WMWriter : MonoBehaviour
         
         index++;
         
-        if (handler.initializers.TryGetValue(lines[index], out CInit init))
+        if (handler.initializers.TryGetValue(lines[index], out CWAInitializerNode init))
         {
-            if (currentNode is CBiomeNode biomeNode && init is CSampleNode sampleNode2)
+            if (currentNode is CWOEBiomeNode biomeNode && init is CWOISampleNode sampleNode2)
                 biomeNode.sample = sampleNode2;
             else
                 return Error("Something went wrong");

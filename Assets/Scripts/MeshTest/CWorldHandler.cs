@@ -6,13 +6,13 @@ using UnityEngine;
 
 public class CWorldHandler : MonoBehaviour
 {
-    public Dictionary<string, CInit> initializers;
-    public Dictionary<string, CExecute> executes;
+    public Dictionary<string, CWAInitializerNode> initializers;
+    public Dictionary<string, CWAExecuteNode> executes;
 
     private void Start()
     {
-        initializers = new Dictionary<string, CInit>();
-        executes = new Dictionary<string, CExecute>();
+        initializers = new Dictionary<string, CWAInitializerNode>();
+        executes = new Dictionary<string, CWAExecuteNode>();
     }
 
     public float GetTextureNoise(int x, int z)
@@ -24,7 +24,7 @@ public class CWorldHandler : MonoBehaviour
 
         float height = 0;
 
-        foreach (CExecute e in executes.Values)
+        foreach (CWAExecuteNode e in executes.Values)
         {
             float noise = e.GetNoise();
             if (noise > height)
@@ -38,7 +38,7 @@ public class CWorldHandler : MonoBehaviour
     {
         Init(x, z);
         
-        if (initializers.TryGetValue(sampleName, out CInit i))
+        if (initializers.TryGetValue(sampleName, out CWAInitializerNode i))
         {
             return i.GetNoise();
         }
@@ -56,7 +56,7 @@ public class CWorldHandler : MonoBehaviour
     public Block GetBlock(int x, int y, int z)
     {
         Block block = null;
-        foreach (CExecute execute in executes.Values)
+        foreach (CWAExecuteNode execute in executes.Values)
         {
             Block b = execute.GetBlock(x, y, z);
             if (b != null) block = b;

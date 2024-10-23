@@ -127,11 +127,20 @@ public class Chunk : MonoBehaviour
             for (int x = 0; x < 32; x++)
             {
                 float value = handler.GetSampleNoise(x + position.x, z + position.z, sampleName);
-                int height = (int)Mathf.Clamp((Mathf.Lerp(WorldInfo.worldMinTerrainHeight, WorldInfo.worldMaxTerrainHeight, value) + 1) - position.y, 0, 32);
-                if (height < 32)
-                    blockMap[index] = (1u << height) - 1;
+                if (value > -.5f)
+                {
+                    int height = (int)Mathf.Clamp(
+                        (Mathf.Lerp(WorldInfo.worldMinTerrainHeight, WorldInfo.worldMaxTerrainHeight, value) + 1) -
+                        position.y, 0, 32);
+
+                    if (height < 32)
+                        blockMap[index] = (1u << height) - 1;
+                    else
+                        blockMap[index] = ~0u;
+                }
                 else
-                    blockMap[index] = ~0u;
+                    blockMap[index] = 0;
+                
                 index++;
             }
         }
@@ -175,7 +184,7 @@ public class Chunk : MonoBehaviour
             
             if (chunkSide[i](x, z, xzSides[i]) || height < 0 || height >= 32)
             {
-                occlusion |= (byte)(1 << i);
+                //occlusion |= (byte)(1 << i);
             }
             else
             {
