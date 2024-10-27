@@ -9,17 +9,19 @@ public class CWorldHandler : MonoBehaviour
     public Dictionary<string, CWAInitializerNode> initializers;
     public Dictionary<string, CWAExecuteNode> executes;
 
-    private void Start()
+    private bool test = true;
+
+    public void Init()
     {
         initializers = new Dictionary<string, CWAInitializerNode>();
         executes = new Dictionary<string, CWAExecuteNode>();
     }
 
-    public float GetTextureNoise(int x, int z)
+    public float GetTextureNoise(int x, int y, int z)
     {
         foreach (var i in initializers.Values)
         {
-            i.Init(x, z);
+            i.Init(x, y, z);
         }
 
         float height = 0;
@@ -34,22 +36,45 @@ public class CWorldHandler : MonoBehaviour
         return height;
     }
 
-    public float GetSampleNoise(int x, int z, string sampleName)
+    public float GetSampleNoise(int x, int y, int z, string sampleName)
     {
-        Init(x, z);
-        
         if (initializers.TryGetValue(sampleName, out CWAInitializerNode i))
         {
             return i.GetNoise();
         }
         return 0;
     }
+    
+    public float GetSampleNoise(int x, int y, int z, CWAInitializerNode i)
+    {
+        Init(x, y, z);
+        return i.GetNoise();
+    }
 
-    public void Init(int x, int z)
+    public Block[] GenerateBiome(Vector3Int position, Block[] blocks, string biomeName)
+    {
+        if (executes.TryGetValue(biomeName.Trim(), out var node))
+        {
+            return node.GetBlocks(position, blocks, this);
+        }
+
+        return blocks;
+    }
+    
+    public uint GetBlockMapPillar(int x, int y, int z, string sampleName)
+    {
+        if (initializers.TryGetValue(sampleName, out CWAInitializerNode i))
+        {
+            return i.GetPillar(x, y, z);
+        }
+        return 0;
+    }
+
+    public void Init(int x, int y, int z)
     {
         foreach (var i in initializers.Values)
         {
-            i.Init(x, z);
+            i.Init(x, y, z);
         }
     }
     
@@ -58,8 +83,8 @@ public class CWorldHandler : MonoBehaviour
         Block block = null;
         foreach (CWAExecuteNode execute in executes.Values)
         {
-            Block b = execute.GetBlock(x, y, z);
-            if (b != null) block = b;
+            //Block b = execute.GetBlock(x, y, z);
+            //if (b != null) block = b;
         }
 
         return block;

@@ -6,6 +6,7 @@ public class MainMenu : MonoBehaviour
 {
     public GameObject commands;
     public GameObject cworld;
+    public TextureGeneration textureGeneration;
     public void NewWorld(string scene)
     {
         SceneManager.LoadScene(scene);
@@ -32,5 +33,6 @@ public class MainMenu : MonoBehaviour
     {
         cworld.SetActive(false);
         commands.SetActive(false);
+        textureGeneration.SetMove(false);
     }
 }

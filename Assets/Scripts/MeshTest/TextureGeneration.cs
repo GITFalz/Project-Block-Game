@@ -16,22 +16,58 @@ public class TextureGeneration : MonoBehaviour
 
     public int textureSize = 512;
 
+    public bool _move = false;
+    private Vector3 _direction;
+    private string _sampleName;
+
+    private float _timer;
+
     private void Start()
     {
-        
-    }
-    
+        _direction = Vector3.zero;
+        _sampleName = "";
 
-    public void UpdateTexture(CSampleNode sample)
+        _timer = 0;
+    }
+
+    private void Update()
     {
-        noiseTexture = new Texture2D(textureSize, textureSize);
-        GenerateNoise(sample);
-        image.texture = noiseTexture;
+        if (_move)
+        {
+            if (_timer <= 0)
+            {
+                _timer = 0.2f;
+                MoveTexture();
+            }
+            else
+            {
+                _timer -= Time.deltaTime;
+            }
+        }
+    }
+
+    public void MoveTexture()
+    {
+        Vector2 moveInput = InputManager.MoveInput();
+        
+        if (!moveInput.Equals(Vector2.zero))
+        {
+            int speed = 20;
+
+            if (InputManager.ControlInput())
+                speed = 100;
+            
+            _direction.y += moveInput.y * speed;
+            _direction.x += moveInput.x * speed;
+            
+            GenerateNoise(_sampleName);
+        }
     }
     
     public void UpdateTexture(string sampleName)
     {
         noiseTexture = new Texture2D(textureSize, textureSize);
+        _sampleName = sampleName;
         GenerateNoise(sampleName);
         image.texture = noiseTexture;
     }
@@ -49,7 +85,7 @@ public class TextureGeneration : MonoBehaviour
         {
             for (int j = 0; j < textureSize; j++)
             {
-                float height = handler.GetTextureNoise(i, j);
+                float height = handler.GetTextureNoise(i + (int)_direction.x, 0, j + (int)_direction.y);
                 noiseTexture.SetPixel(i, j, new Color(height, height, height));
             }
         }
@@ -59,30 +95,23 @@ public class TextureGeneration : MonoBehaviour
     
     private void GenerateNoise(string sampleName)
     {
-        for (int i = 0; i < textureSize; i++)
+        if (handler.initializers.TryGetValue(sampleName, out CWAInitializerNode init))
         {
-            for (int j = 0; j < textureSize; j++)
+            for (int i = 0; i < textureSize; i++)
             {
-                float height = handler.GetSampleNoise(i, j, sampleName);
-                noiseTexture.SetPixel(i, j, new Color(height, height, height));
+                for (int j = 0; j < textureSize; j++)
+                {
+                    float height = handler.GetSampleNoise(i + (int)_direction.x, 0, j + (int)_direction.y, init);
+                    noiseTexture.SetPixel(i, j, new Color(height, height, height));
+                }
             }
+            
+            noiseTexture.Apply();
         }
-
-        noiseTexture.Apply();
     }
-    
-    private void GenerateNoise(CSampleNode sample)
-    {
-        for (int i = 0; i < textureSize; i++)
-        {
-            for (int j = 0; j < textureSize; j++)
-            {
-                handler.Init(i, j);
-                float height = sample.GetNoise();
-                noiseTexture.SetPixel(i, j, new Color(height, height, height));
-            }
-        }
 
-        noiseTexture.Apply();
+    public void SetMove(bool move)
+    {
+        _move = move;
     }
 }

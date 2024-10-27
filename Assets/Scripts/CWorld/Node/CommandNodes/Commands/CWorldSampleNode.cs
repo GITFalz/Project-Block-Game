@@ -1,11 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
-using System.Text.RegularExpressions;
-using TMPro;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class CWorldSampleNode : CWorldAbstractNode
@@ -39,7 +33,24 @@ public class CWorldSampleNode : CWorldAbstractNode
         { "override", (w) => w.On_Settings(instance.overrides) },
         { "noise", (w) => w.On_Settings(instance.noises) },
         { "display", (w) => w.On_Display() },
+        { "biome", (w) => w.On_Settings(instance.biomes) },
         { "}", (w) => w.Increment(0, 1) },
+    };
+    
+    public Dictionary<string, Func<WMWriter, int>> biomes = new Dictionary<string, Func<WMWriter, int>>()
+    {
+        { "{", (w) => w.Increment(1, 0) },
+        { "flip", (w) => w.On_SetTrue(ref instance.sampleNode.flip) },
+        { "range", (w) =>
+        {
+            if (w.GetNext2Ints(out Vector2Int ints) == -1)
+                return w.Error("no suitable ints found");
+
+            instance.sampleNode.min_height = ints.x;
+            instance.sampleNode.max_height = ints.y;
+            return 0;
+        } },
+        { "}", (w) => w.Increment(1, 1) }
     };
 
     public Dictionary<string, Func<WMWriter, int>> noises = new Dictionary<string, Func<WMWriter, int>>()

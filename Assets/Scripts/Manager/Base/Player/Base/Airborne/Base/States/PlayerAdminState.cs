@@ -32,7 +32,7 @@ public class PlayerAdminState : PlayerBaseState
             direction += Vector3.down;
         }
         
-        state.Move(direction, 30);
+        state.Move(direction, 100);
     }
 
     public override void Physics(PlayerStateMachine state)

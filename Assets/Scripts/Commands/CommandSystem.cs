@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
@@ -18,13 +20,97 @@ public class CommandSystem : MonoBehaviour
     public Transform parentChunk;
 
     public GameObject chunkPrefab;
+
+    public BlockManager blockManager;
+    public BiomeSO biome;
+
+    public int threadCount = 4;
     
     private string[] args;
+    
+    public ConcurrentQueue<ChunkData> chunks;
+    private ConcurrentQueue<Vector3Int> _sampleChunks;
+    private ConcurrentQueue<Vector3Int> _biomeChunks;
+
+    private List<Task> tasks;
+
+    private Task thread1 = null;
+    private Task thread2 = null;
+    private string currentName = "";
+
+    private void Start()
+    {
+        chunks = new ConcurrentQueue<ChunkData>();
+        _sampleChunks = new ConcurrentQueue<Vector3Int>();
+        _biomeChunks = new ConcurrentQueue<Vector3Int>();
+
+        tasks = new List<Task>();
+        for (int i = 0; i < threadCount; i++)
+        {
+            tasks.Add(null);
+        }
+    }
 
     private void Awake()
     {
         if (instance == null)
             instance = this;
+    }
+
+    private void Update()
+    {
+        if (_sampleChunks.Count > 0)
+        {
+            GenerateChunks();
+        }
+        else if (_biomeChunks.Count > 0)
+        {
+            GenerateBiomeChunks();
+        }
+
+        if (chunks.Count > 0)
+        {
+            if (chunks.TryDequeue(out var result))
+            {
+                GameObject newChunk = Instantiate(chunkPrefab, result.position, Quaternion.identity, parentChunk);
+                newChunk.GetComponent<ChunkRenderer>().RenderChunk(result);
+            }
+        }
+    }
+
+    private async void GenerateChunks()
+    {
+        if (thread1 == null)
+        {
+            if (_sampleChunks.TryDequeue(out var result))
+            {
+                thread1 = Chunk.CreateChunk(new ChunkData(result), result, currentName, this, handler, blockManager, biome);
+                await thread1;
+                thread1 = null;
+            }
+        }
+        if (thread2 == null)
+        {
+            if (_sampleChunks.TryDequeue(out var result))
+            {
+                thread2 = Chunk.CreateChunk(new ChunkData(result), result, currentName, this, handler, blockManager, biome);
+                await thread2;
+                thread2 = null;
+            }
+        }
+    }
+    
+    private async void GenerateBiomeChunks()
+    {
+        if (thread1 == null)
+        {
+            if (_biomeChunks.TryDequeue(out var result))
+            {
+                thread1 = Chunk.CreateBiomeChunk(new ChunkData(result), result, currentName, handler, this, blockManager);
+                await thread1;
+                thread1 = null;
+            }
+        }
     }
 
     public void ExecuteCommand()
@@ -140,11 +226,16 @@ public class CommandSystem : MonoBehaviour
                             if (args[8].Trim().Equals("sample"))
                             {
                                 Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
-                                ChunkData chunkData = new ChunkData(position);
-                                chunkScript.CreateChunk(chunkData, position, args[9]);
-
-                                GameObject newChunk = Instantiate(chunkPrefab, position, Quaternion.identity, parentChunk);
-                                newChunk.GetComponent<ChunkRenderer>().RenderChunk(chunkData);
+                                
+                                _sampleChunks.Enqueue(position);
+                                currentName = args[9];
+                            }
+                            else if (args[8].Trim().Equals("biome"))
+                            {
+                                Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
+                                
+                                _biomeChunks.Enqueue(position);
+                                currentName = args[9];
                             }
                         }
                         else

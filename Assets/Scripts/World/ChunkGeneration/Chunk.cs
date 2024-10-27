@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -24,6 +25,7 @@ public class Chunk : MonoBehaviour
     public World worldScript;
 
     public CWorldHandler handler;
+    public CommandSystem commandSystem;
 
     public bool generateSingle;
 
@@ -37,7 +39,7 @@ public class Chunk : MonoBehaviour
             texture.filterMode = FilterMode.Point;
             
             blockMap = GenerateTerrain(new Vector3Int(0, 0, 0));
-            blocks = GenerateBlocks();
+            blocks = GenerateBlocks(blockMap, biome);
             
             SetPixels();
             
@@ -68,32 +70,64 @@ public class Chunk : MonoBehaviour
         newChunkData.meshData = new MeshData();
         
         blockMap = GenerateTerrain(position);
-        blocks = GenerateBlocks();
+        blocks = GenerateBlocks(blockMap, biome);
         newChunkData.SetBlocks(blocks);
         
         //World.WriteChunkData(chunkData, writer);
-        GenerateMesh(newChunkData);
+        GenerateMesh(newChunkData, blockManager);
 
         return newChunkData;
     }
     
-    public ChunkData CreateChunk(ChunkData newChunkData, Vector3Int position, string sampleName)
+    public static async Task CreateChunk(ChunkData newChunkData, Vector3Int position, string sampleName, CommandSystem commandSystem, CWorldHandler handler, BlockManager blockManager, BiomeSO biome)
     {
         newChunkData.meshData = new MeshData();
 
-        greedyMap = new uint[6][];
+        uint[][] greedyMap = new uint[6][];
+
+        for (int i = 0; i < 6; i++)
+            greedyMap[i] = new uint[32 * 32];
+
+        Block[] blocks = await CreateChunkAsync(position, sampleName, handler, biome);
+        newChunkData.SetBlocks(blocks);
+
+        GenerateMesh(newChunkData, blockManager);
+        
+        commandSystem.chunks.Enqueue(newChunkData);
+    }
+    
+    public static Task<Block[]> CreateChunkAsync(Vector3Int position, string sampleName, CWorldHandler handler, BiomeSO biome)
+    {
+        return Task.Run(() =>
+        {
+            uint[] blockMap = GenerateTerrain(position, sampleName, handler);
+            return GenerateBlocks(blockMap, biome);
+        });
+    }
+    
+    public static async Task CreateBiomeChunk(ChunkData newChunkData, Vector3Int position, string biomeName, CWorldHandler handler, CommandSystem commandSystem, BlockManager blockManager)
+    {
+        newChunkData.meshData = new MeshData();
+
+        uint[][] greedyMap = new uint[6][];
 
         for (int i = 0; i < 6; i++)
             greedyMap[i] = new uint[32 * 32];
         
-        blockMap = GenerateTerrain(position, sampleName);
-        blocks = GenerateBlocks();
+        Block[] blocks = await CreateBiomeChunkAsync(position, biomeName, handler);
         newChunkData.SetBlocks(blocks);
-        
-        //World.WriteChunkData(chunkData, writer);
-        GenerateMesh(newChunkData);
 
-        return newChunkData;
+        GenerateMesh(newChunkData, blockManager);
+        
+        commandSystem.chunks.Enqueue(newChunkData);
+    }
+    
+    public static Task<Block[]> CreateBiomeChunkAsync(Vector3Int position, string biomeName, CWorldHandler handler)
+    {
+        return Task.Run(() =>
+        {
+            return handler.GenerateBiome(position, new Block[32768], biomeName);
+        });
     }
 
     public uint[] GenerateTerrain(Vector3Int position)
@@ -116,9 +150,19 @@ public class Chunk : MonoBehaviour
 
         return blockMap;
     }
-    
-    public uint[] GenerateTerrain(Vector3Int position, string sampleName)
+
+    public static Block[] GenerateBlocks(Vector3Int position, string biomeName, CWorldHandler handler)
     {
+        Block[] newBlocks = new Block[32768];
+        Block[] blocks = handler.GenerateBiome(position, newBlocks, biomeName);
+        return newBlocks;
+    }
+    
+    public static uint[] GenerateTerrain(Vector3Int position, string sampleName, CWorldHandler handler)
+    {
+        if (!handler.initializers.TryGetValue(sampleName, out CWAInitializerNode init))
+            throw new Exception("can't find sample");
+        
         uint[] blockMap = new uint[32 * 32];
 
         int index = 0;
@@ -126,12 +170,12 @@ public class Chunk : MonoBehaviour
         {
             for (int x = 0; x < 32; x++)
             {
-                float value = handler.GetSampleNoise(x + position.x, z + position.z, sampleName);
+                float value = handler.GetSampleNoise(x + position.x, position.y, z + position.z, init);
+                
                 if (value > -.5f)
                 {
                     int height = (int)Mathf.Clamp(
-                        (Mathf.Lerp(WorldInfo.worldMinTerrainHeight, WorldInfo.worldMaxTerrainHeight, value) + 1) -
-                        position.y, 0, 32);
+                        (Mathf.Lerp(WorldInfo.worldMinTerrainHeight, WorldInfo.worldMaxTerrainHeight, value) + 1) - position.y, 0, 32);
 
                     if (height < 32)
                         blockMap[index] = (1u << height) - 1;
@@ -148,9 +192,10 @@ public class Chunk : MonoBehaviour
         return blockMap;
     }
 
-    private Block[] GenerateBlocks()
+    private static Block[] GenerateBlocks(uint[] blockMap, BiomeSO biome)
     {
-        Block[] newBlocks = new Block[chunkSize];
+        Block[] newBlocks = new Block[32768];
+        
         int index = 0;
         for (int y = 0; y < 32; y++)
         {
@@ -171,7 +216,7 @@ public class Chunk : MonoBehaviour
         return newBlocks;
     }
 
-    private byte GetOcclusion(uint[] blockMap, int x, int y, int z)
+    public static byte GetOcclusion(uint[] blockMap, int x, int y, int z)
     {
         byte occlusion = 0;
 
@@ -188,21 +233,14 @@ public class Chunk : MonoBehaviour
             }
             else
             {
-                try
-                {
-                    occlusion |= (byte)(((blockMap[index] >> height) & 1u) << i);
-                }
-                catch (Exception e)
-                {
-                    Debug.Log(i);
-                }
+                occlusion |= (byte)(((blockMap[index] >> height) & 1u) << i);
             }
         }
 
         return occlusion;
     }
 
-    public Func<int, int, int, bool>[] chunkSide = new Func<int, int, int, bool>[]
+    private static Func<int, int, int, bool>[] chunkSide = new Func<int, int, int, bool>[]
     {
         (x, z, offset) => { int i = z + offset; return i is < 0 or >= 32; },
         (x, z, offset) => { int i = x + offset; return i is < 0 or >= 32; },
@@ -212,7 +250,7 @@ public class Chunk : MonoBehaviour
         (x, z, offset) => { int i = z + offset; return i is < 0 or >= 32; }
     };
 
-    public int[] xzSides = new[]
+    private static int[] xzSides = new[]
     {
         -1, 1, 0, -1, 0, 1
     };
@@ -237,7 +275,7 @@ public class Chunk : MonoBehaviour
     /**
      * Generate the terrain mesh using the blockMap
      */
-    public void GenerateMesh(ChunkData chunkData)
+    public static void GenerateMesh(ChunkData chunkData, BlockManager blockManager)
     {
         int index = 0;
         
@@ -280,7 +318,8 @@ public class Chunk : MonoBehaviour
                                     }
 
                                     if (((chunkData.blocks[i].check >> side) & 1) == 1 ||
-                                        ((chunkData.blocks[i].occlusion >> side) & 1) == 1)
+                                        ((chunkData.blocks[i].occlusion >> side) & 1) == 1 ||
+                                        chunkData.blocks[i].blockData != block.blockData)
                                         break;
 
                                     chunkData.blocks[i].check |= (byte)(1 << side);
@@ -314,7 +353,8 @@ public class Chunk : MonoBehaviour
                                         }
 
                                         if (((chunkData.blocks[up].check >> side) & 1) == 1 ||
-                                            ((chunkData.blocks[up].occlusion >> side) & 1) == 1)
+                                            ((chunkData.blocks[up].occlusion >> side) & 1) == 1 ||
+                                            chunkData.blocks[up].blockData != block.blockData)
                                         {
                                             quit = true;
                                             break;
@@ -338,6 +378,13 @@ public class Chunk : MonoBehaviour
                                 Vector3[] positions = positionOffset[side](width, height);
                                 Vector3 position = new Vector3(x, y, z);
 
+                                int id = blockManager.GetBlock(block.blockData).GetUVs()[side];
+                                
+                                chunkData.meshData.uvs.Add(new Vector3(0, 0, id));
+                                chunkData.meshData.uvs.Add(new Vector3(0, height, id));
+                                chunkData.meshData.uvs.Add(new Vector3(width, height, id));
+                                chunkData.meshData.uvs.Add(new Vector3(width, 0, id));
+                                
                                 chunkData.meshData.verts.Add(position + positions[0]);
                                 chunkData.meshData.verts.Add(position + positions[1]);
                                 chunkData.meshData.verts.Add(position + positions[2]);
@@ -352,17 +399,17 @@ public class Chunk : MonoBehaviour
         }
     }
 
-    public int[] firstOffset = new[]
+    public static int[] firstOffset = new[]
     {
         1024, 1024, 32, 1024, 32, 1024
     };
     
-    public int[] secondOffset = new[]
+    public static int[] secondOffset = new[]
     {
         1, 32, 1, 32, 1, 32
     };
 
-    public Func<int, int, int>[] firstLoop = new Func<int, int, int>[]
+    public static Func<int, int, int>[] firstLoop = new Func<int, int, int>[]
     {
         (y, z) => 31 - y,
         (y, z) => 31 - y,
@@ -372,7 +419,7 @@ public class Chunk : MonoBehaviour
         (y, z) => 31 - y,
     };
     
-    public Func<int, int, int>[] secondLoop = new Func<int, int, int>[]
+    public static Func<int, int, int>[] secondLoop = new Func<int, int, int>[]
     {
         (x, z) => 31 - x,
         (x, z) => 31 - z,
@@ -382,7 +429,7 @@ public class Chunk : MonoBehaviour
         (x, z) => 31 - z,
     };
 
-    public Func<int, int, Vector3[]>[] positionOffset = new Func<int, int, Vector3[]>[]
+    public static Func<int, int, Vector3[]>[] positionOffset = new Func<int, int, Vector3[]>[]
     {
         (width, height) => new Vector3[] { new Vector3(0, 0, 0), new Vector3(0, height, 0), new Vector3(width, height, 0), new Vector3(width, 0, 0), },
         (width, height) => new Vector3[] { new Vector3(1, 0, 0), new Vector3(1, height, 0), new Vector3(1, height, width), new Vector3(1, 0, width), },
@@ -428,8 +475,8 @@ public class Chunk : MonoBehaviour
         sideUpdate.mainChunk.meshData = new MeshData();
         sideUpdate.sideChunk.meshData = new MeshData();
         
-        GenerateMesh(sideUpdate.mainChunk);
-        GenerateMesh(sideUpdate.sideChunk);
+        GenerateMesh(sideUpdate.mainChunk, blockManager);
+        GenerateMesh(sideUpdate.sideChunk, blockManager);
 
         return sideUpdate;
     }
@@ -547,11 +594,11 @@ public class Chunk : MonoBehaviour
             blocks = new Block[32 * 32 * 32];
         
             GenerateTerrain(pos);
-            GenerateBlocks();
+            GenerateBlocks(blockMap, biome);
             
             chunkData.blocks = blocks;
             
-            GenerateMesh(chunkData);
+            GenerateMesh(chunkData, blockManager);
 
             if (worldScript.AddChunk(pos, chunkData))
             {
@@ -565,7 +612,7 @@ public class Chunk : MonoBehaviour
         chunksToAdd.Clear();
     }
 
-    public Func<int, int, int>[] sideIndex = new Func<int, int, int>[]
+    public static Func<int, int, int>[] sideIndex = new Func<int, int, int>[]
     {
         (i, j) => { return i + j * 1024; },
         (i, j) => { return i * 32 + j * 1024 + 31; },
@@ -575,7 +622,7 @@ public class Chunk : MonoBehaviour
         (i, j) => { return i + j * 1024 + 992; },
     };
 
-    public int[,] sideBlockCheck = new[,]
+    public static int[,] sideBlockCheck = new[,]
     {
         { -32, 0 }, { 1, 0 }, { 0, 1 }, { -1, 0 }, { 0, -1 }, { 32, 0 },
     };

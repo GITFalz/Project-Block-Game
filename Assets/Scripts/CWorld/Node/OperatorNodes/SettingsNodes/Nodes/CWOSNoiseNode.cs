@@ -25,12 +25,12 @@ public class CWOSNoiseNode
     public float GetNoiseValue(int x, int z)
     {
         float height = Mathf.PerlinNoise((float)((float)x / sizeX + 0.001f), (float)((float)z / sizeY + 0.001f));
-        
-        if (invert)
-            height = 1 - height;
 
         foreach (CWAParameterNode parameter in parameters)
             height = parameter.GetValue(height);
+        
+        if (invert)
+            height = 1 - height;
         
         return height * amplitude;
     }
