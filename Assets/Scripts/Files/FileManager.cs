@@ -5,7 +5,7 @@ public class FileManager : MonoBehaviour
 {
     public string worldPacksFolderPath;
 
-    private void Start()
+    public void Init()
     {
         worldPacksFolderPath = Path.Combine(Application.persistentDataPath, "WorldPacks");
         

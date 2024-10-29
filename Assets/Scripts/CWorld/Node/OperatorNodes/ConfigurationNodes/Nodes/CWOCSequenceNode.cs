@@ -5,7 +5,7 @@ public class CWOCSequenceNode : CWAConfigurationNode
 
     public Block block;
     
-    public override Block GetBlock(int airDistance, int height)
+    public override Block GetBlock(int airDistance)
     {
         if (airDistance >= top_min && airDistance <= top_max)
             return block;

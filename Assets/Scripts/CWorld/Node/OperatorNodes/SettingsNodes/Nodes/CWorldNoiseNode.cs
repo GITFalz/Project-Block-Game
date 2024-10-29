@@ -1,20 +1,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CWOSNoiseNode
+public class CWorldNoiseNode
 {
     public float sizeX;
     public float sizeY;
+
+    public float offsetX;
+    public float offsetY;
 
     public float amplitude;
     public bool invert;
     
     public List<CWAParameterNode> parameters;
 
-    public CWOSNoiseNode()
+    public CWorldNoiseNode()
     {
-        sizeX = 0;
-        sizeY = 0;
+        sizeX = 100;
+        sizeY = 100;
+
+        offsetX = 0.001f;
+        offsetY = 0.001f;
 
         amplitude = 1;
         invert = false;
@@ -24,7 +30,7 @@ public class CWOSNoiseNode
     
     public float GetNoiseValue(int x, int z)
     {
-        float height = Mathf.PerlinNoise((float)((float)x / sizeX + 0.001f), (float)((float)z / sizeY + 0.001f));
+        float height = Mathf.PerlinNoise((float)((float)x / sizeX + offsetX), (float)((float)z / sizeY + offsetY));
 
         foreach (CWAParameterNode parameter in parameters)
             height = parameter.GetValue(height);

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class CWorldBlockNode : CWorldAbstractNode
+public class CWorldBlockManager : CWorldAbstractNode
 {
     public static WMWriter writer;
 }

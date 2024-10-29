@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 
-public class CWOISampleNode : CWAInitializerNode
+public class CWorldSampleNode : CWAInitializerNode
 {
+    public string name;
+    
     public CWOSOverrideNode overrideNode;
-    public CWOSNoiseNode noiseNode;
+    public CWorldNoiseNode noiseNode;
     public CWOSSpecificsNode SpecificsNode;
     public float noiseValue;
 
@@ -11,10 +13,11 @@ public class CWOISampleNode : CWAInitializerNode
     public int min_height;
     public int max_height;
 
-    public CWOISampleNode()
+    public CWorldSampleNode(string sampleName)
     {
+        name = sampleName;
         overrideNode = new CWOSOverrideNode();
-        noiseNode = new CWOSNoiseNode();
+        noiseNode = new CWorldNoiseNode();
         SpecificsNode = new CWOSSpecificsNode();
         noiseValue = 0;
 
@@ -28,11 +31,14 @@ public class CWOISampleNode : CWAInitializerNode
         noiseValue = noiseNode.GetNoiseValue(x, z);
     }
 
+    public void ApplyOverride()
+    {
+        noiseValue = overrideNode.Apply(noiseValue);
+    }
+
     public override float GetNoise()
     {
-        float height = noiseValue;
-        height = overrideNode.Apply(height);
-        return height;
+        return noiseValue;
     }
 
     public override uint GetPillar(int x, int y, int z)

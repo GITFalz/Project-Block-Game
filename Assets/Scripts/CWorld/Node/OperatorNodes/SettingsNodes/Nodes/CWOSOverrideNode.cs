@@ -6,9 +6,9 @@ public class CWOSOverrideNode
     public float amplitude;
     public bool invert;
 
-    public List<CWOISampleNode> add;
-    public List<CWOISampleNode> multiply;
-    public List<CWOISampleNode> subtract;
+    public List<CWorldSampleNode> add;
+    public List<CWorldSampleNode> multiply;
+    public List<CWorldSampleNode> subtract;
     
     public List<CWAParameterNode> parameters;
     
@@ -17,22 +17,22 @@ public class CWOSOverrideNode
         amplitude = 1;
         invert = false;
         
-        add = new List<CWOISampleNode>();
-        multiply = new List<CWOISampleNode>();
-        subtract = new List<CWOISampleNode>();
+        add = new List<CWorldSampleNode>();
+        multiply = new List<CWorldSampleNode>();
+        subtract = new List<CWorldSampleNode>();
         
         parameters = new List<CWAParameterNode>();
     }
 
     public float Apply(float height)
     {
-        foreach (CWOISampleNode sample in add)
+        foreach (CWorldSampleNode sample in add)
             height += sample.GetNoise();
         
-        foreach (CWOISampleNode sample in multiply)
+        foreach (CWorldSampleNode sample in multiply)
             height *= sample.GetNoise();
         
-        foreach (CWOISampleNode sample in subtract)
+        foreach (CWorldSampleNode sample in subtract)
             height -= sample.GetNoise();
         
         foreach (CWAParameterNode parameter in parameters)

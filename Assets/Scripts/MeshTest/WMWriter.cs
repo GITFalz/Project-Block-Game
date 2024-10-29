@@ -26,8 +26,8 @@ public class WMWriter : MonoBehaviour
     public CWorldHandler handler;
 
     public FileManager fileManager;
-
     public BlockManager blockManager;
+    public CWorldMenu menu;
     
     
     private string[] lines;
@@ -40,8 +40,8 @@ public class WMWriter : MonoBehaviour
     private string[] _worldFiles;
 
     private CWAOperatorNode currentNode;
-    private CWorldSampleNode worldSampleNode;
-    private CWorldBiomeNode _worldBiomeNode;
+    private CWorldSampleManager _worldSampleManager;
+    private CWorldBiomeManager _worldBiomeManager;
 
     private string currentName = "";
     private string currentBiomeName = "";
@@ -55,17 +55,18 @@ public class WMWriter : MonoBehaviour
     {
         handler.Init();
         
-        worldSampleNode = new CWorldSampleNode();
-        worldSampleNode.writer = this;
+        _worldSampleManager = new CWorldSampleManager();
+        _worldSampleManager.writer = this;
 
-        _worldBiomeNode = new CWorldBiomeNode();
-        _worldBiomeNode.writer = this;
+        _worldBiomeManager = new CWorldBiomeManager();
+        _worldBiomeManager.writer = this;
 
         fileNames = new HashSet<string>();
         
+        fileManager.Init();
         _worldFiles = Directory.GetFiles(fileManager.worldPacksFolderPath, "*.cworld");
-        
-        GenerateButtons();
+
+        menu.Init();
     }
 
     private void Awake()
@@ -78,6 +79,9 @@ public class WMWriter : MonoBehaviour
     
     public void ExecuteCode(string content)
     {
+        CWorldHandler.biomeNodes.Clear();
+        CWorldHandler.sampleNodes.Clear();
+        
         lines = InitLines(content);
 
         Main();
@@ -85,18 +89,7 @@ public class WMWriter : MonoBehaviour
 
     public void ExecuteCode()
     {
-        handler.executes.Clear();
-        handler.initializers.Clear();
-
-        lines = InitLines(inputField.text);
-
-        foreach (string line in lines)
-        {
-            Debug.Log(line.Trim());
-        }
-        Debug.Log("---------------------------------");
-
-        Main();
+        ExecuteCode(inputField.text);
     }
     
     
@@ -150,8 +143,10 @@ public class WMWriter : MonoBehaviour
 
             index++;
         }
+        
+        Debug.Log("hello");
 
-        Save();
+        menu.Save(saveFile, inputField.text);
 
         if (!displayName.Equals(""))
         {
@@ -159,23 +154,11 @@ public class WMWriter : MonoBehaviour
             textureGeneration.UpdateTexture(displayName);
         }
     }
-
-
-    public void Save()
-    {
-        if (!saveFile.Equals(""))
-        {
-            string filePath = Path.Combine(fileManager.worldPacksFolderPath, saveFile + ".cworld");
-            File.WriteAllText(filePath, inputField.text);
-        }
-        
-        GenerateButtons();
-    }
+    
 
 
     public void SaveFile()
     {
-        saveFile = "";
         lines = InitLines(inputField.text);
             
         bool quitNext = false;
@@ -183,7 +166,7 @@ public class WMWriter : MonoBehaviour
         {
             if (quitNext)
             {
-                saveFile = value;
+                menu.Save(value, inputField.text);
                 break;
             }
             
@@ -192,50 +175,7 @@ public class WMWriter : MonoBehaviour
                 quitNext = true;
             }
         }
-
-        Save();
     }
-
-
-    public void GenerateButtons()
-    {
-        _worldFiles = Directory.GetFiles(fileManager.worldPacksFolderPath, "*.cworld");
-        
-        foreach (string filePath in _worldFiles)
-        {
-            GenerateButton(filePath);
-        }
-    }
-
-    public void GenerateButton(string filePath)
-    {
-        string buttonName = Path.GetFileNameWithoutExtension(filePath);
-
-        if (!fileNames.Contains(buttonName))
-        {
-            GameObject buttonContainer = new GameObject("Container");
-            buttonContainer.transform.SetParent(contentPanel, false);
-            var layoutGroup = buttonContainer.AddComponent<HorizontalLayoutGroup>();
-            layoutGroup.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.MinSize;
-            layoutGroup.childControlWidth = false;
-            layoutGroup.childControlHeight = false;
-            layoutGroup.spacing = 2;
-            
-            GameObject newButton = Instantiate(buttonPrefab, buttonContainer.transform);
-            GameObject newDeleteButton = Instantiate(deleteButtonPrefab, buttonContainer.transform);
-            
-            newButton.GetComponentInChildren<TMP_Text>().text = buttonName;
-
-            Button button = newButton.GetComponent<Button>();
-            button.onClick.AddListener(() => DisplayContent(filePath));
-            
-            Button deletebutton = newDeleteButton.GetComponent<Button>();
-            deletebutton.onClick.AddListener(() => DeleteFile(filePath, buttonContainer));
-
-            fileNames.Add(buttonName);
-        }
-    }
-
 
     public string DisplayContent(string filePath)
     {
@@ -245,13 +185,6 @@ public class WMWriter : MonoBehaviour
         
         return "";
     }
-
-    public void DeleteFile(string filePath, GameObject container)
-    {
-        File.Delete(filePath);
-        Destroy(container);
-    }
-
 
 
     public int On_Save()
@@ -321,26 +254,28 @@ public class WMWriter : MonoBehaviour
     public int On_Sample()
     {
         index++;
-        worldSampleNode.SetSample(new CWOISampleNode());
+        _worldSampleManager.SetSample(new CWorldSampleNode(currentName));
         
-        if (CommandsTest(worldSampleNode.labels) == -1) return Error("Problem in the label found");
-        if (!handler.initializers.TryAdd(currentName, worldSampleNode.sampleNode))
+        if (CommandsTest(_worldSampleManager.labels) == -1) return Error("Problem in the label found");
+        if (!CWorldHandler.sampleNodes.TryAdd(currentName, _worldSampleManager.sampleNode))
             return Error("name is used twice");
-        currentNode = handler.initializers[currentName];
-        if (CommandsTest(worldSampleNode.settings) == -1) return Error("Problem in the sample settings found");
+
+        currentNode = CWorldHandler.sampleNodes[currentName];
+        if (CommandsTest(_worldSampleManager.settings) == -1) return Error("Problem in the sample settings found");
         return 0;
     }
 
     public int On_Biome()
     {
         index++;
-        _worldBiomeNode.SetBiome(new CWOEBiomeNode());
+        _worldBiomeManager.SetBiome(new CWorldBiomeNode());
         
-        if (CommandsTest(_worldBiomeNode.labels) == -1) return Error("Problem in the label found");
-        if (!handler.executes.TryAdd(currentBiomeName, _worldBiomeNode.biomeNode))
+        if (CommandsTest(_worldBiomeManager.labels) == -1) return Error("Problem in the label found");
+        if (!CWorldHandler.biomeNodes.TryAdd(currentBiomeName, _worldBiomeManager.biomeNode))
             return Error("name is used twice");
-        currentNode = handler.executes[currentBiomeName];
-        if (CommandsTest(_worldBiomeNode.settings) == -1) return Error("Problem in the biome settings found");
+
+        currentNode = CWorldHandler.biomeNodes[currentBiomeName];
+        if (CommandsTest(_worldBiomeManager.settings) == -1) return Error("Problem in the biome settings found");
         return 0;
     }
     
@@ -529,7 +464,7 @@ public class WMWriter : MonoBehaviour
         if (GetNext2Floats(out Vector2 floats) == -1)
             return Error("A problem was found while writing the size");
         
-        if (currentNode is not CWOISampleNode sampleNode) return Error("Something went wrong");
+        if (currentNode is not CWorldSampleNode sampleNode) return Error("Something went wrong");
 
         sampleNode.noiseNode.sizeX = floats.x;
         sampleNode.noiseNode.sizeY = floats.y;
@@ -543,15 +478,14 @@ public class WMWriter : MonoBehaviour
         return CommandsTest(commands) == -1 ? Error("Problem with the settings") : 0;
     }
 
-    public int On_SampleListAdd(List<CWOISampleNode> list)
+    public int On_SampleListAdd(List<CWorldSampleNode> list)
     {
         while (true)
         {
             index++;
-            if (handler.initializers.TryGetValue(lines[index], out var init))
+            if (CWorldHandler.sampleNodes.TryGetValue(lines[index], out var init))
             {
-                if (init is CWOISampleNode sampleNode) list.Add(sampleNode);
-                else return Error("Sample node not found (handler > get init)");
+                list.Add(init);
             }
 
             index++;
@@ -561,23 +495,15 @@ public class WMWriter : MonoBehaviour
     }
     
     
-    public int On_AssingNext2Floats(ref float param1, ref float param2)
+    public int On_AssignNext2Floats(ref float param1, ref float param2)
     {
         index++;
         if (GetNext2Floats(out Vector2 floats) == -1) 
-            return Error("A problem was found while writing the threshold");
+            return Error("A problem was found while trying to get the next 2 floats, check if they are the correct type 0.0");
         param1 = floats.x; param2 = floats.y; return 0;
     }
     
-    public int On_AssingNext2Floats(out Vector2 floats)
-    {
-        index++;
-        if (GetNext2Floats(out floats) == -1) 
-            return Error("A problem was found while writing the threshold");
-        return 0;
-    }
-    
-    public int On_AssingNextFloat(ref float param1)
+    public int On_AssignNextFloat(ref float param1)
     {
         index++;
         if (GetNextFloat(out float value) == -1) 
@@ -605,10 +531,10 @@ public class WMWriter : MonoBehaviour
         
         index++;
         
-        if (handler.initializers.TryGetValue(lines[index], out CWAInitializerNode init))
+        if (CWorldHandler.sampleNodes.TryGetValue(lines[index], out CWorldSampleNode init))
         {
-            if (currentNode is CWOEBiomeNode biomeNode && init is CWOISampleNode sampleNode2)
-                biomeNode.sample = sampleNode2;
+            if (currentNode is CWorldBiomeNode biomeNode)
+                biomeNode.sample = init;
             else
                 return Error("Something went wrong");
         }

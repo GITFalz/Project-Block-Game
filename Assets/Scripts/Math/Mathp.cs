@@ -48,4 +48,23 @@ public static class Mathp
         if (value >= max) return 1f;
         return (value - min) / (max - min);
     }
+
+    public static float NoiseLerp(float noiseA, float noiseB, float minB, float maxA, float t)
+    {
+        if (maxA - minB == 0)
+            return noiseA;
+        
+        float nt = (Clamp(t, minB, maxA) - minB) / (maxA - minB);
+        return Lerp(noiseA, noiseB, nt);
+    }
+
+    public static float Clamp(float v, float min, float max)
+    {
+        return Mathf.Clamp(v, min, max);
+    }
+
+    public static float Lerp(float a, float b, float t)
+    {
+        return Mathf.Lerp(a, b, t);
+    }
 }

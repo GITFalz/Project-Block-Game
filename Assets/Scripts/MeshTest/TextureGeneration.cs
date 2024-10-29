@@ -20,6 +20,9 @@ public class TextureGeneration : MonoBehaviour
     private Vector3 _direction;
     private string _sampleName;
 
+    private Func<Vector2> moveInput;
+    private Func<bool> controlInput;
+
     private float _timer;
 
     private void Start()
@@ -28,6 +31,9 @@ public class TextureGeneration : MonoBehaviour
         _sampleName = "";
 
         _timer = 0;
+
+        moveInput = PlayerInput.Instance.MoveInput;
+        controlInput = PlayerInput.Instance.ControlInput;
     }
 
     private void Update()
@@ -48,17 +54,17 @@ public class TextureGeneration : MonoBehaviour
 
     public void MoveTexture()
     {
-        Vector2 moveInput = InputManager.MoveInput();
+        Vector2 move = moveInput();
         
-        if (!moveInput.Equals(Vector2.zero))
+        if (!move.Equals(Vector2.zero))
         {
             int speed = 20;
 
-            if (InputManager.ControlInput())
+            if (controlInput())
                 speed = 100;
             
-            _direction.y += moveInput.y * speed;
-            _direction.x += moveInput.x * speed;
+            _direction.y += move.y * speed;
+            _direction.x += move.x * speed;
             
             GenerateNoise(_sampleName);
         }
@@ -95,7 +101,7 @@ public class TextureGeneration : MonoBehaviour
     
     private void GenerateNoise(string sampleName)
     {
-        if (handler.initializers.TryGetValue(sampleName, out CWAInitializerNode init))
+        if (CWorldHandler.sampleNodes.TryGetValue(sampleName, out CWorldSampleNode init))
         {
             for (int i = 0; i < textureSize; i++)
             {

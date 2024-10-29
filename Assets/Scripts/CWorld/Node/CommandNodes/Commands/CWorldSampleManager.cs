@@ -2,18 +2,18 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CWorldSampleNode : CWorldAbstractNode
+public class CWorldSampleManager : CWorldAbstractNode
 {
-    public static CWorldSampleNode instance;
+    public static CWorldSampleManager instance;
 
     public WMWriter writer;
-    public CWOISampleNode sampleNode;
-    public CWOSNoiseNode noiseNode;
+    public CWorldSampleNode sampleNode;
+    public CWorldNoiseNode noiseNode;
     public CWOSOverrideNode overrideNode;
 
-    public CWorldSampleNode() { if (instance == null) instance = this; }
+    public CWorldSampleManager() { if (instance == null) instance = this; }
 
-    public void SetSample(CWOISampleNode sample)
+    public void SetSample(CWorldSampleNode sample)
     {
         sampleNode = sample;
         noiseNode = sample.noiseNode;
@@ -57,6 +57,7 @@ public class CWorldSampleNode : CWorldAbstractNode
     {
         { "{", (w) => w.Increment(1, 0) },
         { "size", (w) => w.On_SampleNoiseSize() },
+        { "offset", (w) => w.On_AssignNext2Floats(ref instance.noiseNode.offsetX, ref instance.noiseNode.offsetY) },
         { "clamp", (w) =>
         {
             if (w.GetNext2Floats(out Vector2 floats) == -1)
@@ -73,7 +74,7 @@ public class CWorldSampleNode : CWorldAbstractNode
             instance.noiseNode.parameters.Add(new CWOPLerpNode(floats.x, floats.y));
             return 0;
         } },
-        { "amplitude", (w) => w.On_AssingNextFloat(ref instance.noiseNode.amplitude) },
+        { "amplitude", (w) => w.On_AssignNextFloat(ref instance.noiseNode.amplitude) },
         { "slide", (w) =>
         {
             if (w.GetNext2Floats(out Vector2 floats) == -1)

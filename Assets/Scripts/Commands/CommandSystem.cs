@@ -89,15 +89,6 @@ public class CommandSystem : MonoBehaviour
                 thread1 = null;
             }
         }
-        if (thread2 == null)
-        {
-            if (_sampleChunks.TryDequeue(out var result))
-            {
-                thread2 = Chunk.CreateChunk(new ChunkData(result), result, currentName, this, handler, blockManager, biome);
-                await thread2;
-                thread2 = null;
-            }
-        }
     }
     
     private async void GenerateBiomeChunks()
@@ -232,10 +223,13 @@ public class CommandSystem : MonoBehaviour
                             }
                             else if (args[8].Trim().Equals("biome"))
                             {
-                                Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
-                                
-                                _biomeChunks.Enqueue(position);
-                                currentName = args[9];
+                                if (CWorldHandler.biomeNodes.ContainsKey(args[9]))
+                                {
+                                    Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
+
+                                    _biomeChunks.Enqueue(position);
+                                    currentName = args[9];
+                                }
                             }
                         }
                         else

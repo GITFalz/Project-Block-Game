@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,7 +22,6 @@ public class MenuStateMachine : BaseState
     {
         if (state.escapeSwitch.CanSwitch())
         {
-            Debug.Log("hello");
             state.SwitchState(state.playerState);
             return;
         }

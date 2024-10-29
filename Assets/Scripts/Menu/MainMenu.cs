@@ -1,13 +1,25 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
     public GameObject commands;
-    public GameObject cworld;
     public TextureGeneration textureGeneration;
-    public void NewWorld(string scene)
+    public FileManager fileManager;
+
+
+    public void Init()
+    {
+        fileManager.Init();
+    }
+
+    public void SwitchScene(string scene)
     {
         SceneManager.LoadScene(scene);
     }
@@ -22,16 +34,19 @@ public class MainMenu : MonoBehaviour
         currentMenu.SetActive(false);
         commands.SetActive(true);
     }
-    
-    public void SwitchToCWorld(GameObject currentMenu)
+
+    public void HideMenu(GameObject menu)
     {
-        currentMenu.SetActive(false);
-        cworld.SetActive(true);
+        menu.SetActive(false);
+    }
+
+    public void ShowMenu(GameObject menu)
+    {
+        menu.SetActive(true);
     }
 
     public void CloseAll()
     {
-        cworld.SetActive(false);
         commands.SetActive(false);
         textureGeneration.SetMove(false);
     }

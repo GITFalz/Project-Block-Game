@@ -20,7 +20,7 @@ public class Switch
             b = false;
             return true;
         }
-        else if (!b && !function())
+        if (!b && !function())
         {
             b = true;
         }

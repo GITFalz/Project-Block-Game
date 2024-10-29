@@ -160,7 +160,8 @@ public class Chunk : MonoBehaviour
     
     public static uint[] GenerateTerrain(Vector3Int position, string sampleName, CWorldHandler handler)
     {
-        if (!handler.initializers.TryGetValue(sampleName, out CWAInitializerNode init))
+        CWorldSampleNode sample = handler.SetupSamplePool(sampleName);
+        if (sample == null)
             throw new Exception("can't find sample");
         
         uint[] blockMap = new uint[32 * 32];
@@ -170,7 +171,7 @@ public class Chunk : MonoBehaviour
         {
             for (int x = 0; x < 32; x++)
             {
-                float value = handler.GetSampleNoise(x + position.x, position.y, z + position.z, init);
+                float value = handler.SampleNoise(x + position.x, position.y, z + position.z, sample);
                 
                 if (value > -.5f)
                 {

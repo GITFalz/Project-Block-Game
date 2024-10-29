@@ -1,0 +1,190 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using TMPro;
+using Unity.VisualScripting;
+using UnityEngine.SceneManagement;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class CWorldMenu : MonoBehaviour
+{
+    public FileManager fileManager;
+    public WMWriter writer;
+
+    public GameObject buttonPrefab;
+    public GameObject deleteButtonPrefab;
+
+    public Transform folderContent;
+    public Transform fileContent;
+    
+    
+    private string currentFolderPath;
+    private Dictionary<string, string> worldFolders;
+    private string[] worldFiles;
+
+    private HashSet<string> folderNames;
+    private HashSet<string> fileNames;
+
+    private List<GameObject> folderButtons;
+    private List<GameObject> fileButtons;
+
+
+    public void Init()
+    {
+        fileManager.Init();
+        currentFolderPath = fileManager.worldPacksFolderPath;
+
+        folderNames = new HashSet<string>();
+        fileNames = new HashSet<string>();
+        folderButtons = new List<GameObject>();
+        fileButtons = new List<GameObject>();
+        
+        GenerateCWorldButtons();
+    }
+
+    public void GenerateCWorldButtons()
+    {
+        foreach (var folder in folderButtons)
+            Destroy(folder);
+        
+        foreach (var file in fileButtons)
+            Destroy(file);
+        
+        folderNames.Clear();
+        fileNames.Clear();
+        folderButtons.Clear();
+        fileButtons.Clear();
+        
+        GenerateFolderButtons();
+        GenerateFileButtons();
+    }
+
+    public void GenerateFolderButtons()
+    {
+        DirectoryInfo dirInfo = Directory.GetParent(currentFolderPath);
+        if (dirInfo == null)
+        {
+            PopupError.Popup("No parent directory found");
+            return;
+        }
+        
+        worldFolders = GetFolderNames(currentFolderPath);
+        
+        GenerateFolderButton(new KeyValuePair<string, string>("Back", dirInfo.FullName));
+        
+        foreach (var file in worldFolders)
+        {
+            GenerateFolderButton(file);
+        }
+    }
+    
+    public void GenerateFileButtons()
+    {
+        worldFiles = Directory.GetFiles(currentFolderPath, "*.cworld");
+        
+        foreach (string filePath in worldFiles)
+        {
+            GenerateFileButton(filePath);
+        }
+    }
+
+    public Dictionary<string, string> GetFolderNames(string path)
+    {
+        Dictionary<string, string> names = new Dictionary<string, string>();
+        
+        if (Directory.Exists(path))
+        {
+            DirectoryInfo[] subFolders = new DirectoryInfo(path).GetDirectories();
+
+            foreach (DirectoryInfo folder in subFolders)
+            {
+                names.Add(folder.Name, folder.FullName);
+            }
+        }
+        else
+        {
+            PopupError.Popup("Directory does not exist");
+        }
+
+        return names;
+    }
+    
+    public void GenerateFolderButton(KeyValuePair<string, string> folder)
+    {
+        int fileCount = Directory.GetFiles(folder.Value, "*.cworld").Length;
+        
+        if (!folderNames.Contains(folder.Key))
+        {
+            GameObject buttonContainer = new GameObject("Folder Container");
+            folderButtons.Add(buttonContainer);
+            buttonContainer.transform.SetParent(folderContent, false);
+            var layoutGroup = buttonContainer.AddComponent<HorizontalLayoutGroup>();
+            layoutGroup.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.MinSize;
+            layoutGroup.childControlWidth = false;
+            layoutGroup.childControlHeight = false;
+            layoutGroup.spacing = 2;
+            
+            GameObject newButton = Instantiate(buttonPrefab, buttonContainer.transform);
+            newButton.GetComponentInChildren<TMP_Text>().text = folder.Key;
+            Button button = newButton.GetComponent<Button>();
+            button.onClick.AddListener(() => { currentFolderPath = folder.Value; GenerateCWorldButtons(); });
+
+            if (fileCount == 0)
+            {
+                GameObject newDeleteButton = Instantiate(deleteButtonPrefab, buttonContainer.transform);
+                Button deletebutton = newDeleteButton.GetComponent<Button>();
+                deletebutton.onClick.AddListener(() => DeleteFile(folder.Value, buttonContainer));
+            }
+
+            folderNames.Add(folder.Key);
+        }
+    }
+    
+    public void GenerateFileButton(string filePath)
+    {
+        string buttonName = Path.GetFileNameWithoutExtension(filePath);
+
+        if (!fileNames.Contains(buttonName))
+        {
+            GameObject buttonContainer = new GameObject("File Container");
+            fileButtons.Add(buttonContainer);
+            buttonContainer.transform.SetParent(fileContent, false);
+            var layoutGroup = buttonContainer.AddComponent<HorizontalLayoutGroup>();
+            layoutGroup.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.MinSize;
+            layoutGroup.childControlWidth = false;
+            layoutGroup.childControlHeight = false;
+            layoutGroup.spacing = 2;
+            
+            GameObject newButton = Instantiate(buttonPrefab, buttonContainer.transform);
+            GameObject newDeleteButton = Instantiate(deleteButtonPrefab, buttonContainer.transform);
+            
+            newButton.GetComponentInChildren<TMP_Text>().text = buttonName;
+
+            Button button = newButton.GetComponent<Button>();
+            button.onClick.AddListener(() => writer.DisplayContent(filePath));
+            
+            Button deletebutton = newDeleteButton.GetComponent<Button>();
+            deletebutton.onClick.AddListener(() => DeleteFile(filePath, buttonContainer));
+
+            fileNames.Add(buttonName);
+        }
+    }
+    
+    public void DeleteFile(string filePath, GameObject container)
+    {
+        File.Delete(filePath);
+        Destroy(container);
+    }
+    
+    public void Save(string saveFile, string text)
+    {
+        if (!saveFile.Equals(""))
+        {
+            string filePath = Path.Combine(fileManager.worldPacksFolderPath, saveFile + ".cworld");
+            File.WriteAllText(filePath, text);
+        }
+        
+        GenerateCWorldButtons();
+    }
+}

@@ -35,12 +35,9 @@ public class StateMachine : MonoBehaviour
     private void Start()
     {
         manager = UtilityManager.Instance;
-
         playerData = PlayerData.instance;
 
-        escapeInput = InputManager.EscapeInput;
-
-        escapeSwitch = new Switch(escapeInput);
+        escapeSwitch = new Switch(PlayerInput.Instance.EscapeInput);
         
         menuState.InitState(this);
         playerState.InitState(this);
@@ -52,7 +49,7 @@ public class StateMachine : MonoBehaviour
         
         
     }
-
+    
     private void Update()
     {
         currentState.UpdateState(this);

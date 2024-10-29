@@ -2,20 +2,20 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CWorldBiomeNode : CWorldAbstractNode
+public class CWorldBiomeManager : CWorldAbstractNode
 {
-    public static CWorldBiomeNode instance;
+    public static CWorldBiomeManager instance;
 
     public WMWriter writer;
-    public CWOEBiomeNode biomeNode;
-    public CWOISampleNode sampleNode;
+    public CWorldBiomeNode biomeNode;
+    public CWorldSampleNode sampleNode;
 
-    public CWorldBiomeNode() { if (instance == null) instance = this; }
+    public CWorldBiomeManager() { if (instance == null) instance = this; }
     
     private int id = -1;
     private CWOCSequenceNode _sequenceNode;
 
-    public void SetBiome(CWOEBiomeNode biome)
+    public void SetBiome(CWorldBiomeNode biome)
     {
         biomeNode = biome;
         sampleNode = biomeNode.sample;
@@ -115,18 +115,7 @@ public class CWorldBiomeNode : CWorldAbstractNode
     public Dictionary<string, Func<WMWriter, int>> samples = new Dictionary<string, Func<WMWriter, int>>()
     {
         { "{", (w) => w.Increment(1, 0) },
-        { "main", (w) =>
-        {
-            w.GetNextValue(out string value);
-            if (instance.writer.handler.initializers.TryGetValue(value, out var node) && node is CWOISampleNode sampleNode)
-            {
-                instance.biomeNode.sample = sampleNode;
-                return 0;
-            }
-
-            return w.Error("sample node not found");
-        } },
-        { "overlay", (w) => w.On_SampleListAdd(instance.biomeNode.Overlays) },
+        { "set", (w) => w.On_SampleListAdd(instance.biomeNode.Overlays) },
         { "range", (w) =>
         {
             if (w.GetNext2Ints(out Vector2Int ints) == -1)

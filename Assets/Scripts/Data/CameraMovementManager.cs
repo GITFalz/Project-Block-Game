@@ -43,7 +43,7 @@ public class CameraMovementManager : MonoBehaviour
         airborne.Init(this);
         grounded.Init(this);
 
-        cameraSwitchInput = InputManager.CameraSwitchInput;
+        cameraSwitchInput = PlayerInput.Instance.CameraSwitchInput;
         cameraSwitch = new StateSwitch<PerspectiveBaseState>(cameraSwitchInput, thirdPerson, firstPerson);
 
         currentState = grounded;

@@ -16,7 +16,7 @@ public static class ExitPlay
         {
             Debug.Log("Exiting playmode.");
             GameObject go = GameObject.Find("WorldGeneration");
-            go.GetComponent<World>().Clear();
+            //go.GetComponent<World>().Clear();
         }
     }
 }

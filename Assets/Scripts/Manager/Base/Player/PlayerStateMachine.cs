@@ -71,11 +71,11 @@ public class PlayerStateMachine : BaseState
         isFalling = rigidbodyManager.isFalling;
         SetVelocity = rigidbodyManager.Set;
 
-        moveInput = InputManager.MoveInput;
-        jumpInput = InputManager.JumpInput;
-        controlInput = InputManager.ControlInput;
-        rightClickInput = InputManager.RightClickInput;
-        shiftInput = InputManager.ShiftInput;
+        moveInput = PlayerInput.Instance.MoveInput;
+        jumpInput = PlayerInput.Instance.JumpInput;
+        controlInput = PlayerInput.Instance.ControlInput;
+        rightClickInput = PlayerInput.Instance.RightClickInput;
+        shiftInput = PlayerInput.Instance.ShiftInput;
 
         jumpSwitch = new Switch(jumpInput);
         dashSwitch = new Switch(rightClickInput);
