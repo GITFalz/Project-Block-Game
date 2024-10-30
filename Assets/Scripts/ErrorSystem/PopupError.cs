@@ -13,6 +13,6 @@ public static class PopupError
 
     public static void Hide()
     {
-        GameObject.Find("PopupErrorPanel").SetActive(false);
+        GameObject.Find("PopupErrorPanel").transform.Find("ErrorBase").gameObject.SetActive(false);
     }
 }

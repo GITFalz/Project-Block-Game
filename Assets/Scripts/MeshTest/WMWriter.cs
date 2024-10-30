@@ -32,7 +32,7 @@ public class WMWriter : MonoBehaviour
     [FormerlySerializedAs("blockManager")] public BlockManagerSO blockManagerSo;
     public CWorldMenu menu;
 
-    private WriterManager _wm;
+    public WriterManager writerManager;
     
     /**
     private string[] lines;
@@ -56,11 +56,14 @@ public class WMWriter : MonoBehaviour
 
     private void Start()
     {
-        _wm = new WriterManager(this, false);
+        writerManager = new WriterManager(this, false);
         
         handler.Init();
         fileManager.Init();
         menu.Init();
+        BlockManager.Init();
+
+        LoadOnEnter();
     }
 
     private void Awake()
@@ -75,8 +78,9 @@ public class WMWriter : MonoBehaviour
     {
         CWorldHandler.biomeNodes.Clear();
         CWorldHandler.sampleNodes.Clear();
+        CWorldHandler.MapNode = null;
         
-        _wm.lines = _wm.InitLines(content);
+        writerManager.lines = writerManager.InitLines(content);
 
         Main();
     }
@@ -90,47 +94,135 @@ public class WMWriter : MonoBehaviour
     {
         textureGeneration.SetMove(true);
 
-        DisplayLines(_wm.lines);
+        DisplayLines(writerManager.lines);
         
-        while (_wm.index <= _wm.lines.Length)
+        while (writerManager.index <= writerManager.lines.Length)
         {
-            if (_wm.index == _wm.lines.Length)
+            if (writerManager.index == writerManager.lines.Length)
                 break;
 
-            int message = CommandTest(_wm.index, types);
+            int message = CommandTest(writerManager.index, types);
             
             if (message == -1)
             {
-                Debug.Log($"There is an error at string index {_wm.index}");
+                Debug.Log($"There is an error at string index {writerManager.index}");
                 break;
             }
 
-            _wm.index++;
+            writerManager.index++;
         }
 
-        menu.Save(_wm.savePath, _wm.fileContent);
+        menu.Save(writerManager.savePath, writerManager.fileContent);
 
-        if (!_wm.displayName.Equals(""))
+        if (!writerManager.displayName.Equals(""))
         {
-            Debug.Log(_wm.displayName);
-            textureGeneration.UpdateTexture(_wm.displayName);
+            Debug.Log(writerManager.displayName);
+            textureGeneration.UpdateTexture(writerManager.displayName);
         }
         
         blockManager.UpdateInspector();
     }
+
+
+    public void LoadOnEnter()
+    {
+        if (!fileManager.executeOnEnterPath.Equals(""))
+        {
+            Debug.Log("Loading files...");
+            string[] files = GetCWorldFilesInFolder();
+            Debug.Log(files.Length + " files found");
+            
+            foreach (var filePath in files)
+            {
+                Load(filePath);
+            }
+        }
+    }
+
+    public int Load(string path)
+    {
+        Debug.Log(path);
+
+        WriterManager oldWriter = writerManager;
+        writerManager = new WriterManager(this, true);
+
+        string content;
+        
+        try { content = File.ReadAllText(path); }
+        catch (FileNotFoundException) { return Error("File not found"); }
+
+        writerManager.savePath = path;
+
+        try { writerManager.InitLines(content); }
+        catch (Exception e) { return Error(e + ": A problem occured when initializing lines"); }
+
+        try { Main(); }
+        catch (Exception e) { return Error(e + ": A problem occured when running the main loop"); }
+        
+        Debug.Log(oldWriter.index + " " + writerManager.index);
+        
+        writerManager = oldWriter;
+
+        return 1;
+    }
+
+    public string[] GetCWorldFilesInFolder()
+    {
+        List<string> currentPaths = new List<string>();
+        List<string> checkedPaths = new List<string>();
+        List<string> toBeChecked = new List<string>();
+        List<string> files = new List<string>();
+        
+        string[] filePaths = Directory.GetFiles(fileManager.executeOnEnterPath, "*.cworld");
+        files.AddRange(filePaths);
+        
+        currentPaths = FileManager.GetFolderPaths(fileManager.executeOnEnterPath);
+
+        {
+            Debug.Log(currentPaths.ToString());
+        }
+
+        while (true)
+        {
+            foreach (var path in currentPaths)
+            {
+                var newToBeChecked = FileManager.GetFolderPaths(path);
+                toBeChecked.AddRange(newToBeChecked);
+                checkedPaths.Add(path);
+            }
+            currentPaths.Clear();
+            currentPaths.AddRange(toBeChecked);
+            toBeChecked.Clear();
+
+            if (currentPaths.Count == 0)
+                break;
+        }
+        
+        foreach (var path in checkedPaths)
+        {
+            filePaths = Directory.GetFiles(path, "*.cworld");
+            files.AddRange(filePaths);
+        }
+
+        return files.ToArray();
+    }
+    
+    /**
+     * 
+     */
     
 
 
     public void SaveFile()
     {
-        _wm.lines = _wm.InitLines(inputField.text);
+        writerManager.lines = writerManager.InitLines(inputField.text);
             
         bool quitNext = false;
-        foreach (string value in _wm.lines)
+        foreach (string value in writerManager.lines)
         {
             if (quitNext)
             {
-                menu.Save(value, inputField.text);
+                menu.Save(value + ".cworld", inputField.text);
                 break;
             }
             
@@ -158,51 +250,29 @@ public class WMWriter : MonoBehaviour
 
     public int On_Save()
     {
-        _wm.index++;
-        _wm.saveFile = _wm.lines[_wm.index];
+        writerManager.index++;
+        writerManager.saveFile = writerManager.lines[writerManager.index];
         return 1;
     }
 
     public int On_Use()
     {
-        _wm.index++;
-        string[] path = _wm.lines[_wm.index].Split(new[] { '/', '\'' }, StringSplitOptions.RemoveEmptyEntries);
+        writerManager.index++;
+        string[] path = writerManager.lines[writerManager.index].Split(new[] { '/', '\'' }, StringSplitOptions.RemoveEmptyEntries);
         string mainPath = fileManager.worldPacksFolderPath;
         foreach (string p in path)
         {
             mainPath = Path.Combine(mainPath, p);
         }
-        
-        Debug.Log(mainPath + ".cworld");
 
-        WriterManager oldWriter = _wm;
-        _wm = new WriterManager(this, true);
-
-        string content;
-        
-        try { content = File.ReadAllText(mainPath + ".cworld"); }
-        catch (FileNotFoundException) { return Error("File not found"); }
-
-        _wm.savePath = mainPath;
-
-        try { _wm.InitLines(content); }
-        catch (Exception e) { return Error(e + ": A problem occured when initializing lines"); }
-
-        try { Main(); }
-        catch (Exception e) { return Error(e + ": A problem occured when running the main loop"); }
-        
-        Debug.Log(oldWriter.index + " " + _wm.index);
-        
-        _wm = oldWriter;
-
-        return 1;
+        return Load(mainPath + ".cworld");
     }
     
     
     
     public int CommandTest(int index, Dictionary<string, Func<WMWriter, int>> commands)
     {
-        string command = _wm.lines[index];
+        string command = writerManager.lines[index];
         Debug.Log("Command : " + command);
         if (commands.TryGetValue(command, out Func<WMWriter, int> func))
         {
@@ -213,13 +283,13 @@ public class WMWriter : MonoBehaviour
 
     public int IsComment(int index)
     {
-        if (_wm.lines[index].Trim().StartsWith("//"))
+        if (writerManager.lines[index].Trim().StartsWith("//"))
         {
             index++;
-            while (!_wm.lines[index].Trim().EndsWith("//"))
+            while (!writerManager.lines[index].Trim().EndsWith("//"))
             {
                 index++;
-                if (index == _wm.lines.Length)
+                if (index == writerManager.lines.Length)
                 {
                     return index;
                 }
@@ -230,13 +300,14 @@ public class WMWriter : MonoBehaviour
 
     public int Error(string message)
     {
-        Debug.Log(message + " at string index : " + _wm.index);
+        PopupError.Popup(message);
+        Debug.Log(message + " at string index : " + writerManager.index);
         return -1;
     }
 
     private bool MaxIndex(int i)
     {
-        return _wm.index + i < _wm.lines.Length;
+        return writerManager.index + i < writerManager.lines.Length;
     }
 
     public int DisplayLines(string[] content)
@@ -257,7 +328,7 @@ public class WMWriter : MonoBehaviour
         bool done = false;
         while (!done)
         {
-            int message = CommandTest(_wm.index, commands);
+            int message = CommandTest(writerManager.index, commands);
             if(message == -1) return Error("Problem in the label found");
             if(message == 1) done = true;
         }
@@ -269,53 +340,74 @@ public class WMWriter : MonoBehaviour
 
     public int On_Sample()
     {
-        _wm.index++;
-        _wm.worldSampleManager.SetSample(new CWorldSampleNode(_wm.currentName));
+        writerManager.index++;
+        writerManager.worldSampleManager.SetSample(new CWorldSampleNode(writerManager.currentName));
         
-        if (CommandsTest(_wm.worldSampleManager.labels) == -1) return Error("Problem in the label found");
-        if (!CWorldHandler.sampleNodes.TryAdd(_wm.currentName, _wm.worldSampleManager.sampleNode))
+        if (CommandsTest(writerManager.worldSampleManager.labels) == -1) return Error("Problem in the label found");
+        if (!CWorldHandler.sampleNodes.TryAdd(writerManager.currentName, writerManager.worldSampleManager.sampleNode))
         {
-            if (!_wm.import)
+            if (!writerManager.import)
                 return Error("name is used twice");
-            if (_wm.import)
+            if (writerManager.import)
                 return SkipNode();
         }
         
-        _wm.currentNode = CWorldHandler.sampleNodes[_wm.currentName];
-        if (CommandsTest(_wm.worldSampleManager.settings) == -1) return Error("Problem in the sample settings found");
+        writerManager.currentNode = CWorldHandler.sampleNodes[writerManager.currentName];
+        if (CommandsTest(writerManager.worldSampleManager.settings) == -1) return Error("Problem in the sample settings found");
         return 0;
     }
 
     public int On_Biome()
     {
-        _wm.index++;
-        _wm.worldBiomeManager.SetBiome(new CWorldBiomeNode());
+        writerManager.index++;
+        writerManager.worldBiomeManager.SetBiome(new CWorldBiomeNode());
         
-        if (CommandsTest(_wm.worldBiomeManager.labels) == -1) return Error("Problem in the label found");
-        if (!CWorldHandler.biomeNodes.TryAdd(_wm.currentBiomeName, _wm.worldBiomeManager.biomeNode))
+        if (CommandsTest(writerManager.worldBiomeManager.labels) == -1) return Error("Problem in the label found");
+        if (!CWorldHandler.biomeNodes.TryAdd(writerManager.currentBiomeName, writerManager.worldBiomeManager.biomeNode))
         {
-            if (!_wm.import)
+            if (!writerManager.import)
                 return Error("name is used twice");
-            if (_wm.import)
+            if (writerManager.import)
                 return SkipNode();
         }
 
-        _wm.currentNode = CWorldHandler.biomeNodes[_wm.currentBiomeName];
-        if (CommandsTest(_wm.worldBiomeManager.settings) == -1) return Error("Problem in the biome settings found");
+        writerManager.currentNode = CWorldHandler.biomeNodes[writerManager.currentBiomeName];
+        if (CommandsTest(writerManager.worldBiomeManager.settings) == -1) return Error("Problem in the biome settings found");
         return 0;
     }
     
     public int On_Block()
     {
-        _wm.index++;
+        writerManager.Inc();
         
-        _wm.worldBlockManager.SetBlock(new CWorldBlock());
+        writerManager.worldBlockManager.SetBlock(new CWorldBlock());
         
-        if (CommandsTest(_wm.worldBlockManager.labels) == -1) return Error("Problem in the label found");
+        if (CommandsTest(writerManager.worldBlockManager.labels) == -1) return Error("Problem in the label found");
 
-        _wm.worldBlockManager.BlockNode.blockName = _wm.currentBlockName;
+        writerManager.worldBlockManager.BlockNode.blockName = writerManager.currentBlockName;
         
-        if (CommandsTest(_wm.worldBlockManager.settings) == -1) return Error("Problem in the biome settings found");
+        if (CommandsTest(writerManager.worldBlockManager.settings) == -1) return Error("Problem in the biome settings found");
+        return 0;
+    }
+    
+    public int On_Map()
+    {
+        writerManager.Inc();
+        
+        writerManager.worldMapManager.SetMap(new CWorldMapNode());
+
+        if (writerManager.NextLine(1).Equals("Force") || CWorldHandler.MapNode == null)
+        {
+            CWorldHandler.MapNode = writerManager.worldMapManager.MapNode;
+        }
+        else
+        {
+            return Error("Watch out!, a map node already exists in the system. To replace the node write 'Map Force'");
+        }
+        
+        writerManager.Inc();
+        
+        if (CommandsTest(writerManager.worldMapManager.settings) == -1) return Error("Problem in the biome settings found");
         return 0;
     }
 
@@ -325,11 +417,11 @@ public class WMWriter : MonoBehaviour
         {
             while (true)
             {
-                if (_wm.lines[_wm.index].Equals("}") && _wm.index + 1 == _wm.lines.Length ||
-                    _wm.lines[_wm.index].Equals("}") && types.ContainsKey(_wm.lines[_wm.index + 1]))
+                if (writerManager.lines[writerManager.index].Equals("}") && writerManager.index + 1 == writerManager.lines.Length ||
+                    writerManager.lines[writerManager.index].Equals("}") && types.ContainsKey(writerManager.lines[writerManager.index + 1]))
                     return 0;
 
-                _wm.index++;
+                writerManager.index++;
             }
         }
         catch (Exception e)
@@ -347,9 +439,9 @@ public class WMWriter : MonoBehaviour
 
         try
         {
-            _wm.index++;
-            if (!float.TryParse(_wm.lines[_wm.index], NumberStyles.Float, CultureInfo.InvariantCulture, out float amplitude)) return Error("No valid float value found");
-            _wm.index++;
+            writerManager.index++;
+            if (!float.TryParse(writerManager.lines[writerManager.index], NumberStyles.Float, CultureInfo.InvariantCulture, out float amplitude)) return Error("No valid float value found");
+            writerManager.index++;
 
             value = amplitude;
             return 0;
@@ -371,9 +463,9 @@ public class WMWriter : MonoBehaviour
 
         try
         {
-            _wm.index++;
-            if (!int.TryParse(_wm.lines[_wm.index], out int result)) return Error("No valid int value found");
-            _wm.index++;
+            writerManager.index++;
+            if (!int.TryParse(writerManager.lines[writerManager.index], out int result)) return Error("No valid int value found");
+            writerManager.index++;
 
             value = result;
             return 0;
@@ -395,13 +487,13 @@ public class WMWriter : MonoBehaviour
 
         try
         {
-            _wm.index++;
-            if (!float.TryParse(_wm.lines[_wm.index], NumberStyles.Float, CultureInfo.InvariantCulture, out float x)) return Error("No valid min value found");
-            _wm.index++;
-            if (!_wm.lines[_wm.index].Equals(","))return Error("',' is missing");
-            _wm.index++;
-            if (!float.TryParse(_wm.lines[_wm.index], NumberStyles.Float, CultureInfo.InvariantCulture, out float y)) return Error("No valid max value found");
-            _wm.index++;
+            writerManager.index++;
+            if (!float.TryParse(writerManager.lines[writerManager.index], NumberStyles.Float, CultureInfo.InvariantCulture, out float x)) return Error("No valid min value found");
+            writerManager.index++;
+            if (!writerManager.lines[writerManager.index].Equals(","))return Error("',' is missing");
+            writerManager.index++;
+            if (!float.TryParse(writerManager.lines[writerManager.index], NumberStyles.Float, CultureInfo.InvariantCulture, out float y)) return Error("No valid max value found");
+            writerManager.index++;
 
             floats.x = x;
             floats.y = y;
@@ -424,13 +516,13 @@ public class WMWriter : MonoBehaviour
 
         try
         {
-            _wm.index++;
-            if (!int.TryParse(_wm.lines[_wm.index], out int x)) return Error("No valid int found");
-            _wm.index++;
-            if (!_wm.lines[_wm.index].Equals(","))return Error("',' is missing");
-            _wm.index++;
-            if (!int.TryParse(_wm.lines[_wm.index], out int y)) return Error("No valid int found");
-            _wm.index++;
+            writerManager.index++;
+            if (!int.TryParse(writerManager.lines[writerManager.index], out int x)) return Error("No valid int found");
+            writerManager.index++;
+            if (!writerManager.lines[writerManager.index].Equals(","))return Error("',' is missing");
+            writerManager.index++;
+            if (!int.TryParse(writerManager.lines[writerManager.index], out int y)) return Error("No valid int found");
+            writerManager.index++;
 
             ints.x = x;
             ints.y = y;
@@ -451,9 +543,9 @@ public class WMWriter : MonoBehaviour
     {
         value = "";
 
-        _wm.index++;
-        value = _wm.lines[_wm.index];
-        _wm.index++;
+        writerManager.index++;
+        value = writerManager.lines[writerManager.index];
+        writerManager.index++;
 
         return 0;
     }
@@ -462,8 +554,8 @@ public class WMWriter : MonoBehaviour
     {
         value = "";
 
-        _wm.index++;
-        value = _wm.lines[_wm.index];
+        writerManager.index++;
+        value = writerManager.lines[writerManager.index];
 
         return 0;
     }
@@ -472,13 +564,13 @@ public class WMWriter : MonoBehaviour
     {
         values = new[] {"", ""};
 
-        _wm.index++;
-        values[0] = _wm.lines[_wm.index];
-        _wm.index++;
-        if (!_wm.lines[_wm.index].Equals(","))return Error("',' is missing");
-        _wm.index++;
-        values[1] = _wm.lines[_wm.index];
-        _wm.index++;
+        writerManager.index++;
+        values[0] = writerManager.lines[writerManager.index];
+        writerManager.index++;
+        if (!writerManager.lines[writerManager.index].Equals(","))return Error("',' is missing");
+        writerManager.index++;
+        values[1] = writerManager.lines[writerManager.index];
+        writerManager.index++;
 
         return 0;
     }
@@ -488,47 +580,47 @@ public class WMWriter : MonoBehaviour
     public int On_SampleName()
     {
         Debug.Log("Name test");
-        _wm.index++;
+        writerManager.index++;
         
-        if (!_wm.lines[_wm.index].Equals("="))
+        if (!writerManager.lines[writerManager.index].Equals("="))
             return Error("No '=' found");
-        _wm.index++;
+        writerManager.index++;
 
-        if (_wm.lines[_wm.index].Equals(")"))
+        if (writerManager.lines[writerManager.index].Equals(")"))
             return Error("'name' expected but ) found");
-        _wm.currentName = _wm.lines[_wm.index];
-        _wm.index++;
+        writerManager.currentName = writerManager.lines[writerManager.index];
+        writerManager.index++;
         return 2;
     }
     
     public int On_BiomeName()
     {
         Debug.Log("Name test");
-        _wm.index++;
+        writerManager.index++;
         
-        if (!_wm.lines[_wm.index].Equals("="))
+        if (!writerManager.lines[writerManager.index].Equals("="))
             return Error("No '=' found");
-        _wm.index++;
+        writerManager.index++;
 
-        if (_wm.lines[_wm.index].Equals(")"))
+        if (writerManager.lines[writerManager.index].Equals(")"))
             return Error("'name' expected but ) found");
-        _wm.currentBiomeName = _wm.lines[_wm.index];
-        _wm.index++;
+        writerManager.currentBiomeName = writerManager.lines[writerManager.index];
+        writerManager.index++;
         return 2;
     }
     public int On_BlockName()
     {
         Debug.Log("Name test");
-        _wm.index++;
+        writerManager.index++;
         
-        if (!_wm.lines[_wm.index].Equals("="))
+        if (!writerManager.lines[writerManager.index].Equals("="))
             return Error("No '=' found");
-        _wm.index++;
+        writerManager.index++;
 
-        if (_wm.lines[_wm.index].Equals(")"))
+        if (writerManager.lines[writerManager.index].Equals(")"))
             return Error("'name' expected but ) found");
-        _wm.currentBlockName = _wm.lines[_wm.index];
-        _wm.index++;
+        writerManager.currentBlockName = writerManager.lines[writerManager.index];
+        writerManager.index++;
         return 2;
     }
 
@@ -540,22 +632,54 @@ public class WMWriter : MonoBehaviour
             if (GetNextInt(out int t) == -1)
                 return Error("A problem occured when trying to get the texture indexes, check if they are indeed integers");
 
-            if (!BlockManager.SetUv(_wm.worldBlockManager.BlockNode.index, i, t))
+            if (!BlockManager.SetUv(writerManager.worldBlockManager.BlockNode.index, i, t))
                 return Error("A problem occured when trying set the uv texture index, too many indices could be the problem");
             
             i++;
-            if (_wm.lines[_wm.index].Equals(",")) continue;
+            if (writerManager.lines[writerManager.index].Equals(",")) continue;
             return 0;
         }
+    }
+
+    public int On_SetBiomeRange()
+    {
+        writerManager.Inc();
+        if (!CWorldHandler.biomeNodes.TryGetValue(writerManager.CurrentLine(), out var biome))
+            return Error("Can't find biome -_-");
+        
+        CWorldHandler.MapNode.biomePool.Add(new BiomePool(biome));
+        writerManager.Inc();
+        return CommandsTest(writerManager.worldMapManager.setRanges) == -1 ? Error("Problem with the settings") : 0;
+    }
+
+    public int On_SetSampleRange()
+    {
+        writerManager.Inc();
+
+        if (!CWorldHandler.sampleNodes.TryGetValue(writerManager.CurrentLine(), out var sample))
+            return Error("Sample may not exists when setting biome range");
+        
+        if (CWorldHandler.MapNode == null)
+            return Error("How?? Map == null??");
+
+        CWorldHandler.MapNode.biomePool[^1].samples.Add(sample.name, new BiomePoolSample(sample));
+
+        if (GetNext2Floats(out var floats) == -1)
+            return Error("Not valid range u_u");
+
+        CWorldHandler.MapNode.biomePool[^1].samples[sample.name].min = floats.x;
+        CWorldHandler.MapNode.biomePool[^1].samples[sample.name].max = floats.y;
+
+        return 0;
     }
     
     public int On_SampleNoiseSize()
     {
-        _wm.index++;
+        writerManager.index++;
         if (GetNext2Floats(out Vector2 floats) == -1)
             return Error("A problem was found while writing the size");
         
-        if (_wm.currentNode is not CWorldSampleNode sampleNode) return Error("Something went wrong");
+        if (writerManager.currentNode is not CWorldSampleNode sampleNode) return Error("Something went wrong");
 
         sampleNode.noiseNode.sizeX = floats.x;
         sampleNode.noiseNode.sizeY = floats.y;
@@ -565,7 +689,7 @@ public class WMWriter : MonoBehaviour
 
     public int On_Settings(Dictionary<string, Func<WMWriter, int>> commands)
     {
-        _wm.index++;
+        writerManager.index++;
         return CommandsTest(commands) == -1 ? Error("Problem with the settings") : 0;
     }
 
@@ -573,22 +697,33 @@ public class WMWriter : MonoBehaviour
     {
         while (true)
         {
-            _wm.index++;
-            if (CWorldHandler.sampleNodes.TryGetValue(_wm.lines[_wm.index], out var init))
+            writerManager.index++;
+            if (CWorldHandler.sampleNodes.TryGetValue(writerManager.lines[writerManager.index], out var init))
             {
                 list.Add(init);
             }
 
-            _wm.index++;
-            if (_wm.lines[_wm.index].Equals(",")) continue;
+            writerManager.index++;
+            if (writerManager.lines[writerManager.index].Equals(",")) continue;
             return 0;
         }
+    }
+
+    public int On_SetSample()
+    {
+        writerManager.Inc();
+        if (!CWorldHandler.sampleNodes.TryGetValue(writerManager.CurrentLine(), out var init))
+            return Error("Can't find the sample specified in the biome");
+
+        writerManager.worldBiomeManager.biomeNode.sample = init;
+        writerManager.Inc();
+        return 0;
     }
     
     
     public int On_AssignNext2Floats(ref float param1, ref float param2)
     {
-        _wm.index++;
+        writerManager.index++;
         if (GetNext2Floats(out Vector2 floats) == -1) 
             return Error("A problem was found while trying to get the next 2 floats, check if they are the correct type 0.0");
         param1 = floats.x; param2 = floats.y; return 0;
@@ -596,7 +731,7 @@ public class WMWriter : MonoBehaviour
     
     public int On_AssignNextFloat(ref float param1)
     {
-        _wm.index++;
+        writerManager.index++;
         if (GetNextFloat(out float value) == -1) 
             return Error("A problem was found while writing the threshold");
         param1 = value; return 0;
@@ -604,39 +739,39 @@ public class WMWriter : MonoBehaviour
 
     public int On_SetTrue(ref bool value)
     {
-        _wm.index++; value = true; return 0;
+        writerManager.index++; value = true; return 0;
     }
     
 
     public int On_Name()
     {
         Debug.Log("Name test");
-        _wm.index++;
+        writerManager.index++;
         
-        if (_wm.lines[_wm.index].Equals(")"))
+        if (writerManager.lines[writerManager.index].Equals(")"))
             return Error("'name = sample_name' expected but ')' found");
         
-        if (!_wm.lines[_wm.index].Equals("="))
+        if (!writerManager.lines[writerManager.index].Equals("="))
             return Error("No '=' found");
-        _wm.index++;
+        writerManager.index++;
 
-        if (_wm.lines[_wm.index].Equals(")"))
+        if (writerManager.lines[writerManager.index].Equals(")"))
             return Error("'name' expected but ) found");
-        _wm.currentName = _wm.lines[_wm.index];
+        writerManager.currentName = writerManager.lines[writerManager.index];
         return 2;
     }
 
     public int Increment(int i, int result)
     {
         Debug.Log("Increment by : " + i);
-        _wm.index += i;
+        writerManager.index += i;
         return result;
     }
 
     public int On_Display()
     {
-        _wm.index++;
-        _wm.displayName = _wm.currentName;
+        writerManager.index++;
+        writerManager.displayName = writerManager.currentName;
 
         return 0;
     }
@@ -648,5 +783,6 @@ public class WMWriter : MonoBehaviour
         { "Sample", (w) => w.On_Sample() },
         { "Biome", (w) => w.On_Biome() },
         { "Block", (w) => w.On_Block() },
+        { "Map", (w) => w.On_Map() },
     };
 }

@@ -12,15 +12,38 @@ public class CWorldMapNode : CWAPoolingNode
         biomePool = new List<BiomePool>();
     }
 
-    public Block[] GetBlocks(Vector3Int chunkPosition, Block[] blocks, CWorldHandler handler)
+    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldHandler handler)
     {
+        int i = 0;
+        float noise = 0;
+
+        List<BiomePool> biomes = new List<BiomePool>();
         
         foreach (var biome in biomePool)
         {
-
+            if (biome.InRange())
+            {
+                biomes.Add(biome);
+            }
         }
-        
-        return blocks;
+
+        if (biomes.Count == 1)
+        {
+            return biomes[0].GetBiomePillar(chunkPosition, blocks, x, z);
+        }
+        if (biomes.Count == 2)
+        {
+            foreach (var sample in biomePool[0].samples)
+            {
+                if (biomePool[1].samples.TryGetValue(sample.Key, out var s))
+                {
+                    noise = NoiseLerpSample(sample.Value, s, biomePool[0].biome.sample.noiseValue, biomePool[1].biome.sample.noiseValue, s.sample.noiseValue);
+                    return biomes[0].GetBiomePillar(chunkPosition, blocks, x, z, noise);
+                }
+            }
+        }
+
+        return 0;
     }
 
     public uint GetPillar(int x, int y, int z, Vector3Int chunkPosition, CWorldHandler handler)
@@ -29,17 +52,54 @@ public class CWorldMapNode : CWAPoolingNode
 
         return 1;
     }
+    
+    public float NoiseLerpSample(BiomePoolSample a, BiomePoolSample b, float noiseA, float noiseB, float t)
+    {
+        if (a.max > b.min)
+        {
+            float noise = Mathp.NoiseLerp(noiseA, noiseB, b.min, a.max, t);
+            Debug.Log("noiseA: " + noiseA + " noiseB: " + noiseB + " minB: " + b.min + " maxA: " + a.max + " t: " + t + " gave noise: " + noise);
+            return noise;
+        }
+        else
+        {
+            float noise = Mathp.NoiseLerp(noiseB, noiseA, a.min, b.max, t);
+            Debug.Log("noiseA: " + noiseB + " noiseB: " + noiseA + " minB: " + a.min + " maxA: " + b.max + " t: " + t + " gave noise: " + noise);
+            return noise;
+        }
+    }
 }
 
 public class BiomePool
 {
     public CWorldBiomeNode biome;
-    public List<BiomePoolSample> samples;
+    public Dictionary<string, BiomePoolSample> samples;
 
     public BiomePool(CWorldBiomeNode newBiome)
     {
         biome = newBiome;
-        samples = new List<BiomePoolSample>();
+        samples = new Dictionary<string, BiomePoolSample>();
+    }
+
+    public bool InRange()
+    {
+        foreach (var sample in samples.Values)
+        {
+            if (!sample.InRange())
+                return false;
+        }
+
+        return true;
+    }
+
+    public uint GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z)
+    {
+        return biome.GetBlockPillar(chunkPosition, blocks, x, z);
+    }
+    
+    public uint GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float noise)
+    {
+        return biome.GetBlockPillar(chunkPosition, blocks, x, z, noise);
     }
 }
 

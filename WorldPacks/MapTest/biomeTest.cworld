@@ -1,0 +1,15 @@
+Save biomeTest
+
+Biome ( name = plains )
+{
+	sample
+	{
+		set biomeNoise1
+	}
+
+	sequence
+	{
+		id 1
+		set 1, 999
+	}
+}

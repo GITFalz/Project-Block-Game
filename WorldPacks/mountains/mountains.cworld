@@ -1,0 +1,80 @@
+Save mountains
+
+Use MapTest\noiseTest
+
+Sample ( name = m0 )
+{
+	noise
+	{
+		size : 40, 40
+		smooth 0.3, 0.7
+		amplitude : 0.05
+	}
+}
+
+Sample ( name = m1 )
+{
+	noise
+	{
+		size : 160, 160
+		smooth 0.3, 0.7
+		amplitude : 0.1
+	}
+}
+
+Sample ( name = m2 )
+{
+	noise
+	{
+		size : 80, 80
+		smooth 0.3, 0.7
+		amplitude : 0.1
+	}
+}
+
+
+Sample ( name = m3 )
+{
+	override
+	{
+		add mapNoise
+		slide 0.1, 0.55
+		invert
+	}
+	
+	noise
+	{
+		amplitude : 0
+	}
+
+	display
+}
+
+Sample ( name = m4 )
+{
+	override
+	{
+		add m1, m2, m0
+		mul m3
+	}
+	
+	noise
+	{
+		size : 320, 320
+		amplitude : 0.75
+	}
+}
+
+Biome ( name = mount )
+{
+	sample
+	{
+		set m4
+	}
+
+	sequence
+	{
+		id 3
+		set 1, 999
+	}
+}

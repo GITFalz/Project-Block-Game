@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class CWorldBlockManager : CWorldAbstractNode
 {
     public static CWorldBlockManager instance;
-
-    public WMWriter writer;
     public CWorldBlock BlockNode;
 
-    public CWorldBlockManager() { if (instance == null) instance = this; }
+    public int test = 0;
+
+    public CWorldBlockManager()
+    {
+        if (instance == null) instance = this;
+    }
     
     private CWOCSequenceNode _sequenceNode;
 
@@ -32,12 +36,17 @@ public class CWorldBlockManager : CWorldAbstractNode
             if (w.GetNextInt(out int index) == -1)
                 return w.Error("height must be an integer");
             
+            Debug.Log("hello");
+            
             if (BlockManager.Exists(index))
                 return w.Error("Block already exists");
-
-            instance.BlockNode.index = index;
-            if (!BlockManager.Add(instance.BlockNode))
+            
+            w.writerManager.worldBlockManager.BlockNode.index = index;
+            
+            if (!BlockManager.Add(w.writerManager.worldBlockManager.BlockNode))
                 return w.Error("A problem occured when trying to add the block");
+            
+            Debug.Log("hello");
                 
             return 0;
         } },

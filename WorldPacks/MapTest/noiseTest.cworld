@@ -1,0 +1,18 @@
+Save noiseTest
+
+Sample ( name = mapNoise )
+{
+	noise
+	{
+		size : 300, 300
+	}
+}
+
+Sample ( name = biomeNoise1 )
+{
+	noise
+	{
+		size : 100, 100
+		amplitude : 0.1
+	}
+}

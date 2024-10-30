@@ -32,6 +32,7 @@ public class CommandSystem : MonoBehaviour
     public ConcurrentQueue<ChunkData> chunks;
     private ConcurrentQueue<Vector3Int> _sampleChunks;
     private ConcurrentQueue<Vector3Int> _biomeChunks;
+    private ConcurrentQueue<Vector3Int> _mapChunks;
 
     private List<Task> tasks;
 
@@ -44,6 +45,7 @@ public class CommandSystem : MonoBehaviour
         chunks = new ConcurrentQueue<ChunkData>();
         _sampleChunks = new ConcurrentQueue<Vector3Int>();
         _biomeChunks = new ConcurrentQueue<Vector3Int>();
+        _mapChunks = new ConcurrentQueue<Vector3Int>();
 
         tasks = new List<Task>();
         for (int i = 0; i < threadCount; i++)
@@ -67,6 +69,10 @@ public class CommandSystem : MonoBehaviour
         else if (_biomeChunks.Count > 0)
         {
             GenerateBiomeChunks();
+        }
+        else if (_mapChunks.Count > 0)
+        {
+            GenerateMapChunks();
         }
 
         if (chunks.Count > 0)
@@ -99,6 +105,19 @@ public class CommandSystem : MonoBehaviour
             if (_biomeChunks.TryDequeue(out var result))
             {
                 thread1 = Chunk.CreateBiomeChunk(new ChunkData(result), result, currentName, handler, this);
+                await thread1;
+                thread1 = null;
+            }
+        }
+    }
+    
+    private async void GenerateMapChunks()
+    {
+        if (thread1 == null)
+        {
+            if (_mapChunks.TryDequeue(out var result))
+            {
+                thread1 = Chunk.CreateMapChunk(new ChunkData(result), result, handler, this);
                 await thread1;
                 thread1 = null;
             }
@@ -213,7 +232,7 @@ public class CommandSystem : MonoBehaviour
                 {
                     for (int z = 0; z < z2; z++)
                     {
-                        if (args.Length > 8)
+                        if (args.Length > 9)
                         {
                             if (args[8].Trim().Equals("sample"))
                             {
@@ -232,6 +251,12 @@ public class CommandSystem : MonoBehaviour
                                     currentName = args[9];
                                 }
                             }
+                        }
+                        else if (args[8].Trim().Equals("map"))
+                        {
+                            Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
+
+                            _mapChunks.Enqueue(position);
                         }
                         else
                         {

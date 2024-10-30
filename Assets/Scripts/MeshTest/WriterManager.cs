@@ -17,6 +17,7 @@ public class WriterManager
     public CWorldSampleManager worldSampleManager;
     public CWorldBiomeManager worldBiomeManager;
     public CWorldBlockManager worldBlockManager;
+    public CWorldMapManager worldMapManager;
 
     public string currentName = "";
     public string currentBiomeName = "";
@@ -36,7 +37,8 @@ public class WriterManager
         worldBiomeManager.writer = writer;
 
         worldBlockManager = new CWorldBlockManager();
-        worldBlockManager.writer = writer;
+
+        worldMapManager = new CWorldMapManager();
 
         this.import = import;
     }
@@ -74,5 +76,20 @@ public class WriterManager
         lines = content.Split(new[] { '\n','\t', '\r', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
         return lines;
+    }
+
+    public string CurrentLine()
+    {
+        return lines[index];
+    }
+
+    public string NextLine(int i = 1)
+    {
+        return index + i >= lines.Length ? "" : lines[index + i];
+    }
+
+    public void Inc(int i = 1)
+    {
+        index += i;
     }
 }

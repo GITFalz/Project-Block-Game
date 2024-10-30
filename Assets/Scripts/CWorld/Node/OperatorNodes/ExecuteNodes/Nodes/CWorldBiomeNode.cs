@@ -105,23 +105,23 @@ public class CWorldBiomeNode : CWAExecuteNode
         return blocks;
     }
 
-    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldHandler handler)
+    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z)
     {
-        handler.Init(x + chunkPosition.x, 0, z + chunkPosition.z);
+        return GetBlockPillar(chunkPosition, blocks, x, z, sample.noiseValue);
+    }
 
+    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float n)
+    {
         uint pillar = 0;
         int top = 0;
                 
-        foreach (var newSample in Overlays)
-        {
-            float noise = newSample.noiseValue;
+        float noise = n;
 
-            if (noise > -.5f)
-            {
-                int height = (int)Mathf.Clamp(Mathf.Lerp(newSample.min_height, newSample.max_height, noise), newSample.min_height, newSample.max_height);
+        if (noise > -.5f)
+        {
+            int height = (int)Mathf.Clamp(Mathf.Lerp(sample.min_height, sample.max_height, noise), sample.min_height, sample.max_height);
                         
-                GetPillar(newSample, ref pillar, ref top, height, chunkPosition.y);
-            }
+            GetPillar(sample, ref pillar, ref top, height, chunkPosition.y);
         }
 
         int index = x + z * 32;

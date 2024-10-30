@@ -78,7 +78,7 @@ public class CWorldMenu : MonoBehaviour
             return;
         }
         
-        worldFolders = GetFolderNames(currentFolderPath);
+        worldFolders = FileManager.GetFolderNames(currentFolderPath);
         
         GenerateFolderButton(new KeyValuePair<string, string>("Back", dirInfo.FullName));
         
@@ -98,30 +98,9 @@ public class CWorldMenu : MonoBehaviour
         }
     }
 
-    public Dictionary<string, string> GetFolderNames(string path)
-    {
-        Dictionary<string, string> names = new Dictionary<string, string>();
-        
-        if (Directory.Exists(path))
-        {
-            DirectoryInfo[] subFolders = new DirectoryInfo(path).GetDirectories();
-
-            foreach (DirectoryInfo folder in subFolders)
-            {
-                names.Add(folder.Name, folder.FullName);
-            }
-        }
-        else
-        {
-            PopupError.Popup("Directory does not exist");
-        }
-
-        return names;
-    }
-
     public void CreateFolder()
     {
-        Dictionary<string, string> allFolderNames = GetFolderNames(currentFolderPath);
+        Dictionary<string, string> allFolderNames = FileManager.GetFolderNames(currentFolderPath);
 
         if (allFolderNames.ContainsKey(inputField.text)) { PopupError.Popup("Folder already exists"); return;}
 
@@ -229,7 +208,7 @@ public class CWorldMenu : MonoBehaviour
     {
         if (!saveFile.Equals(""))
         {
-            string filePath = Path.Combine(currentFolderPath, saveFile + ".cworld");
+            string filePath = Path.Combine(currentFolderPath, saveFile);
             File.WriteAllText(filePath, text);
         }
         

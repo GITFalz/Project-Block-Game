@@ -134,7 +134,56 @@ public class Chunk : MonoBehaviour
             {
                 for (int x = 0; x < 32; x++)
                 {
+                    handler.Init(x + position.x, 0, z + position.z);
                     blockMap[x + z * 32] = handler.GenerateBiomePillar(position, blocks, x, z, biomeName);
+                }
+            }
+
+            int index = 0;
+            for (int y = 0; y < 32; y++)
+            {
+                for (int z = 0; z < 32; z++)
+                {
+                    for (int x = 0; x < 32; x++)
+                    {
+                        if (blocks[index] != null)
+                        {
+                            blocks[index].occlusion = GetOcclusion(blockMap, x, y, z);
+                        }
+                        index++;
+                    }
+                }
+            }
+
+            return blocks;
+        });
+    }
+    
+    public static async Task CreateMapChunk(ChunkData newChunkData, Vector3Int position, CWorldHandler handler, CommandSystem commandSystem)
+    {
+        newChunkData.meshData = new MeshData();
+        
+        Block[] blocks = await CreateMapChunkAsync(position, handler);
+        newChunkData.SetBlocks(blocks);
+
+        GenerateMesh(newChunkData);
+        
+        commandSystem.chunks.Enqueue(newChunkData);
+    }
+    
+    public static Task<Block[]> CreateMapChunkAsync(Vector3Int position, CWorldHandler handler)
+    {
+        return Task.Run(() =>
+        {
+            uint[] blockMap = new uint[1024];
+            Block[] blocks = new Block[32768];
+            
+            for (int z = 0; z < 32; z++)
+            {
+                for (int x = 0; x < 32; x++)
+                {
+                    handler.Init(x + position.x, 0, z + position.z);
+                    blockMap[x + z * 32] = handler.GenerateMapPillar(position, blocks, x, z);
                 }
             }
 

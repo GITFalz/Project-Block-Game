@@ -7,10 +7,9 @@ public class BlockManager : MonoBehaviour
     public static Dictionary<int, CWorldBlock> Blocks;
     public List<CWorldBlock> inspectorBlocks;
 
-    private void Start()
+    public static void Init()
     {
         Blocks = new Dictionary<int, CWorldBlock>();
-        inspectorBlocks = new List<CWorldBlock>();
     }
 
     public static CWorldBlock GetBlock(int index)
@@ -52,6 +51,9 @@ public class BlockManager : MonoBehaviour
 
     public void UpdateInspector()
     {
+        if (inspectorBlocks == null)
+            inspectorBlocks = new List<CWorldBlock>();
+        
         inspectorBlocks.Clear();
         
         foreach (var block in Blocks)

@@ -8,6 +8,7 @@ public class CWorldHandler : MonoBehaviour
 {
     public static Dictionary<string, CWorldSampleNode> sampleNodes;
     public static Dictionary<string, CWorldBiomeNode> biomeNodes;
+    public static CWorldMapNode MapNode;
     //public Dictionary<string, CWAInitializerNode> initializers;
     //public Dictionary<string, CWAExecuteNode> executes;
 
@@ -93,10 +94,15 @@ public class CWorldHandler : MonoBehaviour
     {
         if (biomeNodes.TryGetValue(biomeName.Trim(), out var node))
         {
-            return node.GetBlockPillar(position, blocks, x, z, this);
+            return node.GetBlockPillar(position, blocks, x, z);
         }
 
         return 0;
+    }
+    
+    public uint GenerateMapPillar(Vector3Int position, Block[] blocks, int x, int z)
+    {
+        return MapNode.GetBlockPillar(position, blocks, x, z, this);
     }
     
     public uint GetBlockMapPillar(int x, int y, int z, string sampleName)

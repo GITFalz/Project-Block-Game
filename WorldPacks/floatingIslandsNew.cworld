@@ -1,0 +1,167 @@
+Save floatingIslandsNew
+
+Sample ( name = m2mask )
+{
+	noise
+	{
+		size : 160, 160
+		slide 0.4, 0.8
+		invert	
+	}
+}
+
+
+Sample ( name = m1 )
+{
+	override
+	{
+		mul m2mask
+	}
+
+	noise
+	{
+		size : 10, 10
+		amplitude : 0.1
+	}
+}
+
+Sample ( name = m2 )
+{
+	override
+	{
+		sub m1
+	}
+
+	noise
+	{
+		size : 160, 160
+		slide 0.5, 1	
+	}
+}
+
+
+
+Sample ( name = b1 )
+{
+	noise
+	{
+		size : 10, 10
+		amplitude : 0.2
+	}
+}
+
+Sample ( name = b2 )
+{
+	noise
+	{
+		size : 20, 20
+		amplitude : 0.3
+	}
+}
+
+
+
+Sample ( name = bottomMask )
+{
+	override
+	{
+		add b1, b2
+		mul m2
+		ignore -0.1, 0.01
+	}
+	noise
+	{
+		size : 240, 240
+		amplitude : 0.9
+	}
+
+	biome
+	{
+		flip
+		range 0, 150
+	}
+
+	display
+}
+
+
+
+Sample ( name = M1 )
+{
+	noise
+	{
+		size : 40, 40
+		smooth 0.2, 0.8
+		amplitude : 0.05
+	}
+}
+
+Sample ( name = M2 )
+{
+	noise
+	{
+		size : 80, 80
+		smooth 0.2, 0.8
+		amplitude : 0.1
+	}
+}
+
+Sample ( name = M3 )
+{
+	noise
+	{
+		size : 160, 160
+		smooth 0.2, 0.8		
+		amplitude : 0.2
+	}
+}
+
+Sample ( name = main )
+{
+	override
+	{
+		add M1, M2, M3
+		mul m2
+		ignore -0.1, 0.01
+	}
+	noise
+	{
+		size : 320, 320
+		amplitude : 0.9
+	}
+	
+	biome
+	{
+		range 151, 180
+	}
+
+	display
+}
+
+
+
+Biome ( name = floatingIslands )
+{
+	sample
+	{
+		overlay bottomMask, main
+	}
+
+	sequence
+	{
+		id 0
+		fixed 1
+	}
+
+	sequence
+	{
+		id 1
+		set 2, 3
+	}
+
+	sequence
+	{
+		id 2
+		set 4, 999
+	}
+}

@@ -5,7 +5,7 @@ using UnityEngine;
 public class CWorldBiomeManager : CWorldAbstractNode
 {
     public static CWorldBiomeManager instance;
-
+    
     public WMWriter writer;
     public CWorldBiomeNode biomeNode;
     public CWorldSampleNode sampleNode;
@@ -31,8 +31,8 @@ public class CWorldBiomeManager : CWorldAbstractNode
     public Dictionary<string, Func<WMWriter, int>> settings = new Dictionary<string, Func<WMWriter, int>>()
     {
         { "{", (w) => w.Increment(1, 0) },
-        { "sample", (w) => w.On_Settings(instance.samples) },
-        { "sequence", (w) => w.On_Settings(instance.sequences) },
+        { "sample", (w) => w.On_Settings(w.writerManager.worldBiomeManager.samples) },
+        { "sequence", (w) => w.On_Settings(w.writerManager.worldBiomeManager.sequences) },
         { "}", (w) => w.Increment(0, 1) },
     };
 
@@ -45,8 +45,8 @@ public class CWorldBiomeManager : CWorldAbstractNode
             if (!int.TryParse(value, out int result))
                 return w.Error("id needs to be an integer");
 
-            instance._sequenceNode = new CWOCSequenceNode();
-            instance._sequenceNode.block = new Block((short)result, 0);
+            w.writerManager.worldBiomeManager._sequenceNode = new CWOCSequenceNode();
+            w.writerManager.worldBiomeManager._sequenceNode.block = new Block((short)result, 0);
             return 0;
         } },
         { "fixed", (w) =>
@@ -54,8 +54,8 @@ public class CWorldBiomeManager : CWorldAbstractNode
             if (w.GetNextInt(out int value) == -1)
                 return w.Error("height must be an integer");
 
-            instance._sequenceNode.top_min = value;
-            instance._sequenceNode.top_max = value;
+            w.writerManager.worldBiomeManager._sequenceNode.top_min = value;
+            w.writerManager.worldBiomeManager._sequenceNode.top_max = value;
             return 0;
         } },
         { "set", (w) =>
@@ -71,8 +71,8 @@ public class CWorldBiomeManager : CWorldAbstractNode
                 {
                     if (result >= 1)
                     {
-                        instance._sequenceNode.top_min = 1;
-                        instance._sequenceNode.top_max = result;
+                        w.writerManager.worldBiomeManager._sequenceNode.top_min = 1;
+                        w.writerManager.worldBiomeManager._sequenceNode.top_max = result;
                         return 0;
                     }
                     
@@ -83,8 +83,8 @@ public class CWorldBiomeManager : CWorldAbstractNode
                 {
                     if (result2 >= result1)
                     {
-                        instance._sequenceNode.top_min = result1;
-                        instance._sequenceNode.top_max = result2;
+                        w.writerManager.worldBiomeManager._sequenceNode.top_min = result1;
+                        w.writerManager.worldBiomeManager._sequenceNode.top_max = result2;
                         return 0;
                     }
                     
@@ -93,21 +93,21 @@ public class CWorldBiomeManager : CWorldAbstractNode
                 
                 if (int.TryParse(values[0], out result) && values[1].Equals("min"))
                 {
-                    instance._sequenceNode.top_min = result;
-                    instance._sequenceNode.top_max = 9999;
+                    w.writerManager.worldBiomeManager._sequenceNode.top_min = result;
+                    w.writerManager.worldBiomeManager._sequenceNode.top_max = 9999;
                     return 0;
                 }
                 
                 return w.Error("uhm... error");
             }
             
-            instance._sequenceNode.top_min = ints.x;
-            instance._sequenceNode.top_max = ints.y;
+            w.writerManager.worldBiomeManager._sequenceNode.top_min = ints.x;
+            w.writerManager.worldBiomeManager._sequenceNode.top_max = ints.y;
             return 0;
         } },
         { "}", (w) =>
         {
-            instance.biomeNode.SequenceNodes.Add(instance._sequenceNode);
+            w.writerManager.worldBiomeManager.biomeNode.SequenceNodes.Add(w.writerManager.worldBiomeManager._sequenceNode);
             return w.Increment(1, 1);
         } }
     };
@@ -115,14 +115,14 @@ public class CWorldBiomeManager : CWorldAbstractNode
     public Dictionary<string, Func<WMWriter, int>> samples = new Dictionary<string, Func<WMWriter, int>>()
     {
         { "{", (w) => w.Increment(1, 0) },
-        { "set", (w) => w.On_SampleListAdd(instance.biomeNode.Overlays) },
+        { "set", (w) => w.On_SetSample() },
         { "range", (w) =>
         {
             if (w.GetNext2Ints(out Vector2Int ints) == -1)
                 return w.Error("no suitable ints found");
 
-            instance.biomeNode.min_height = ints.x;
-            instance.biomeNode.max_height = ints.y;
+            w.writerManager.worldBiomeManager.biomeNode.min_height = ints.x;
+            w.writerManager.worldBiomeManager.biomeNode.max_height = ints.y;
             return 0;
         } },
         { "}", (w) => w.Increment(1, 1) }
