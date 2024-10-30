@@ -105,6 +105,47 @@ public class CWorldBiomeNode : CWAExecuteNode
         return blocks;
     }
 
+    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldHandler handler)
+    {
+        handler.Init(x + chunkPosition.x, 0, z + chunkPosition.z);
+
+        uint pillar = 0;
+        int top = 0;
+                
+        foreach (var newSample in Overlays)
+        {
+            float noise = newSample.noiseValue;
+
+            if (noise > -.5f)
+            {
+                int height = (int)Mathf.Clamp(Mathf.Lerp(newSample.min_height, newSample.max_height, noise), newSample.min_height, newSample.max_height);
+                        
+                GetPillar(newSample, ref pillar, ref top, height, chunkPosition.y);
+            }
+        }
+
+        int index = x + z * 32;
+        int[] distance = ToList(top, pillar);
+        
+        for (int y = 0; y < 32; y++)
+        {
+            int i = index + y * 1024;
+                    
+            blocks[i] = null;
+
+            foreach (var sq in SequenceNodes)
+            {
+                Block block = sq.GetBlock(distance[y]);
+                if (block != null)
+                {
+                    blocks[i] = new Block(block.blockData, block.state); 
+                }
+            }
+        }
+
+        return pillar;
+    }
+
     public void GetPillar(CWorldSampleNode sample, uint[] blockMap, int[] tops, int height, int y, int index)
     {
         if (blockMap[index] != ~0u && sample.min_height < y + 32 && sample.max_height >= y)
@@ -143,10 +184,8 @@ public class CWorldBiomeNode : CWAExecuteNode
         }
     }
     
-    public void GetPillar(CWorldSampleNode sample, ref uint pillar, out int tops, int height, int y)
+    public void GetPillar(CWorldSampleNode sample, ref uint pillar, ref int tops, int height, int y)
     {
-        tops = 0;
-        
         if (pillar != ~0u && sample.min_height < y + 32 && sample.max_height >= y)
         {
             bool top = false;

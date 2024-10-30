@@ -38,6 +38,9 @@ public class CWorldNoiseNode
         if (invert)
             height = 1 - height;
         
+        if (float.IsNaN(height))
+            return 0;
+        
         return height * amplitude;
     }
 }

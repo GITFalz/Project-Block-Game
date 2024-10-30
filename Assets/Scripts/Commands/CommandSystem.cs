@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class CommandSystem : MonoBehaviour
 {
@@ -84,7 +85,7 @@ public class CommandSystem : MonoBehaviour
         {
             if (_sampleChunks.TryDequeue(out var result))
             {
-                thread1 = Chunk.CreateChunk(new ChunkData(result), result, currentName, this, handler, blockManager, biome);
+                thread1 = Chunk.CreateChunk(new ChunkData(result), result, currentName, this, handler, biome);
                 await thread1;
                 thread1 = null;
             }
@@ -97,7 +98,7 @@ public class CommandSystem : MonoBehaviour
         {
             if (_biomeChunks.TryDequeue(out var result))
             {
-                thread1 = Chunk.CreateBiomeChunk(new ChunkData(result), result, currentName, handler, this, blockManager);
+                thread1 = Chunk.CreateBiomeChunk(new ChunkData(result), result, currentName, handler, this);
                 await thread1;
                 thread1 = null;
             }

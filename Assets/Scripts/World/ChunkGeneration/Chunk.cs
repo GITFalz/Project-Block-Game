@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Chunk : MonoBehaviour
 {
@@ -12,7 +13,7 @@ public class Chunk : MonoBehaviour
     
     public NoiseSettings terrainNoise;
     public BiomeSO biome;
-    public BlockManager blockManager;
+    [FormerlySerializedAs("blockManager")] public BlockManagerSO blockManagerSo;
     public GameObject chunkPrefab;
     
     public List<Vector3Int> chunksToAdd;
@@ -74,12 +75,12 @@ public class Chunk : MonoBehaviour
         newChunkData.SetBlocks(blocks);
         
         //World.WriteChunkData(chunkData, writer);
-        GenerateMesh(newChunkData, blockManager);
+        GenerateMesh(newChunkData);
 
         return newChunkData;
     }
     
-    public static async Task CreateChunk(ChunkData newChunkData, Vector3Int position, string sampleName, CommandSystem commandSystem, CWorldHandler handler, BlockManager blockManager, BiomeSO biome)
+    public static async Task CreateChunk(ChunkData newChunkData, Vector3Int position, string sampleName, CommandSystem commandSystem, CWorldHandler handler, BiomeSO biome)
     {
         newChunkData.meshData = new MeshData();
 
@@ -91,7 +92,7 @@ public class Chunk : MonoBehaviour
         Block[] blocks = await CreateChunkAsync(position, sampleName, handler, biome);
         newChunkData.SetBlocks(blocks);
 
-        GenerateMesh(newChunkData, blockManager);
+        GenerateMesh(newChunkData);
         
         commandSystem.chunks.Enqueue(newChunkData);
     }
@@ -105,7 +106,7 @@ public class Chunk : MonoBehaviour
         });
     }
     
-    public static async Task CreateBiomeChunk(ChunkData newChunkData, Vector3Int position, string biomeName, CWorldHandler handler, CommandSystem commandSystem, BlockManager blockManager)
+    public static async Task CreateBiomeChunk(ChunkData newChunkData, Vector3Int position, string biomeName, CWorldHandler handler, CommandSystem commandSystem)
     {
         newChunkData.meshData = new MeshData();
 
@@ -117,7 +118,7 @@ public class Chunk : MonoBehaviour
         Block[] blocks = await CreateBiomeChunkAsync(position, biomeName, handler);
         newChunkData.SetBlocks(blocks);
 
-        GenerateMesh(newChunkData, blockManager);
+        GenerateMesh(newChunkData);
         
         commandSystem.chunks.Enqueue(newChunkData);
     }
@@ -126,7 +127,34 @@ public class Chunk : MonoBehaviour
     {
         return Task.Run(() =>
         {
-            return handler.GenerateBiome(position, new Block[32768], biomeName);
+            uint[] blockMap = new uint[1024];
+            Block[] blocks = new Block[32768];
+            
+            for (int z = 0; z < 32; z++)
+            {
+                for (int x = 0; x < 32; x++)
+                {
+                    blockMap[x + z * 32] = handler.GenerateBiomePillar(position, blocks, x, z, biomeName);
+                }
+            }
+
+            int index = 0;
+            for (int y = 0; y < 32; y++)
+            {
+                for (int z = 0; z < 32; z++)
+                {
+                    for (int x = 0; x < 32; x++)
+                    {
+                        if (blocks[index] != null)
+                        {
+                            blocks[index].occlusion = GetOcclusion(blockMap, x, y, z);
+                        }
+                        index++;
+                    }
+                }
+            }
+
+            return blocks;
         });
     }
 
@@ -276,7 +304,7 @@ public class Chunk : MonoBehaviour
     /**
      * Generate the terrain mesh using the blockMap
      */
-    public static void GenerateMesh(ChunkData chunkData, BlockManager blockManager)
+    public static void GenerateMesh(ChunkData chunkData)
     {
         int index = 0;
         
@@ -379,7 +407,7 @@ public class Chunk : MonoBehaviour
                                 Vector3[] positions = positionOffset[side](width, height);
                                 Vector3 position = new Vector3(x, y, z);
 
-                                int id = blockManager.GetBlock(block.blockData).GetUVs()[side];
+                                int id = BlockManager.GetBlock(block.blockData).GetUVs()[side];
                                 
                                 chunkData.meshData.uvs.Add(new Vector3(0, 0, id));
                                 chunkData.meshData.uvs.Add(new Vector3(0, height, id));
@@ -459,7 +487,7 @@ public class Chunk : MonoBehaviour
                 {
                     chunkData.meshData.verts.Add(VoxelData.vertexTable[VoxelData.vertexIndexTable[i, vert]] + position);
                     float2 uv = VoxelData.uvTable[vert];
-                    chunkData.meshData.uvs.Add(new Vector3(uv.x, uv.y, blockManager.GetBlock(block.blockData).GetUVs()[i]));
+                    chunkData.meshData.uvs.Add(new Vector3(uv.x, uv.y, blockManagerSo.GetBlock(block.blockData).GetUVs()[i]));
                 }
             }
         }
@@ -476,8 +504,8 @@ public class Chunk : MonoBehaviour
         sideUpdate.mainChunk.meshData = new MeshData();
         sideUpdate.sideChunk.meshData = new MeshData();
         
-        GenerateMesh(sideUpdate.mainChunk, blockManager);
-        GenerateMesh(sideUpdate.sideChunk, blockManager);
+        GenerateMesh(sideUpdate.mainChunk);
+        GenerateMesh(sideUpdate.sideChunk);
 
         return sideUpdate;
     }
@@ -599,7 +627,7 @@ public class Chunk : MonoBehaviour
             
             chunkData.blocks = blocks;
             
-            GenerateMesh(chunkData, blockManager);
+            GenerateMesh(chunkData);
 
             if (worldScript.AddChunk(pos, chunkData))
             {

@@ -27,13 +27,13 @@ public class CWOSOverrideNode
     public float Apply(float height)
     {
         foreach (CWorldSampleNode sample in add)
-            height += sample.GetNoise();
+            height += sample.noiseValue;
         
         foreach (CWorldSampleNode sample in multiply)
-            height *= sample.GetNoise();
+            height *= sample.noiseValue;
         
         foreach (CWorldSampleNode sample in subtract)
-            height -= sample.GetNoise();
+            height -= sample.noiseValue;
         
         foreach (CWAParameterNode parameter in parameters)
             height = parameter.GetValue(height);

@@ -88,6 +88,16 @@ public class CWorldHandler : MonoBehaviour
 
         return blocks;
     }
+
+    public uint GenerateBiomePillar(Vector3Int position, Block[] blocks, int x, int z, string biomeName)
+    {
+        if (biomeNodes.TryGetValue(biomeName.Trim(), out var node))
+        {
+            return node.GetBlockPillar(position, blocks, x, z, this);
+        }
+
+        return 0;
+    }
     
     public uint GetBlockMapPillar(int x, int y, int z, string sampleName)
     {

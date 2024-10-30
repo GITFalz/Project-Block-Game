@@ -1,30 +1,91 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
-
-[CreateAssetMenu(menuName = "ScriptableObjects/BlockManager")]
-public class BlockManager : ScriptableObject
+public class BlockManager : MonoBehaviour
 {
-    public List<BlockSO> blocks;
+    public static Dictionary<int, CWorldBlock> Blocks;
+    public List<CWorldBlock> inspectorBlocks;
 
-    public BlockSO GetBlock(int index)
+    private void Start()
     {
-        return blocks[index];
+        Blocks = new Dictionary<int, CWorldBlock>();
+        inspectorBlocks = new List<CWorldBlock>();
     }
 
-    public bool GetAir(out BlockSO airBlock)
+    public static CWorldBlock GetBlock(int index)
     {
-        airBlock = null;
-        if (blocks.Count > 0)
+        return Blocks.GetValueOrDefault(index);
+    }
+
+    public static bool Exists(CWorldBlock block)
+    {
+        return Blocks.ContainsKey(block.index);
+    }
+    
+    public static bool Exists(int index)
+    {
+        return Blocks.ContainsKey(index);
+    }
+
+    public static bool Add(CWorldBlock block)
+    {
+        if (Exists(block))
+            Blocks.Remove(block.index);
+            
+        return Blocks.TryAdd(block.index, block);
+    }
+    
+    public static bool Add(int index)
+    {
+        return Blocks.TryAdd(index, new CWorldBlock(index));
+    }
+
+    public static bool SetUv(int index, int uv, int value)
+    {
+        if (uv >= 6 || !Blocks.TryGetValue(index, out var block))
+            return false;
+        
+        block.SetUv(uv, value);
+        return true;
+    }
+
+    public void UpdateInspector()
+    {
+        inspectorBlocks.Clear();
+        
+        foreach (var block in Blocks)
         {
-            airBlock = blocks[blocks.Count - 1];
-            return true;
+            inspectorBlocks.Add(block.Value);
         }
-        return false;
+    }
+}
+
+[System.Serializable]
+public class CWorldBlock
+{
+    public string blockName;
+    public int index;
+    public UVmaps blockUVs = UVmaps.DefaultIndexUVmap;
+
+    public CWorldBlock()
+    {
+        blockName = "";
+        index = 0;
+    }
+    public CWorldBlock(int index)
+    {
+        blockName = "";
+        this.index = index;
     }
 
-    public int[] GetIndices(int index)
+    public void SetUv(int index, int value)
     {
-        return blocks[index].blockUVs.textureIndices;
+        blockUVs.textureIndices[index] = value;
+    }
+
+    public int[] GetUVs()
+    {
+        return blockUVs.textureIndices;
     }
 }

@@ -3,5 +3,45 @@ using System.Collections.Generic;
 
 public class CWorldBlockManager : CWorldAbstractNode
 {
-    public static WMWriter writer;
+    public static CWorldBlockManager instance;
+
+    public WMWriter writer;
+    public CWorldBlock BlockNode;
+
+    public CWorldBlockManager() { if (instance == null) instance = this; }
+    
+    private CWOCSequenceNode _sequenceNode;
+
+    public void SetBlock(CWorldBlock block)
+    {
+        BlockNode = block;
+    }
+    
+    public Dictionary<string, Func<WMWriter, int>> labels = new Dictionary<string, Func<WMWriter, int>>()
+    {
+        { "(", (w) => w.Increment(1, 0) },
+        { "name", (w) => w.On_BlockName() },
+        { ")", (w) => w.Increment(1, 1) },
+    };
+    
+    public Dictionary<string, Func<WMWriter, int>> settings = new Dictionary<string, Func<WMWriter, int>>()
+    {
+        { "{", (w) => w.Increment(1, 0) },
+        { "id", (w) =>
+        {
+            if (w.GetNextInt(out int index) == -1)
+                return w.Error("height must be an integer");
+            
+            if (BlockManager.Exists(index))
+                return w.Error("Block already exists");
+
+            instance.BlockNode.index = index;
+            if (!BlockManager.Add(instance.BlockNode))
+                return w.Error("A problem occured when trying to add the block");
+                
+            return 0;
+        } },
+        { "texture", (w) => w.On_BlockSetTextures() },
+        { "}", (w) => w.Increment(0, 1) },
+    };
 }

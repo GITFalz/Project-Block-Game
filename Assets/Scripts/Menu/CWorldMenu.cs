@@ -17,9 +17,12 @@ public class CWorldMenu : MonoBehaviour
 
     public Transform folderContent;
     public Transform fileContent;
+
+    public TMP_InputField inputField;
     
+    public string currentFolderPath;
+    public string currentFilePath;
     
-    private string currentFolderPath;
     private Dictionary<string, string> worldFolders;
     private string[] worldFiles;
 
@@ -28,6 +31,10 @@ public class CWorldMenu : MonoBehaviour
 
     private List<GameObject> folderButtons;
     private List<GameObject> fileButtons;
+
+    private bool _move;
+
+    private string _selectedFilePath;
 
 
     public void Init()
@@ -39,6 +46,8 @@ public class CWorldMenu : MonoBehaviour
         fileNames = new HashSet<string>();
         folderButtons = new List<GameObject>();
         fileButtons = new List<GameObject>();
+
+        _move = false;
         
         GenerateCWorldButtons();
     }
@@ -109,6 +118,34 @@ public class CWorldMenu : MonoBehaviour
 
         return names;
     }
+
+    public void CreateFolder()
+    {
+        Dictionary<string, string> allFolderNames = GetFolderNames(currentFolderPath);
+
+        if (allFolderNames.ContainsKey(inputField.text)) { PopupError.Popup("Folder already exists"); return;}
+
+        string newPath = Path.Combine(currentFolderPath, inputField.text);
+        Directory.CreateDirectory(newPath);
+
+        GenerateFolderButton(new KeyValuePair<string, string>(inputField.text, newPath));
+    }
+
+    public void MoveFile()
+    {
+        if (_move)
+        {
+            _move = false;
+            File.Move(_selectedFilePath, Path.Combine(currentFolderPath, Path.GetFileNameWithoutExtension(_selectedFilePath) + ".cworld"));
+            
+            GenerateCWorldButtons();
+        }
+        else
+        {
+            _move = true;
+            _selectedFilePath = currentFilePath;
+        }
+    }
     
     public void GenerateFolderButton(KeyValuePair<string, string> folder)
     {
@@ -134,7 +171,7 @@ public class CWorldMenu : MonoBehaviour
             {
                 GameObject newDeleteButton = Instantiate(deleteButtonPrefab, buttonContainer.transform);
                 Button deletebutton = newDeleteButton.GetComponent<Button>();
-                deletebutton.onClick.AddListener(() => DeleteFile(folder.Value, buttonContainer));
+                deletebutton.onClick.AddListener(() => DeleteFolder(folder.Value, buttonContainer));
             }
 
             folderNames.Add(folder.Key);
@@ -162,7 +199,7 @@ public class CWorldMenu : MonoBehaviour
             newButton.GetComponentInChildren<TMP_Text>().text = buttonName;
 
             Button button = newButton.GetComponent<Button>();
-            button.onClick.AddListener(() => writer.DisplayContent(filePath));
+            button.onClick.AddListener(() => { currentFilePath = filePath; writer.DisplayContent(filePath); });
             
             Button deletebutton = newDeleteButton.GetComponent<Button>();
             deletebutton.onClick.AddListener(() => DeleteFile(filePath, buttonContainer));
@@ -177,11 +214,32 @@ public class CWorldMenu : MonoBehaviour
         Destroy(container);
     }
     
+    public void DeleteFolder(string folderPath, GameObject container)
+    {
+        Directory.Delete(folderPath);
+        Destroy(container);
+    }
+
+    public void ClearInputField()
+    {
+        writer.Clear();
+    }
+    
     public void Save(string saveFile, string text)
     {
         if (!saveFile.Equals(""))
         {
-            string filePath = Path.Combine(fileManager.worldPacksFolderPath, saveFile + ".cworld");
+            string filePath = Path.Combine(currentFolderPath, saveFile + ".cworld");
+            File.WriteAllText(filePath, text);
+        }
+        
+        GenerateCWorldButtons();
+    }
+    
+    public void SaveToPath(string filePath, string text)
+    {
+        if (!filePath.Equals(""))
+        {
             File.WriteAllText(filePath, text);
         }
         
