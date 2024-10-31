@@ -45,5 +45,23 @@ public class CWorldSampleNode : CWAInitializerNode
     {
         return 1;
     }
-    
+
+    public CWorldSampleNode Copy(CWorldDataHandler handler)
+    {
+        if (handler.sampleNodes.TryGetValue(name, out var s))
+            return s;
+        
+        CWorldSampleNode sampleNode = new CWorldSampleNode(name)
+        {
+            noiseNode = noiseNode,
+            SpecificsNode = SpecificsNode,
+            flip = flip,
+            min_height = min_height,
+            max_height = max_height
+        };
+
+        sampleNode.overrideNode = overrideNode.Copy(handler);
+
+        return sampleNode;
+    }
 }

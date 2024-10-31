@@ -33,6 +33,8 @@ public class WMWriter : MonoBehaviour
     public CWorldMenu menu;
 
     public WriterManager writerManager;
+
+    public CWorldDataHandler DataHandler;
     
     /**
     private string[] lines;
@@ -56,8 +58,10 @@ public class WMWriter : MonoBehaviour
 
     private void Start()
     {
-        writerManager = new WriterManager(this, false);
+        ChunkGenerationNodes.Set();
         
+        writerManager = new WriterManager(this, false);
+            
         handler.Init();
         fileManager.Init();
         menu.Init();
@@ -76,9 +80,7 @@ public class WMWriter : MonoBehaviour
     
     public void ExecuteCode(string content)
     {
-        CWorldHandler.biomeNodes.Clear();
-        CWorldHandler.sampleNodes.Clear();
-        CWorldHandler.MapNode = null;
+        ChunkGenerationNodes.Clear();
         
         writerManager.lines = writerManager.InitLines(content);
 
@@ -114,10 +116,10 @@ public class WMWriter : MonoBehaviour
 
         menu.Save(writerManager.savePath, writerManager.fileContent);
 
-        if (!writerManager.displayName.Equals(""))
+        if (!ChunkGenerationNodes.sampleDisplayName.Equals(""))
         {
-            Debug.Log(writerManager.displayName);
-            textureGeneration.UpdateTexture(writerManager.displayName);
+            Debug.Log(ChunkGenerationNodes.sampleDisplayName);
+            textureGeneration.UpdateTexture(ChunkGenerationNodes.sampleDisplayName);
         }
         
         blockManager.UpdateInspector();
@@ -341,18 +343,16 @@ public class WMWriter : MonoBehaviour
     public int On_Sample()
     {
         writerManager.index++;
-        writerManager.worldSampleManager.SetSample(new CWorldSampleNode(writerManager.currentName));
         
         if (CommandsTest(writerManager.worldSampleManager.labels) == -1) return Error("Problem in the label found");
-        if (!CWorldHandler.sampleNodes.TryAdd(writerManager.currentName, writerManager.worldSampleManager.sampleNode))
+        if (!ChunkGenerationNodes.AddSamples(writerManager.currentName))
         {
             if (!writerManager.import)
                 return Error("name is used twice");
             if (writerManager.import)
                 return SkipNode();
         }
-        
-        writerManager.currentNode = CWorldHandler.sampleNodes[writerManager.currentName];
+
         if (CommandsTest(writerManager.worldSampleManager.settings) == -1) return Error("Problem in the sample settings found");
         return 0;
     }
@@ -360,18 +360,16 @@ public class WMWriter : MonoBehaviour
     public int On_Biome()
     {
         writerManager.index++;
-        writerManager.worldBiomeManager.SetBiome(new CWorldBiomeNode());
         
         if (CommandsTest(writerManager.worldBiomeManager.labels) == -1) return Error("Problem in the label found");
-        if (!CWorldHandler.biomeNodes.TryAdd(writerManager.currentBiomeName, writerManager.worldBiomeManager.biomeNode))
+        if (!ChunkGenerationNodes.AddBiomes(writerManager.currentBiomeName))
         {
             if (!writerManager.import)
                 return Error("name is used twice");
             if (writerManager.import)
                 return SkipNode();
         }
-
-        writerManager.currentNode = CWorldHandler.biomeNodes[writerManager.currentBiomeName];
+        
         if (CommandsTest(writerManager.worldBiomeManager.settings) == -1) return Error("Problem in the biome settings found");
         return 0;
     }
@@ -393,17 +391,12 @@ public class WMWriter : MonoBehaviour
     public int On_Map()
     {
         writerManager.Inc();
-        
-        writerManager.worldMapManager.SetMap(new CWorldMapNode());
 
-        if (writerManager.NextLine(1).Equals("Force") || CWorldHandler.MapNode == null)
-        {
-            CWorldHandler.MapNode = writerManager.worldMapManager.MapNode;
-        }
-        else
-        {
+        if (!ChunkGenerationNodes.AddMap(writerManager.NextLine(1)))
             return Error("Watch out!, a map node already exists in the system. To replace the node write 'Map Force'");
-        }
+        
+        if (writerManager.NextLine(1).Equals("Force"))
+            writerManager.Inc();
         
         writerManager.Inc();
         
@@ -541,10 +534,8 @@ public class WMWriter : MonoBehaviour
 
     public int GetNextValue(out string value)
     {
-        value = "";
-
         writerManager.index++;
-        value = writerManager.lines[writerManager.index];
+        value = writerManager.CurrentLine();
         writerManager.index++;
 
         return 0;
@@ -552,8 +543,6 @@ public class WMWriter : MonoBehaviour
     
     public int GetNext(out string value)
     {
-        value = "";
-
         writerManager.index++;
         value = writerManager.lines[writerManager.index];
 
@@ -641,6 +630,17 @@ public class WMWriter : MonoBehaviour
         }
     }
 
+    public int On_BlockSetPriority()
+    {
+        if (GetNextInt(out int t) == -1)
+            return Error("A problem occured when trying to get the priority value, make sure it's an integer");
+
+        if (!BlockManager.SetPriority(writerManager.worldBlockManager.BlockNode.index, t))
+            return Error("Couldn't find block to set priority");
+
+        return 0;
+    }
+
     public int On_SetBiomeRange()
     {
         writerManager.Inc();
@@ -708,17 +708,6 @@ public class WMWriter : MonoBehaviour
             return 0;
         }
     }
-
-    public int On_SetSample()
-    {
-        writerManager.Inc();
-        if (!CWorldHandler.sampleNodes.TryGetValue(writerManager.CurrentLine(), out var init))
-            return Error("Can't find the sample specified in the biome");
-
-        writerManager.worldBiomeManager.biomeNode.sample = init;
-        writerManager.Inc();
-        return 0;
-    }
     
     
     public int On_AssignNext2Floats(ref float param1, ref float param2)
@@ -771,7 +760,7 @@ public class WMWriter : MonoBehaviour
     public int On_Display()
     {
         writerManager.index++;
-        writerManager.displayName = writerManager.currentName;
+        ChunkGenerationNodes.sampleDisplayName = writerManager.currentName;
 
         return 0;
     }

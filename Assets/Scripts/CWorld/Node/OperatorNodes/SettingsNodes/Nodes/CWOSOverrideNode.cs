@@ -43,4 +43,58 @@ public class CWOSOverrideNode
         
         return height * amplitude;
     }
+
+    public CWOSOverrideNode Copy(CWorldDataHandler handler)
+    {
+        CWOSOverrideNode overrideNode = new CWOSOverrideNode
+        {
+            amplitude = amplitude,
+            invert = invert,
+            parameters = parameters
+        };
+
+        foreach (var sample in add)
+        {
+            if (handler.sampleNodes.TryGetValue(sample.name, out var s))
+            {
+                overrideNode.add.Add(s);
+            }
+            else
+            {
+                CWorldSampleNode newSample = sample.Copy(handler);
+                overrideNode.add.Add(newSample);
+                handler.sampleNodes.Add(newSample.name, newSample);
+            }
+        }
+        
+        foreach (var sample in multiply)
+        {
+            if (handler.sampleNodes.TryGetValue(sample.name, out var s))
+            {
+                overrideNode.multiply.Add(s);
+            }
+            else
+            {
+                CWorldSampleNode newSample = sample.Copy(handler);
+                overrideNode.multiply.Add(newSample);
+                handler.sampleNodes.Add(newSample.name, newSample);
+            }
+        }
+        
+        foreach (var sample in subtract)
+        {
+            if (handler.sampleNodes.TryGetValue(sample.name, out var s))
+            {
+                overrideNode.subtract.Add(s);
+            }
+            else
+            {
+                CWorldSampleNode newSample = sample.Copy(handler);
+                overrideNode.subtract.Add(newSample);
+                handler.sampleNodes.Add(newSample.name, newSample);
+            }
+        }
+
+        return overrideNode;
+    }
 }

@@ -51,6 +51,7 @@ public class CWorldBlockManager : CWorldAbstractNode
             return 0;
         } },
         { "texture", (w) => w.On_BlockSetTextures() },
+        { "priority", (w) => w.On_BlockSetPriority() },
         { "}", (w) => w.Increment(0, 1) },
     };
 }

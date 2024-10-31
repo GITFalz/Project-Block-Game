@@ -5,6 +5,7 @@ using UnityEngine;
 public class CWorldBiomeNode : CWAExecuteNode
 {
     public CWorldSampleNode sample;
+    public string name;
     
     public List<CWorldSampleNode> Overlays;
     public List<CWOCSequenceNode> SequenceNodes;
@@ -12,10 +13,12 @@ public class CWorldBiomeNode : CWAExecuteNode
     public int min_height;
     public int max_height;
 
-    public CWorldBiomeNode()
+    public CWorldBiomeNode(string name)
     {
         Overlays = new List<CWorldSampleNode>();
         SequenceNodes = new List<CWOCSequenceNode>();
+
+        this.name = name;
 
         min_height = 0;
         max_height = 640;
@@ -37,6 +40,75 @@ public class CWorldBiomeNode : CWAExecuteNode
     }
 
     public override Block[] GetBlocks(Vector3Int chunkPosition, Block[] blocks, CWorldHandler handler)
+    {
+        if (chunkPosition.y > max_height || chunkPosition.y + 31 < min_height)
+            return blocks;
+
+        uint[] blockMap = new uint[1024];
+        int[] tops = new int[1024];
+
+        int index = 0;
+        for (int z = 0; z < 32; z++)
+        {
+            for (int x = 0; x < 32; x++)
+            {
+                blockMap[index] = 0;
+                tops[index] = 0;
+                    
+                handler.Init(x + chunkPosition.x, 0, z + chunkPosition.z);
+                
+                foreach (var newSample in Overlays)
+                {
+                    float noise = newSample.noiseValue;
+
+                    if (noise > -.5f)
+                    {
+                        int height = (int)Mathf.Clamp(Mathf.Lerp(newSample.min_height, newSample.max_height, noise), newSample.min_height, newSample.max_height);
+                        
+                        GetPillar(newSample, blockMap, tops, height, chunkPosition.y, index);
+                    }
+                }
+
+                index++;
+            }
+        }
+
+
+        for (int z = 0; z < 32; z++)
+        {
+            for (int x = 0; x < 32; x++)
+            {
+                handler.Init(x + chunkPosition.x, 0, z + chunkPosition.z);
+                index = x + z * 32;
+                int[] distance = ToList(tops[index], blockMap[index]);
+                
+                //Debug.Log($"[{string.Join(", ", distance.Take(32))}]");
+                
+                for (int y = 0; y < 32; y++)
+                {
+                    int i = index + y * 1024;
+                    
+                    blocks[i] = null;
+
+                    foreach (var sq in SequenceNodes)
+                    {
+                        Block block = sq.GetBlock(distance[y]);
+                        if (block != null)
+                        {
+                            blocks[i] = new Block(block.blockData, block.state); 
+                        }
+                    }
+                    
+                    if (blocks[i] != null)
+                        blocks[i].occlusion = Chunk.GetOcclusion(blockMap, x, y, z);
+                }
+            }
+        }
+        
+        return blocks;
+    }
+    
+    public Block[] GetBlocks(Vector3Int chunkPosition, Block[] blocks, CWorldDataHandler handler)
     {
         if (chunkPosition.y > max_height || chunkPosition.y + 31 < min_height)
             return blocks;
@@ -238,5 +310,47 @@ public class CWorldBiomeNode : CWAExecuteNode
         }
 
         return list;
+    }
+
+    public CWorldBiomeNode Copy(CWorldDataHandler handler)
+    {
+        if (handler.biomeNodes.TryGetValue(name, out var b))
+            return b;
+        
+        CWorldBiomeNode biomeNode = new CWorldBiomeNode(name)
+        {
+            SequenceNodes = SequenceNodes,
+            min_height = min_height,
+            max_height = max_height,
+        };
+
+        if (handler.sampleNodes.TryGetValue(sample.name, out var s1))
+        {
+            Debug.Log("set sample in biome");
+            biomeNode.sample = s1;
+        }
+        else
+        {
+            Debug.Log("copying sample in biome");
+            CWorldSampleNode newSample = sample.Copy(handler);
+            biomeNode.sample = newSample;
+            handler.sampleNodes.Add(newSample.name, newSample);
+        }
+
+        foreach (var sample in Overlays)
+        {
+            if (handler.sampleNodes.TryGetValue(sample.name, out var s))
+            {
+                biomeNode.Overlays.Add(s);
+            }
+            else
+            {
+                CWorldSampleNode newSample = sample.Copy(handler);
+                biomeNode.Overlays.Add(newSample);
+                handler.sampleNodes.Add(newSample.name, newSample);
+            }
+        }
+
+        return biomeNode;
     }
 }

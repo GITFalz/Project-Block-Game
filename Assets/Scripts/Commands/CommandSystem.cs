@@ -35,10 +35,17 @@ public class CommandSystem : MonoBehaviour
     private ConcurrentQueue<Vector3Int> _mapChunks;
 
     private List<Task> tasks;
+    private List<CWorldDataHandler> _dataHandlers;
 
     private Task thread1 = null;
     private Task thread2 = null;
     private string currentName = "";
+
+    private bool lod;
+    private int distance;
+    private Vector3Int center;
+
+    private CWorldDataHandler dataHandler;
 
     private void Start()
     {
@@ -47,11 +54,7 @@ public class CommandSystem : MonoBehaviour
         _biomeChunks = new ConcurrentQueue<Vector3Int>();
         _mapChunks = new ConcurrentQueue<Vector3Int>();
 
-        tasks = new List<Task>();
-        for (int i = 0; i < threadCount; i++)
-        {
-            tasks.Add(null);
-        }
+        
     }
 
     private void Awake()
@@ -87,39 +90,52 @@ public class CommandSystem : MonoBehaviour
 
     private async void GenerateChunks()
     {
-        if (thread1 == null)
+        for (int i = 0; i < ChunkGenerationNodes.threadCount; i++)
         {
-            if (_sampleChunks.TryDequeue(out var result))
+            if (ChunkGenerationNodes.tasks[i] == null)
             {
-                thread1 = Chunk.CreateChunk(new ChunkData(result), result, currentName, this, handler, biome);
-                await thread1;
-                thread1 = null;
+                if (_sampleChunks.TryDequeue(out var result))
+                {
+                    ChunkGenerationNodes.tasks[i] = Chunk.CreateChunk(new ChunkData(result), result, currentName, this, ChunkGenerationNodes.dataHandlers[i] , biome);
+                    await ChunkGenerationNodes.tasks[i];
+                    ChunkGenerationNodes.tasks[i] = null;
+                }
             }
         }
     }
     
     private async void GenerateBiomeChunks()
     {
-        if (thread1 == null)
+        for (int i = 0; i < ChunkGenerationNodes.threadCount; i++)
         {
-            if (_biomeChunks.TryDequeue(out var result))
+            if (ChunkGenerationNodes.tasks[i] == null)
             {
-                thread1 = Chunk.CreateBiomeChunk(new ChunkData(result), result, currentName, handler, this);
-                await thread1;
-                thread1 = null;
+                if (_biomeChunks.TryDequeue(out var result))
+                {
+                    ChunkGenerationNodes.tasks[i] = Chunk.CreateBiomeChunk(new ChunkData(result), result, currentName, ChunkGenerationNodes.dataHandlers[i], this);
+                    await ChunkGenerationNodes.tasks[i];
+                    ChunkGenerationNodes.tasks[i] = null;
+                }
             }
         }
     }
     
     private async void GenerateMapChunks()
     {
-        if (thread1 == null)
+        for (int i = 0; i < ChunkGenerationNodes.threadCount; i++)
         {
-            if (_mapChunks.TryDequeue(out var result))
+            if (ChunkGenerationNodes.tasks[i] == null)
             {
-                thread1 = Chunk.CreateMapChunk(new ChunkData(result), result, handler, this);
-                await thread1;
-                thread1 = null;
+                if (_mapChunks.TryDequeue(out var result))
+                {
+                    if (Vector3Int.Distance(center, result) > distance)
+                        ChunkGenerationNodes.tasks[i] = Chunk.CreateMapChunk(new ChunkData(result), result, ChunkGenerationNodes.dataHandlers[i], this, 1);
+                    else
+                        ChunkGenerationNodes.tasks[i] = Chunk.CreateMapChunk(new ChunkData(result), result, ChunkGenerationNodes.dataHandlers[i], this, 0);
+                
+                    await ChunkGenerationNodes.tasks[i];
+                    ChunkGenerationNodes.tasks[i] = null;
+                }
             }
         }
     }
@@ -215,6 +231,7 @@ public class CommandSystem : MonoBehaviour
 
     public string Do_Generate_Box()
     {
+        bool setupPool = true;
         if (IsNumericValue(2, out int x1) && 
             IsNumericValue(3, out int y1) && 
             IsNumericValue(4, out int z1) &&
@@ -236,19 +253,34 @@ public class CommandSystem : MonoBehaviour
                         {
                             if (args[8].Trim().Equals("sample"))
                             {
-                                Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
-                                
-                                _sampleChunks.Enqueue(position);
-                                currentName = args[9];
-                            }
-                            else if (args[8].Trim().Equals("biome"))
-                            {
-                                if (CWorldHandler.biomeNodes.ContainsKey(args[9]))
+                                if (ChunkGenerationNodes.dataHandlers[0].sampleNodes.ContainsKey(args[9]))
                                 {
                                     Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
 
+                                    if (setupPool)
+                                    {
+                                        currentName = args[9];
+                                        ChunkGenerationNodes.SetupSamplePool(currentName);
+                                        setupPool = false;
+                                    }
+
+                                    _sampleChunks.Enqueue(position);
+                                }
+                            }
+                            else if (args[8].Trim().Equals("biome"))
+                            {
+                                if (ChunkGenerationNodes.dataHandlers[0].biomeNodes.ContainsKey(args[9]))
+                                {
+                                    Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
+
+                                    if (setupPool)
+                                    {
+                                        currentName = args[9];
+                                        ChunkGenerationNodes.SetupSamplePool(currentName);
+                                        setupPool = false;
+                                    }
+
                                     _biomeChunks.Enqueue(position);
-                                    currentName = args[9];
                                 }
                             }
                         }
@@ -272,6 +304,82 @@ public class CommandSystem : MonoBehaviour
             }
             
             return "Done";
+        }
+
+        return "The values set are not valid";
+    }
+
+    public string Do_Generate_Distance()
+    {
+        if (args.Length > 6)
+        {
+            if (args[5].Trim().Equals("lod") && IsNumericValue(6, out int lodDistance))
+            {
+                distance = lodDistance * 32;
+            }
+        }
+        
+        if (IsNumericValue(2, out int dist) && 
+            IsNumericValue(3, out int height))
+        {
+            int loop;
+            int dir;
+            int x = 0;
+            int z = 0;
+            
+            for (int d = 0; d < dist; d++)
+            {
+                dir = 0;
+                loop = 1 + d * 2;
+                
+                for (int step = 0; step < 4 + d * 8; step++)
+                {
+                    for (int y = 0; y < height; y++)
+                    {
+                        if (args[4].Trim().Equals("map"))
+                        {
+                            Vector3Int position = new Vector3Int(x * 32, y * 32, z * 32);
+
+                            _mapChunks.Enqueue(position);
+                        }
+                    }
+                    
+                    switch (dir)
+                    {
+                        case 0:
+                        {
+                            x++;
+                            break;
+                        }
+                        case 1:
+                        {
+                            z++;
+                            break;
+                        }
+                        case 2:
+                        {
+                            x--;
+                            break;
+                        }
+                        case 3:
+                        {
+                            z--;
+                            break;
+                        }
+                    }
+
+                    loop--;
+
+                    if (loop == 0)
+                    {
+                        dir++;
+                        loop = 1 + d * 2;
+                    }
+                }
+
+                x--;
+                z--;
+            }
         }
 
         return "The values set are not valid";
@@ -332,6 +440,7 @@ public class CommandSystem : MonoBehaviour
     private Dictionary<string, Func<string>> generateCommands = new Dictionary<string, Func<string>>
     {
         { "box", () => instance.Do_Generate_Box() },
+        { "distance", () => instance.Do_Generate_Distance() },
         { "clear", () => instance.Do_Generate_Clear() },
     };
 }

@@ -101,7 +101,9 @@ public class TextureGeneration : MonoBehaviour
     
     private void GenerateNoise(string sampleName)
     {
-        if (CWorldHandler.sampleNodes.TryGetValue(sampleName, out CWorldSampleNode init))
+        Debug.Log(ChunkGenerationNodes.sampleDisplayName);
+        
+        if (ChunkGenerationNodes.dataHandlers[0].sampleNodes.TryGetValue(ChunkGenerationNodes.sampleDisplayName, out CWorldSampleNode init))
         {
             for (int i = 0; i < textureSize; i++)
             {

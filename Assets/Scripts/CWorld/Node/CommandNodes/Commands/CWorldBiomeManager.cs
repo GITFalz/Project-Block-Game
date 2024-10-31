@@ -41,8 +41,7 @@ public class CWorldBiomeManager : CWorldAbstractNode
         { "{", (w) => w.Increment(1, 0) },
         { "id", (w) =>
         {
-            w.GetNextValue(out string value);
-            if (!int.TryParse(value, out int result))
+            if (w.GetNextInt(out int result) == -1)
                 return w.Error("id needs to be an integer");
 
             w.writerManager.worldBiomeManager._sequenceNode = new CWOCSequenceNode();
@@ -107,7 +106,7 @@ public class CWorldBiomeManager : CWorldAbstractNode
         } },
         { "}", (w) =>
         {
-            w.writerManager.worldBiomeManager.biomeNode.SequenceNodes.Add(w.writerManager.worldBiomeManager._sequenceNode);
+            ChunkGenerationNodes.SetBiomeSequence(w.writerManager.worldBiomeManager._sequenceNode);
             return w.Increment(1, 1);
         } }
     };
@@ -115,14 +114,21 @@ public class CWorldBiomeManager : CWorldAbstractNode
     public Dictionary<string, Func<WMWriter, int>> samples = new Dictionary<string, Func<WMWriter, int>>()
     {
         { "{", (w) => w.Increment(1, 0) },
-        { "set", (w) => w.On_SetSample() },
+        {
+            "set", (w) =>
+            {
+                w.GetNextValue(out var value);
+                if (!ChunkGenerationNodes.SetBiomeSample(value))
+                    return w.Error("Can't find the sample specified in the biome");
+                return 0;
+            }
+        },
         { "range", (w) =>
         {
             if (w.GetNext2Ints(out Vector2Int ints) == -1)
                 return w.Error("no suitable ints found");
 
-            w.writerManager.worldBiomeManager.biomeNode.min_height = ints.x;
-            w.writerManager.worldBiomeManager.biomeNode.max_height = ints.y;
+            ChunkGenerationNodes.SetBiomeRange(ints);
             return 0;
         } },
         { "}", (w) => w.Increment(1, 1) }

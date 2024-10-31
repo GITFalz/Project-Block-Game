@@ -45,6 +45,41 @@ public class CWorldMapNode : CWAPoolingNode
 
         return 0;
     }
+    
+    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldDataHandler handler)
+    {
+        int i = 0;
+        float noise = 0;
+
+        List<BiomePool> biomes = new List<BiomePool>();
+        
+        foreach (var biome in biomePool)
+        {
+            if (biome.InRange())
+            {
+                biomes.Add(biome);
+            }
+        }
+
+        if (biomes.Count == 1)
+        {
+            return biomes[0].GetBiomePillar(chunkPosition, blocks, x, z);
+        }
+        
+        if (biomes.Count == 2)
+        {
+            foreach (var sample in biomePool[1].samples)
+            {
+                if (biomePool[0].samples.TryGetValue(sample.Key, out var s))
+                {
+                    noise = NoiseLerpSample(sample.Value, s, biomePool[0].biome.sample.noiseValue, biomePool[1].biome.sample.noiseValue, s.sample.noiseValue);
+                    return biomes[0].GetBiomePillar(chunkPosition, blocks, x, z, noise);
+                }
+            }
+        }
+
+        return 0;
+    }
 
     public uint GetPillar(int x, int y, int z, Vector3Int chunkPosition, CWorldHandler handler)
     {
@@ -57,16 +92,28 @@ public class CWorldMapNode : CWAPoolingNode
     {
         if (a.max > b.min)
         {
-            float noise = Mathp.NoiseLerp(noiseA, noiseB, b.min, a.max, t);
-            Debug.Log("noiseA: " + noiseA + " noiseB: " + noiseB + " minB: " + b.min + " maxA: " + a.max + " t: " + t + " gave noise: " + noise);
+            float noise = Mathp.NoiseLerp(noiseA, noiseB, a.min, b.max, t);
+            //Debug.Log("noiseA: " + noiseA + " noiseB: " + noiseB + " minB: " + b.min + " maxA: " + a.max + " t: " + t + " gave noise: " + noise);
             return noise;
         }
         else
         {
-            float noise = Mathp.NoiseLerp(noiseB, noiseA, a.min, b.max, t);
-            Debug.Log("noiseA: " + noiseB + " noiseB: " + noiseA + " minB: " + a.min + " maxA: " + b.max + " t: " + t + " gave noise: " + noise);
+            float noise = Mathp.NoiseLerp(noiseB, noiseA, b.min, a.max, t);
+            //Debug.Log("noiseA: " + noiseB + " noiseB: " + noiseA + " minB: " + a.min + " maxA: " + b.max + " t: " + t + " gave noise: " + noise);
             return noise;
         }
+    }
+
+    public CWorldMapNode Copy(CWorldDataHandler handler)
+    {
+        CWorldMapNode mapNode = new CWorldMapNode();
+        
+        foreach (var biome in biomePool)
+        {
+            mapNode.biomePool.Add(biome.Copy(handler));
+        }
+
+        return mapNode;
     }
 }
 
@@ -101,6 +148,18 @@ public class BiomePool
     {
         return biome.GetBlockPillar(chunkPosition, blocks, x, z, noise);
     }
+
+    public BiomePool Copy(CWorldDataHandler handler)
+    {
+        BiomePool biomePool = new BiomePool(biome.Copy(handler));
+
+        foreach (var sample in samples)
+        {
+            biomePool.samples.Add(sample.Key, sample.Value.Copy(handler));
+        }
+
+        return biomePool;
+    }
 }
 
 public class BiomePoolSample
@@ -120,5 +179,15 @@ public class BiomePoolSample
     {
         float noise = sample.noiseValue;
         return min <= noise && noise <= max;
+    }
+
+    public BiomePoolSample Copy(CWorldDataHandler handler)
+    {
+        BiomePoolSample biomePoolSample = new BiomePoolSample(sample.Copy(handler))
+        {
+            min = min,
+            max = max,
+        };
+        return biomePoolSample;
     }
 }

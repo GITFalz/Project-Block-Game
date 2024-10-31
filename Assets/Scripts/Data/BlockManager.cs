@@ -49,6 +49,15 @@ public class BlockManager : MonoBehaviour
         return true;
     }
 
+    public static bool SetPriority(int index, int priority)
+    {
+        if (!Blocks.TryGetValue(index, out var block))
+            return false;
+
+        block.priority = priority;
+        return true;
+    }
+
     public void UpdateInspector()
     {
         if (inspectorBlocks == null)
@@ -68,6 +77,7 @@ public class CWorldBlock
 {
     public string blockName;
     public int index;
+    public int priority;
     public UVmaps blockUVs = UVmaps.DefaultIndexUVmap;
 
     public CWorldBlock()
