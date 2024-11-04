@@ -5,23 +5,16 @@ using UnityEngine;
 public class CWorldBiomeNode : CWAExecuteNode
 {
     public CWorldSampleNode sample;
+    public IntRangeNode sampleRange;
     public string name;
     
-    public List<CWorldSampleNode> Overlays;
     public List<CWOCSequenceNode> SequenceNodes;
-
-    public int min_height;
-    public int max_height;
 
     public CWorldBiomeNode(string name)
     {
-        Overlays = new List<CWorldSampleNode>();
         SequenceNodes = new List<CWOCSequenceNode>();
 
         this.name = name;
-
-        min_height = 0;
-        max_height = 640;
     }
     
     public override float GetNoise()
@@ -31,17 +24,12 @@ public class CWorldBiomeNode : CWAExecuteNode
 
     public override int GetBlock(int x, int y, int z)
     {
-        if (y >= min_height && y <= max_height)
-        {
-
-        }
-
         return -1;
     }
 
     public override Block[] GetBlocks(Vector3Int chunkPosition, Block[] blocks, CWorldHandler handler)
     {
-        if (chunkPosition.y > max_height || chunkPosition.y + 31 < min_height)
+        if (chunkPosition.y > sampleRange.min || chunkPosition.y + 31 < sampleRange.max)
             return blocks;
 
         uint[] blockMap = new uint[1024];
@@ -57,6 +45,7 @@ public class CWorldBiomeNode : CWAExecuteNode
                     
                 handler.Init(x + chunkPosition.x, 0, z + chunkPosition.z);
                 
+                /**
                 foreach (var newSample in Overlays)
                 {
                     float noise = newSample.noiseValue;
@@ -65,9 +54,10 @@ public class CWorldBiomeNode : CWAExecuteNode
                     {
                         int height = (int)Mathf.Clamp(Mathf.Lerp(newSample.min_height, newSample.max_height, noise), newSample.min_height, newSample.max_height);
                         
-                        GetPillar(newSample, blockMap, tops, height, chunkPosition.y, index);
+                        //GetPillar(newSample, blockMap, tops, height, chunkPosition.y, index);
                     }
                 }
+                */
 
                 index++;
             }
@@ -110,7 +100,7 @@ public class CWorldBiomeNode : CWAExecuteNode
     
     public Block[] GetBlocks(Vector3Int chunkPosition, Block[] blocks, CWorldDataHandler handler)
     {
-        if (chunkPosition.y > max_height || chunkPosition.y + 31 < min_height)
+        if (chunkPosition.y > sampleRange.min || chunkPosition.y + 31 < sampleRange.max)
             return blocks;
 
         uint[] blockMap = new uint[1024];
@@ -126,6 +116,7 @@ public class CWorldBiomeNode : CWAExecuteNode
                     
                 handler.Init(x + chunkPosition.x, 0, z + chunkPosition.z);
                 
+                /**
                 foreach (var newSample in Overlays)
                 {
                     float noise = newSample.noiseValue;
@@ -134,9 +125,10 @@ public class CWorldBiomeNode : CWAExecuteNode
                     {
                         int height = (int)Mathf.Clamp(Mathf.Lerp(newSample.min_height, newSample.max_height, noise), newSample.min_height, newSample.max_height);
                         
-                        GetPillar(newSample, blockMap, tops, height, chunkPosition.y, index);
+                        //GetPillar(newSample, blockMap, tops, height, chunkPosition.y, index);
                     }
                 }
+                */
 
                 index++;
             }
@@ -193,7 +185,7 @@ public class CWorldBiomeNode : CWAExecuteNode
         {
             int height = (int)Mathf.Clamp(Mathf.Lerp(sample.min_height, sample.max_height, noise), sample.min_height, sample.max_height);
                         
-            GetPillar(sample, ref pillar, ref top, height, chunkPosition.y);
+            GetPillar(sampleRange, false, ref pillar, ref top, height, chunkPosition.y);
         }
 
         int index = x + z * 32;
@@ -218,21 +210,21 @@ public class CWorldBiomeNode : CWAExecuteNode
         return pillar;
     }
 
-    public void GetPillar(CWorldSampleNode sample, uint[] blockMap, int[] tops, int height, int y, int index)
+    public void GetPillar(IntRangeNode range, bool flip, uint[] blockMap, int[] tops, int height, int y, int index)
     {
-        if (blockMap[index] != ~0u && sample.min_height < y + 32 && sample.max_height >= y)
+        if (blockMap[index] != ~0u && range.min < y + 32 && range.max >= y)
         {
             bool top = false;
             
-            if (!sample.flip)
+            if (!flip)
             {
-                if (height >= y && height < y + 32 && sample.min_height <= y)
+                if (height >= y && height < y + 32 && range.min <= y)
                 { blockMap[index] |= (uint)((1ul << ((height - y) + 1)) - 1); top = true; }
-                else if (height >= y && height < y + 32 && sample.min_height > y)
-                { blockMap[index] |= (uint)(((1ul << ((height - sample.min_height) + 1)) - 1) << sample.min_height - y); top = true; }
-                else if (height >= y + 32 && sample.min_height >= y)
-                { blockMap[index] |= (uint)(((1ul << ((y + 32 - sample.min_height) + 1)) - 1) << sample.min_height - y); top = true; }
-                else if (height >= y + 32 && sample.min_height <= y)
+                else if (height >= y && height < y + 32 && range.min > y)
+                { blockMap[index] |= (uint)(((1ul << ((height - range.min) + 1)) - 1) << range.min - y); top = true; }
+                else if (height >= y + 32 && range.min >= y)
+                { blockMap[index] |= (uint)(((1ul << ((y + 32 - range.min) + 1)) - 1) << range.min - y); top = true; }
+                else if (height >= y + 32 && range.min <= y)
                 { blockMap[index] = ~0u; top = true; }
                 
                 if (top)
@@ -240,37 +232,37 @@ public class CWorldBiomeNode : CWAExecuteNode
             }
             else
             {
-                int newHeight = sample.min_height + (sample.max_height - height);
-                if (newHeight >= y && newHeight < y + 32 && sample.max_height >= y + 32)
+                int newHeight = range.min + (range.max - height);
+                if (newHeight >= y && newHeight < y + 32 && range.max >= y + 32)
                 { blockMap[index] |= (uint)(((1ul << ((y + 32 - newHeight) + 1)) - 1) << newHeight - y); top = true; }
-                else if (newHeight >= y && newHeight < y + 32 && sample.max_height < y + 32)
-                { blockMap[index] |= (uint)(((1ul << ((sample.max_height - newHeight) + 1)) - 1) << newHeight - y); top = true; }
-                else if (newHeight <= y && sample.max_height < y + 32)
-                { blockMap[index] |= (uint)((1ul << ((sample.max_height - y) + 1)) - 1); top = true; }
-                else if (newHeight <= y && sample.max_height >= y + 32) 
+                else if (newHeight >= y && newHeight < y + 32 && range.max < y + 32)
+                { blockMap[index] |= (uint)(((1ul << ((range.max - newHeight) + 1)) - 1) << newHeight - y); top = true; }
+                else if (newHeight <= y && range.max < y + 32)
+                { blockMap[index] |= (uint)((1ul << ((range.max - y) + 1)) - 1); top = true; }
+                else if (newHeight <= y && range.max >= y + 32) 
                 { blockMap[index] = ~0u; top = true; }
                 
                 if (top)
-                    tops[index] = sample.max_height - newHeight;
+                    tops[index] = range.max - newHeight;
             }
         }
     }
     
-    public void GetPillar(CWorldSampleNode sample, ref uint pillar, ref int tops, int height, int y)
+    public void GetPillar(IntRangeNode range, bool flip, ref uint pillar, ref int tops, int height, int y)
     {
-        if (pillar != ~0u && sample.min_height < y + 32 && sample.max_height >= y)
+        if (pillar != ~0u && range.min < y + 32 && range.max >= y)
         {
             bool top = false;
             
-            if (!sample.flip)
+            if (!flip)
             {
-                if (height >= y && height < y + 32 && sample.min_height <= y)
+                if (height >= y && height < y + 32 && range.min <= y)
                 { pillar |= (uint)((1ul << ((height - y) + 1)) - 1); top = true; }
-                else if (height >= y && height < y + 32 && sample.min_height > y)
-                { pillar |= (uint)(((1ul << ((height - sample.min_height) + 1)) - 1) << sample.min_height - y); top = true; }
-                else if (height >= y + 32 && sample.min_height >= y)
-                { pillar |= (uint)(((1ul << ((y + 32 - sample.min_height) + 1)) - 1) << sample.min_height - y); top = true; }
-                else if (height >= y + 32 && sample.min_height <= y)
+                else if (height >= y && height < y + 32 && range.min > y)
+                { pillar |= (uint)(((1ul << ((height - range.min) + 1)) - 1) << range.min - y); top = true; }
+                else if (height >= y + 32 && range.min >= y)
+                { pillar |= (uint)(((1ul << ((y + 32 - range.min) + 1)) - 1) << range.min - y); top = true; }
+                else if (height >= y + 32 && range.min <= y)
                 { pillar = ~0u; top = true; }
                 
                 if (top)
@@ -278,18 +270,18 @@ public class CWorldBiomeNode : CWAExecuteNode
             }
             else
             {
-                int newHeight = sample.min_height + (sample.max_height - height);
-                if (newHeight >= y && newHeight < y + 32 && sample.max_height >= y + 32)
+                int newHeight = range.min + (range.max - height);
+                if (newHeight >= y && newHeight < y + 32 && range.max >= y + 32)
                 { pillar |= (uint)(((1ul << ((y + 32 - newHeight) + 1)) - 1) << newHeight - y); top = true; }
-                else if (newHeight >= y && newHeight < y + 32 && sample.max_height < y + 32)
-                { pillar |= (uint)(((1ul << ((sample.max_height - newHeight) + 1)) - 1) << newHeight - y); top = true; }
-                else if (newHeight <= y && sample.max_height < y + 32)
-                { pillar |= (uint)((1ul << ((sample.max_height - y) + 1)) - 1); top = true; }
-                else if (newHeight <= y && sample.max_height >= y + 32) 
+                else if (newHeight >= y && newHeight < y + 32 && range.max < y + 32)
+                { pillar |= (uint)(((1ul << ((range.max - newHeight) + 1)) - 1) << newHeight - y); top = true; }
+                else if (newHeight <= y && range.max < y + 32)
+                { pillar |= (uint)((1ul << ((range.max - y) + 1)) - 1); top = true; }
+                else if (newHeight <= y && range.max >= y + 32) 
                 { pillar = ~0u; top = true; }
                 
                 if (top)
-                    tops = sample.max_height - newHeight;
+                    tops = range.max - newHeight;
             }
         }
     }
@@ -310,47 +302,5 @@ public class CWorldBiomeNode : CWAExecuteNode
         }
 
         return list;
-    }
-
-    public CWorldBiomeNode Copy(CWorldDataHandler handler)
-    {
-        if (handler.biomeNodes.TryGetValue(name, out var b))
-            return b;
-        
-        CWorldBiomeNode biomeNode = new CWorldBiomeNode(name)
-        {
-            SequenceNodes = SequenceNodes,
-            min_height = min_height,
-            max_height = max_height,
-        };
-
-        if (handler.sampleNodes.TryGetValue(sample.name, out var s1))
-        {
-            Debug.Log("set sample in biome");
-            biomeNode.sample = s1;
-        }
-        else
-        {
-            Debug.Log("copying sample in biome");
-            CWorldSampleNode newSample = sample.Copy(handler);
-            biomeNode.sample = newSample;
-            handler.sampleNodes.Add(newSample.name, newSample);
-        }
-
-        foreach (var sample in Overlays)
-        {
-            if (handler.sampleNodes.TryGetValue(sample.name, out var s))
-            {
-                biomeNode.Overlays.Add(s);
-            }
-            else
-            {
-                CWorldSampleNode newSample = sample.Copy(handler);
-                biomeNode.Overlays.Add(newSample);
-                handler.sampleNodes.Add(newSample.name, newSample);
-            }
-        }
-
-        return biomeNode;
     }
 }

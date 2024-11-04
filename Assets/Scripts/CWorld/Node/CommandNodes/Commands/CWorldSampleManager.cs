@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class CWorldSampleManager : CWorldAbstractNode
@@ -34,31 +33,7 @@ public class CWorldSampleManager : CWorldAbstractNode
         { "override", (w) => w.On_Settings(w.writerManager.worldSampleManager.overrides) },
         { "noise", (w) => w.On_Settings(w.writerManager.worldSampleManager.noises) },
         { "display", (w) => w.On_Display() },
-        { "biome", (w) => w.On_Settings(w.writerManager.worldSampleManager.biomes) },
         { "}", (w) => w.Increment(0, 1) },
-    };
-    
-    public Dictionary<string, Func<WMWriter, int>> biomes = new Dictionary<string, Func<WMWriter, int>>()
-    {
-        { "{", (w) => w.Increment(1, 0) },
-        {
-            "flip", (w) =>
-            {
-                ChunkGenerationNodes.SetSampleFlip();
-                return 0;
-            }
-        },
-        { 
-            "range", (w) =>
-            {
-                if (w.GetNext2Ints(out Vector2Int ints) == -1)
-                    return w.Error("no suitable ints found");
-
-                ChunkGenerationNodes.SetSampleRange(ints);
-                return 0;
-            } 
-        },
-        { "}", (w) => w.Increment(1, 1) }
     };
 
     public Dictionary<string, Func<WMWriter, int>> noises = new Dictionary<string, Func<WMWriter, int>>()

@@ -282,7 +282,7 @@ public static class ChunkGenerationNodes
         }
     }
 
-    public static void SetSampleRange(Vector2Int ints)
+    public static void SetBiomeSampleRange(Vector2Int ints)
     {
         for (int i = 0; i < threadCount; i++)
         {
@@ -336,8 +336,8 @@ public static class ChunkGenerationNodes
         for (int i = 0; i < threadCount; i++)
         {
             CWorldBiomeNode biomeNode = dataHandlers[i].biomeNodes[currentBiomeName];
-            biomeNode.min_height = ints.x;
-            biomeNode.max_height = ints.y;
+            biomeNode.sampleRange.min = ints.x;
+            biomeNode.sampleRange.max = ints.y;
         }
     }
 
