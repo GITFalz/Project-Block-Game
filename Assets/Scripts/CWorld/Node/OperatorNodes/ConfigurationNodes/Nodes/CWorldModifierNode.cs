@@ -42,6 +42,11 @@ public class IntRangeNode
         min = 0;
         max = WorldInfo.worldMaxTerrainHeight;
     }
+    
+    public static IntRangeNode operator +(IntRangeNode a, int offset)
+    {
+        return new IntRangeNode(a.min + offset, a.max + offset);
+    }
 }
 
 public class FloatRangeNode
@@ -77,8 +82,12 @@ public class CWorldModifierGenNode
 
     public int GetHeight(CWorldModifierNode parent)
     {
-        if (parent.sample.noiseValue >= parent.ignore.min && parent.sample.noiseValue <= parent.ignore.max)
+        if (parent.ignore != null && parent.sample.noiseValue >= parent.ignore.min && parent.sample.noiseValue <= parent.ignore.max)
             return 0;
-        return (int)Mathf.Clamp(Mathf.Lerp(range.min, range.max, parent.GetMaxHeight() + sample.noiseValue), range.min, range.max);
+        if (sample.noiseValue < -0.5f)
+            return -1;
+            
+        int maxHeight = parent.GetMaxHeight();
+        return (int)Mathf.Clamp(Mathf.Lerp(maxHeight + range.min, maxHeight + range.max,  sample.noiseValue), maxHeight + range.min, maxHeight + range.max);
     }
 }

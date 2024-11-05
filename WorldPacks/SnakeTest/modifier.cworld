@@ -1,0 +1,13 @@
+Save modifier
+
+Modifier ( name = snake_modifier )
+{
+	sample snake_height
+	range 0, 150
+
+	gen
+	{
+		sample snake2
+		range 0, 10 
+	}
+}

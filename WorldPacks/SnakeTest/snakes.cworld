@@ -1,0 +1,88 @@
+Save snakes
+
+Sample ( name = empty )
+{
+	noise
+	{
+		amplitude 0
+	}
+}
+
+Sample ( name = snake_height1 )
+{
+	noise
+	{
+		size 30, 30
+		offset 9999, 9999
+		amplitude 0.05
+	}
+}
+
+Sample ( name = snake_height0 )
+{
+	noise
+	{
+		size 75, 75
+		offset 9999, 9999
+		amplitude 0.1
+	}
+}
+
+Sample ( name = biome )
+{
+	override
+	{
+		invert
+	}
+	noise
+	{
+		amplitude 0
+	}
+}
+
+Sample ( name = snake_height )
+{
+	override 
+	{
+		add snake_height0, snake_height1
+	}
+
+	noise
+	{
+		size 150, 150
+		offset 9999, 9999
+		amplitude 0.6
+	}
+
+	display
+}
+
+Sample ( name = snake1 )
+{
+	noise
+	{
+		size 200, 200
+		offset 9999, 9999
+		smooth 0.35, 0.5
+	}
+}
+
+Sample ( name = snake2 )
+{
+	override
+	{
+		mul snake1
+		slide 0, 0.7
+		ignore 0, 0.1
+	
+	}
+
+	noise
+	{
+		size 100, 100
+		smooth 0.3, 0.7
+		offset 9999, 9999
+	}
+
+	display
+}

@@ -192,7 +192,12 @@ public class CWorldBiomeNode : CWAExecuteNode
             if (modifier != null)
             {
                 foreach (var gen in modifier.gen)
-                    GetPillar(gen.range, false, ref pillar, ref top, gen.GetHeight(modifier), chunkPosition.y);
+                {
+                    height = gen.GetHeight(modifier);
+                    if (height != -1)
+                        GetPillar((gen.range + modifier.GetMaxHeight()), false, ref pillar, ref top,
+                            height, chunkPosition.y);
+                }
             }
         }
 

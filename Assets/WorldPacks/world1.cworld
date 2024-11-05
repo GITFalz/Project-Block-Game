@@ -1,0 +1,42 @@
+Sample ( name = a1 )
+{
+	noise
+	{
+		size : 40, 40
+		amplitude : 0.125
+	}
+}
+
+Sample ( name = a2 )
+{
+	noise
+	{
+		size : 80, 80
+		amplitude : 0.25
+	}
+}
+
+Sample ( name = a3 )
+{
+	noise
+	{
+		size : 160, 160
+		amplitude : 0.5
+	}
+}
+
+Sample ( name = main )
+{
+	override
+	{
+		add a1, a2, a3
+		invert
+	}
+
+	noise
+	{
+		size : 320, 320
+	}
+
+	display
+}
