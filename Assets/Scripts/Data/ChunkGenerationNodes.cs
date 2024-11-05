@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEngine;
 
 public static class ChunkGenerationNodes
@@ -10,6 +11,7 @@ public static class ChunkGenerationNodes
     public static string currentSampleName = "";
     public static string currentBiomeName = "";
     public static string sampleDisplayName = "";
+    public static string currentModifierName = "";
 
     public static int threadCount = 4;
     
@@ -52,6 +54,19 @@ public static class ChunkGenerationNodes
         }
 
         currentSampleName = name;
+
+        return true;
+    }
+    
+    public static bool AddModifier(string name)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            if (!dataHandlers[i].modifierNodes.TryAdd(name, new CWorldModifierNode(name)))
+                return false;
+        }
+
+        currentModifierName = name;
 
         return true;
     }
@@ -308,6 +323,99 @@ public static class ChunkGenerationNodes
         }
     }
 
+
+
+    public static bool SetModifierSample(string sampleName)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            if (!dataHandlers[i].sampleNodes.TryGetValue(sampleName, out var sampleNode))
+                return false;
+
+            dataHandlers[i].modifierNodes[currentModifierName].sample = sampleNode;
+        }
+
+        return true;
+    }
+    
+    public static void SetModifierRange(Vector2Int ints)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            CWorldModifierNode modifierNode = dataHandlers[i].modifierNodes[currentModifierName];
+            modifierNode.range.min = ints.x;
+            modifierNode.range.max = ints.y;
+        }
+    }
+    
+    public static void SetModifierIgnore(Vector2 floats)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            CWorldModifierNode modifierNode = dataHandlers[i].modifierNodes[currentModifierName];
+            modifierNode.ignore = new FloatRangeNode();
+            modifierNode.ignore.min = floats.x;
+            modifierNode.ignore.max = floats.y;
+        }
+    }
+
+    public static void SetModifierInvert(bool value = false)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            dataHandlers[i].modifierNodes[currentModifierName].invert = value;
+        }
+    }
+
+    public static void AddModifierGen()
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            dataHandlers[i].modifierNodes[currentModifierName].gen.Add(new CWorldModifierGenNode());
+        }
+    }
+
+    public static bool SetModifierGenSample(string sampleName)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            if (!dataHandlers[i].sampleNodes.TryGetValue(sampleName, out var sampleNode))
+                return false;
+
+            dataHandlers[i].modifierNodes[currentModifierName].gen[^1].sample = sampleNode;
+        }
+
+        return true;
+    }
+
+    public static void SetModifierGenRange(Vector2Int ints)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            CWorldModifierGenNode genNode = dataHandlers[i].modifierNodes[currentModifierName].gen[^1];
+            genNode.range = new IntRangeNode();
+            genNode.range.min = ints.x;
+            genNode.range.max = ints.y;
+        }
+    }
+
+    public static void SetModifierGenOffset(int value)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            dataHandlers[i].modifierNodes[currentModifierName].gen[^1].offset = value;
+        }
+    }
+
+    public static void SetModifierGenFlip(bool value = false)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            dataHandlers[i].modifierNodes[currentModifierName].gen[^1].flip = value;
+        }
+    }
+    
+    
     
 
     public static void SetBiomeSequence(CWOCSequenceNode sequenceNode)
@@ -326,6 +434,19 @@ public static class ChunkGenerationNodes
                 return false;
 
             dataHandlers[i].biomeNodes[currentBiomeName].sample = sampleNode;
+        }
+
+        return true;
+    }
+
+    public static bool SetBiomeModifier(string modifierName)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            if (!dataHandlers[i].modifierNodes.TryGetValue(modifierName, out var modifierNode))
+                return false;
+            
+            dataHandlers[i].biomeNodes[currentBiomeName].modifier = modifierNode;
         }
 
         return true;

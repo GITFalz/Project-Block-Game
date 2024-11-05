@@ -6,6 +6,7 @@ public class CWorldBiomeNode : CWAExecuteNode
 {
     public CWorldSampleNode sample;
     public IntRangeNode sampleRange;
+    public CWorldModifierNode modifier;
     public string name;
     
     public List<CWOCSequenceNode> SequenceNodes;
@@ -13,7 +14,8 @@ public class CWorldBiomeNode : CWAExecuteNode
     public CWorldBiomeNode(string name)
     {
         SequenceNodes = new List<CWOCSequenceNode>();
-
+        sampleRange = new IntRangeNode(0, 256);
+        modifier = null;
         this.name = name;
     }
     
@@ -186,6 +188,12 @@ public class CWorldBiomeNode : CWAExecuteNode
             int height = (int)Mathf.Clamp(Mathf.Lerp(sample.min_height, sample.max_height, noise), sample.min_height, sample.max_height);
                         
             GetPillar(sampleRange, false, ref pillar, ref top, height, chunkPosition.y);
+            
+            if (modifier != null)
+            {
+                foreach (var gen in modifier.gen)
+                    GetPillar(gen.range, false, ref pillar, ref top, gen.GetHeight(modifier), chunkPosition.y);
+            }
         }
 
         int index = x + z * 32;
@@ -248,7 +256,7 @@ public class CWorldBiomeNode : CWAExecuteNode
         }
     }
     
-    public void GetPillar(IntRangeNode range, bool flip, ref uint pillar, ref int tops, int height, int y)
+    public static void GetPillar(IntRangeNode range, bool flip, ref uint pillar, ref int tops, int height, int y)
     {
         if (pillar != ~0u && range.min < y + 32 && range.max >= y)
         {

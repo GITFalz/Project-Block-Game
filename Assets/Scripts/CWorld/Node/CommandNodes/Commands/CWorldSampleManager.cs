@@ -42,6 +42,7 @@ public class CWorldSampleManager : CWorldAbstractNode
         {
             "size", (w) =>
             {
+                Debug.Log(w.writerManager.currentName);
                 if (w.GetNext2Floats(out Vector2 floats) == -1)
                     return w.Error("Error setting noise size");
                 

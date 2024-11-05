@@ -18,10 +18,12 @@ public class WriterManager
     public CWorldBiomeManager worldBiomeManager;
     public CWorldBlockManager worldBlockManager;
     public CWorldMapManager worldMapManager;
+    public CWorldModifierManager worldModifierManager;
 
     public string currentName = "";
     public string currentBiomeName = "";
     public string currentBlockName = "";
+    public string currentModifierName = "";
     public string currentType = "";
 
     public string displayName = "";
@@ -39,6 +41,8 @@ public class WriterManager
         worldBlockManager = new CWorldBlockManager();
 
         worldMapManager = new CWorldMapManager();
+        
+        worldModifierManager = new CWorldModifierManager();
 
         this.import = import;
     }
@@ -49,6 +53,7 @@ public class WriterManager
         currentName = "";
         currentBiomeName = "";
         currentBlockName = "";
+        currentModifierName = "";
         currentType = "";
         displayName = "";
         saveFile = "";

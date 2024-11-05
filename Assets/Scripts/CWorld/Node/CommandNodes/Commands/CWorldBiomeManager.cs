@@ -32,6 +32,7 @@ public class CWorldBiomeManager : CWorldAbstractNode
     {
         { "{", (w) => w.Increment(1, 0) },
         { "sample", (w) => w.On_Settings(w.writerManager.worldBiomeManager.samples) },
+        { "modifier", (w) => w.On_Settings(w.writerManager.worldBiomeManager.modifiers) },
         { "sequence", (w) => w.On_Settings(w.writerManager.worldBiomeManager.sequences) },
         { "}", (w) => w.Increment(0, 1) },
     };
@@ -130,10 +131,24 @@ public class CWorldBiomeManager : CWorldAbstractNode
             {
                 if (w.GetNext2Ints(out Vector2Int ints) == -1)
                     return w.Error("no suitable ints found");
-
                 ChunkGenerationNodes.SetBiomeRange(ints);
                 return 0;
             } 
+        },
+        { "}", (w) => w.Increment(1, 1) }
+    };
+    
+    public Dictionary<string, Func<WMWriter, int>> modifiers = new Dictionary<string, Func<WMWriter, int>>()
+    {
+        { "{", (w) => w.Increment(1, 0) },
+        {
+            "use", (w) =>
+            {
+                w.GetNextValue(out var value);
+                if (!ChunkGenerationNodes.SetBiomeModifier(value))
+                    return w.Error("Can't find the modifier specified in the biome");
+                return 0;
+            }
         },
         { "}", (w) => w.Increment(1, 1) }
     };

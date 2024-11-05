@@ -62,10 +62,10 @@ public class WMWriter : MonoBehaviour
         
         writerManager = new WriterManager(this, false);
             
+        BlockManager.Init();
         handler.Init();
         fileManager.Init();
         menu.Init();
-        BlockManager.Init();
 
         LoadOnEnter();
     }
@@ -149,9 +149,15 @@ public class WMWriter : MonoBehaviour
         writerManager = new WriterManager(this, true);
 
         string content;
-        
-        try { content = File.ReadAllText(path); }
-        catch (FileNotFoundException) { return Error("File not found"); }
+
+        try
+        {
+            content = File.ReadAllText(path);
+        }
+        catch (FileNotFoundException)
+        {
+            return Error("File not found");
+        }
 
         writerManager.savePath = path;
 
@@ -260,12 +266,16 @@ public class WMWriter : MonoBehaviour
     public int On_Use()
     {
         writerManager.index++;
-        string[] path = writerManager.lines[writerManager.index].Split(new[] { '/', '\'' }, StringSplitOptions.RemoveEmptyEntries);
+        string[] path = writerManager.lines[writerManager.index].Split(new[] { '/', '\'', '|', '>' }, StringSplitOptions.RemoveEmptyEntries);
         string mainPath = fileManager.worldPacksFolderPath;
+        
         foreach (string p in path)
         {
+            Debug.Log(p);
             mainPath = Path.Combine(mainPath, p);
         }
+
+        Debug.Log(mainPath);
 
         return Load(mainPath + ".cworld");
     }
@@ -401,6 +411,23 @@ public class WMWriter : MonoBehaviour
         writerManager.Inc();
         
         if (CommandsTest(writerManager.worldMapManager.settings) == -1) return Error("Problem in the biome settings found");
+        return 0;
+    }
+    
+    public int On_Modifier()
+    {
+        writerManager.index++;
+        
+        if (CommandsTest(writerManager.worldModifierManager.labels) == -1) return Error("Problem in the label found");
+        if (!ChunkGenerationNodes.AddModifier(writerManager.currentModifierName))
+        {
+            if (!writerManager.import)
+                return Error("name is used twice");
+            if (writerManager.import)
+                return SkipNode();
+        }
+        
+        if (CommandsTest(writerManager.worldModifierManager.settings) == -1) return Error("Problem in the biome settings found");
         return 0;
     }
 
@@ -597,7 +624,40 @@ public class WMWriter : MonoBehaviour
         writerManager.index++;
         return 2;
     }
+
+    public int On_Name(ref string name)
+    {
+        Debug.Log("Name test");
+        writerManager.Inc();
+        
+        if (!writerManager.CurrentLine().Equals("="))
+            return Error("No '=' found");
+        writerManager.Inc();
+
+        if (writerManager.CurrentLine().Equals(")"))
+            return Error("'name' expected but ) found");
+        name = writerManager.CurrentLine();
+        writerManager.index++;
+        return 2;
+    }
+    
     public int On_BlockName()
+    {
+        Debug.Log("Name test");
+        writerManager.index++;
+        
+        if (!writerManager.lines[writerManager.index].Equals("="))
+            return Error("No '=' found");
+        writerManager.index++;
+
+        if (writerManager.lines[writerManager.index].Equals(")"))
+            return Error("'name' expected but ) found");
+        writerManager.currentBlockName = writerManager.lines[writerManager.index];
+        writerManager.index++;
+        return 2;
+    }
+
+    public int On_ModifierName()
     {
         Debug.Log("Name test");
         writerManager.index++;
@@ -772,6 +832,7 @@ public class WMWriter : MonoBehaviour
         { "Sample", (w) => w.On_Sample() },
         { "Biome", (w) => w.On_Biome() },
         { "Block", (w) => w.On_Block() },
+        { "Modifier", (w) => w.On_Modifier() },
         { "Map", (w) => w.On_Map() },
     };
 }
