@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -6,47 +7,82 @@ using UnityEngine;
 public class ConsoleTextManager : MonoBehaviour
 {
     public TMP_InputField inputField;
-    
-    public static TMP_InputField consoleText;
-    public static List<string> lines;
-    public static int lineCount;
+    public List<string> lines;
+    public int lineCount;
 
-    private void Start()
+    public ConcurrentQueue<string> lineQueue;
+
+    public void Init()
     {
         lines = new List<string>();
+        lineQueue = new ConcurrentQueue<string>();
         lineCount = 0;
+    }
+
+    private void Update()
+    {
+        if (lineQueue?.TryDequeue(out var line) == true)
+        {
+            lines ??= new List<string>();
+            
+            if (lineCount == 100)
+                lines.RemoveAt(0);
+            else
+                lineCount++;
+        
+            lines.Add(line);
+
+            UpdateText();
+        }
     }
 
     private void Awake()
     {
-        consoleText = inputField;
+        Console.console = this;
     }
 
-    public static void UpdateText()
+    public void UpdateText()
     {
         string text = "";
         foreach (var line in lines)
         {
             text += line + "\n";
         }
-        consoleText.text = text;
+        inputField.text = text;
     }
 }
 
 public static class Console
 {
-    public static void Log(string message)
+    public static ConsoleTextManager console;
+    public static string Log(string message)
     {
-        if (ConsoleTextManager.lines == null)
-            ConsoleTextManager.lines = new List<string>();
-            
-        if (ConsoleTextManager.lineCount == 100)
-            ConsoleTextManager.lines.RemoveAt(0);
-        else
-            ConsoleTextManager.lineCount++;
-        
-        ConsoleTextManager.lines.Add(message);
+        console.lineQueue.Enqueue(message);
+        return message;
+    }
 
-        ConsoleTextManager.UpdateText();
+    public static int LineCount()
+    {
+        return console.lineCount;
+    }
+
+    public static bool RemoveLineAt(int index)
+    {
+        try
+        {
+            console.lines.RemoveAt(index);
+            console.lineCount--;
+            console.UpdateText();
+            return true;
+        }
+        catch (IndexOutOfRangeException)
+        {
+            return false;
+        }
+    }
+
+    public static bool RemoveLast()
+    {
+        return RemoveLineAt(console.lineCount - 1);
     }
 }

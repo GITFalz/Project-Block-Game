@@ -1152,7 +1152,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   commands: {fileID: 0}
   textureGeneration: {fileID: 0}
-  fileManager: {fileID: 0}
+  fileManager: {fileID: 995309361}
 --- !u!114 &995309361
 MonoBehaviour:
   m_ObjectHideFlags: 0

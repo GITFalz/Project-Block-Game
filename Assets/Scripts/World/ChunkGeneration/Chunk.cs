@@ -187,14 +187,14 @@ public class Chunk : MonoBehaviour
             Block[] blocks = await CreateMapChunkAsync(newChunkData, position, handler);
             newChunkData.SetBlocks(blocks);
             GenerateMesh(newChunkData);
-            ChunkDataHandler.WriteChunkData(newChunkData);
+            //ChunkDataHandler.WriteChunkData(newChunkData);
             
         }
         else
         {
-            Block[] blocks = await CreateMapChunkAsync(newChunkData, position, handler, 1);
+            Block[] blocks = await CreateMapChunkAsync(newChunkData, position, handler, lod);
             GenerateMesh(newChunkData, blocks, lodWidth[lod], lodSize[lod], lod);
-            ChunkDataHandler.WriteChunkData(newChunkData);
+            //ChunkDataHandler.WriteChunkData(newChunkData);
         }
     }
     
@@ -277,16 +277,16 @@ public class Chunk : MonoBehaviour
                 chunkData.blocks = blocks;
             }
 
-            Block[] newBlocks = GenerateLodBlocks(blocks, 16, 2, 1);
+            Block[] newBlocks = GenerateLodBlocks(blocks, lodWidth[lod], lodSize[lod], lod);
 
-            int height = lodWidth[1] * lodWidth[1];
+            int height = lodWidth[lod] * lodWidth[lod];
 
             int index = 0;
-            for (int y = 0; y < lodWidth[1]; y++)
+            for (int y = 0; y < lodWidth[lod]; y++)
             {
-                for (int z = 0; z < lodWidth[1]; z++)
+                for (int z = 0; z < lodWidth[lod]; z++)
                 {
-                    for (int x = 0; x < lodWidth[1]; x++)
+                    for (int x = 0; x < lodWidth[lod]; x++)
                     {
                         if (newBlocks[index] != null)
                         {
@@ -294,23 +294,23 @@ public class Chunk : MonoBehaviour
                             
                             byte occlusion = 0;
 
-                            if (z - 1 >= 0 && newBlocks[index - lodWidth[1]] != null)
+                            if (z - 1 >= 0 && newBlocks[index - lodWidth[lod]] != null)
                                 occlusion = 1;
                             
-                            if (x + 1 < lodWidth[1] && newBlocks[index + 1] != null)
-                                occlusion |= (1 << 1);
+                            if (x + 1 < lodWidth[lod] && newBlocks[index + 1] != null)
+                                occlusion |= 2;
                             
-                            if (y + 1 < lodWidth[1] && newBlocks[index + height] != null)
-                                occlusion |= (1 << 2);
+                            if (y + 1 < lodWidth[lod] && newBlocks[index + height] != null)
+                                occlusion |= 4;
                             
                             if (x - 1 >= 0 && newBlocks[index - 1] != null)
-                                occlusion |= (1 << 3);
+                                occlusion |= 8;
                             
                             if (y - 1 >= 0 && newBlocks[index - height] != null)
-                                occlusion |= (1 << 4);
+                                occlusion |= 16;
                             
-                            if (z + 1 < lodWidth[1] && newBlocks[index + lodWidth[1]] != null)
-                                occlusion |= (1 << 5);
+                            if (z + 1 < lodWidth[lod] && newBlocks[index + lodWidth[lod]] != null)
+                                occlusion |= 32;
 
                             newBlocks[index].occlusion = occlusion;
                         }
@@ -520,7 +520,7 @@ public class Chunk : MonoBehaviour
                 offset += 960;
             }
 
-            if (blockIndex == 0 || blockAmount < 4)
+            if (blockIndex == 0 || blockAmount < 1)
                 return null;
             return new Block(blockIndex, 0);
         },
@@ -543,17 +543,20 @@ public class Chunk : MonoBehaviour
                     
                     if (block != null)
                     {
+                        int[] ids = BlockManager.GetBlock(block.blockData).GetUVs();
+                        
                         for (int side = 0; side < 6; side++)
                         {
                             if (((block.check >> side) & 1) == 0 && ((block.occlusion >> side) & 1) == 0)
                             {
+                                block.check |= (byte)(1 << side);
+                                
                                 for (int tris = 0; tris < 6; tris++)
                                 {
                                     chunkData.meshData.tris.Add(VoxelData.TrisIndexTable[tris] +
                                                                 chunkData.meshData.Count());
                                 }
-
-                                block.occlusion |= 1 << 7;
+                                
                                 int i = index;
                                 int loop = VoxelData.FirstLoopBase[side](y, z);
                                 int height = 1;
@@ -561,18 +564,11 @@ public class Chunk : MonoBehaviour
                                 while (loop > 0)
                                 {
                                     i += VoxelData.FirstOffsetBase[side];
-                                    try
-                                    {
-                                        if (chunkData.blocks[i] == null)
-                                            break;
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Debug.Log("i: " + i + " side: " + side);
-                                    }
+                                    if (chunkData.blocks[i] == null)
+                                        break;
 
-                                    if (((chunkData.blocks[i].check >> side) & 1) == 1 ||
-                                        ((chunkData.blocks[i].occlusion >> side) & 1) == 1 ||
+                                    if (((chunkData.blocks[i].check >> side) & 1) != 0 ||
+                                        ((chunkData.blocks[i].occlusion >> side) & 1) != 0 ||
                                         chunkData.blocks[i].blockData != block.blockData)
                                         break;
 
@@ -591,23 +587,17 @@ public class Chunk : MonoBehaviour
                                 {
                                     i += VoxelData.SecondOffsetBase[side];
                                     int up = i;
+                                    
                                     for (int j = 0; j < height; j++)
                                     {
-                                        try
+                                        if (chunkData.blocks[up] == null)
                                         {
-                                            if (chunkData.blocks[up] == null)
-                                            {
-                                                quit = true;
-                                                break;
-                                            }
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Debug.Log("i: " + i + " side: " + side);
+                                            quit = true;
+                                            break;
                                         }
 
-                                        if (((chunkData.blocks[up].check >> side) & 1) == 1 ||
-                                            ((chunkData.blocks[up].occlusion >> side) & 1) == 1 ||
+                                        if (((chunkData.blocks[up].check >> side) & 1) != 0 ||
+                                            ((chunkData.blocks[up].occlusion >> side) & 1) != 0 ||
                                             chunkData.blocks[up].blockData != block.blockData)
                                         {
                                             quit = true;
@@ -620,6 +610,7 @@ public class Chunk : MonoBehaviour
                                     if (quit) break;
                                     
                                     up = i;
+                                    
                                     for (int j = 0; j < height; j++) {
                                         chunkData.blocks[up].check |= (byte)(1 << side);
                                         up += VoxelData.FirstOffsetBase[side];
@@ -632,7 +623,7 @@ public class Chunk : MonoBehaviour
                                 Vector3[] positions = VoxelData.PositionOffset[side](width, height);
                                 Vector3 position = new Vector3(x, y, z);
 
-                                int id = BlockManager.GetBlock(block.blockData).GetUVs()[side];
+                                int id = ids[side];
                                 
                                 chunkData.meshData.uvs.Add(new Vector3(0, 0, id));
                                 chunkData.meshData.uvs.Add(new Vector3(0, height, id));
@@ -667,75 +658,87 @@ public class Chunk : MonoBehaviour
                     
                     if (block != null)
                     {
+                        int[] ids = BlockManager.GetBlock(block.blockData).GetUVs();
+                        
                         for (int side = 0; side < 6; side++)
                         {
                             if (((block.check >> side) & 1) == 0 && ((block.occlusion >> side) & 1) == 0)
                             {
-                                int vertCount = chunkData.meshData.Count();
+                                block.check |= (byte)(1 << side);
+                                
                                 for (int tris = 0; tris < 6; tris++)
                                 {
-                                    chunkData.meshData.tris.Add(VoxelData.TrisIndexTable[tris] + vertCount);
+                                    chunkData.meshData.tris.Add(VoxelData.TrisIndexTable[tris] +
+                                                                chunkData.meshData.Count());
                                 }
                                 
-                                int loop1 = VoxelData.FirstLoop[lod][side](y, z);
-                                int loop2 = VoxelData.SecondLoop[lod][side](x, z);
-                                
-                                int firstOffset = VoxelData.FirstOffset[lod][side];
-                                int secondOffset = VoxelData.SecondOffset[lod][side];
-                                byte shiftPosition = VoxelData.ShiftPosition[side];
-                                
                                 int i = index;
+                                int loop = VoxelData.FirstLoop[lod][side](y, z);
                                 int height = 1;
                                 int width = 1;
-                                
-                                
-                                while (loop1 > 0)
+                                while (loop > 0)
                                 {
-                                    i += firstOffset;
-                                    if (blocks[i] == null || !VoxelData.BlockIsValid(blocks[i], block, side))
+                                    i += VoxelData.FirstOffset[lod][side];
+                                    if (blocks[i] == null)
+                                        break;
+
+                                    if (((blocks[i].check >> side) & 1) != 0 ||
+                                        ((blocks[i].occlusion >> side) & 1) != 0 ||
+                                        blocks[i].blockData != block.blockData)
                                         break;
 
                                     blocks[i].check |= (byte)(1 << side);
 
                                     height++;
-                                    loop1--;
+                                    loop--;
                                 }
 
                                 i = index;
+                                loop = VoxelData.SecondLoop[lod][side](x, z);
                                 
                                 bool quit = false;
                                 
-                                while (loop2 > 0)
+                                while (loop > 0)
                                 {
-                                    i += secondOffset;
+                                    i += VoxelData.SecondOffset[lod][side];
                                     int up = i;
+                                    
                                     for (int j = 0; j < height; j++)
                                     {
-                                        if (blocks[up] == null || !VoxelData.BlockIsValid(blocks[up], block, side))
+                                        if (blocks[up] == null)
+                                        {
+                                            quit = true;
+                                            break;
+                                        }
+
+                                        if (((blocks[up].check >> side) & 1) != 0 ||
+                                            ((blocks[up].occlusion >> side) & 1) != 0 ||
+                                            blocks[up].blockData != block.blockData)
                                         {
                                             quit = true;
                                             break;
                                         }
                                         
-                                        up += firstOffset;
+                                        up += VoxelData.FirstOffset[lod][side];
                                     }
                                     
                                     if (quit) break;
                                     
                                     up = i;
-                                    for (int j = 0; j < height; j++)
-                                    {
-                                        blocks[up].check |= shiftPosition;
-                                        up += firstOffset;
+                                    
+                                    for (int j = 0; j < height; j++) {
+                                        blocks[up].check |= (byte)(1 << side);
+                                        up += VoxelData.FirstOffset[lod][side];
                                     }
 
                                     width++;
-                                    loop2--;
+                                    loop--;
                                 }
-                                
-                                int id = BlockManager.GetBlock(block.blockData).GetUVs()[side];
-                                Vector3 position = new Vector3(x * size, y * size, z * size);
+
                                 Vector3[] positions = VoxelData.PositionOffset[side](width, height);
+                                Vector3 position = new Vector3(x * size, y * size, z * size);
+
+                                int id = ids[side];
                                 
                                 chunkData.meshData.uvs.Add(new Vector3(0, 0, id));
                                 chunkData.meshData.uvs.Add(new Vector3(0, height, id));
@@ -755,6 +758,24 @@ public class Chunk : MonoBehaviour
             }
         }
     }
+
+/**
+ *  for (int tris = 0; tris < 6; tris++)
+    {
+        chunkData.meshData.tris.Add(VoxelData.TrisIndexTable[tris] +
+                                    chunkData.meshData.Count());
+    }
+    
+    chunkData.meshData.uvs.Add(new Vector3(0, 0, id));
+    chunkData.meshData.uvs.Add(new Vector3(0, height, id));
+    chunkData.meshData.uvs.Add(new Vector3(width, height, id));
+    chunkData.meshData.uvs.Add(new Vector3(width, 0, id));
+    
+    chunkData.meshData.verts.Add(position + positions[0] * size);
+    chunkData.meshData.verts.Add(position + positions[1] * size);
+    chunkData.meshData.verts.Add(position + positions[2] * size);
+    chunkData.meshData.verts.Add(position + positions[3] * size);
+ */
     
     /**
      * Add a certain block to the mesh based on it's x, y, z coords and what face to occlude

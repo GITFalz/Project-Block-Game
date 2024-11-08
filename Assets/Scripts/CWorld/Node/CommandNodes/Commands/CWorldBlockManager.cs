@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class CWorldBlockManager : CWorldAbstractNode
@@ -21,32 +22,28 @@ public class CWorldBlockManager : CWorldAbstractNode
         BlockNode = block;
     }
     
-    public Dictionary<string, Func<WMWriter, int>> labels = new Dictionary<string, Func<WMWriter, int>>()
+    public Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "(", (w) => w.Increment(1, 0) },
-        { "name", (w) => w.On_BlockName() },
+        { "name", (w) => w.On_Name(ref w.writerManager.currentBlockName) },
         { ")", (w) => w.Increment(1, 1) },
     };
     
-    public Dictionary<string, Func<WMWriter, int>> settings = new Dictionary<string, Func<WMWriter, int>>()
+    public Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
-        { "id", (w) =>
+        { "id", async (w) =>
         {
-            if (w.GetNextInt(out int index) == -1)
-                return w.Error("height must be an integer");
-            
-            Debug.Log("hello");
+            if (await w.GetNextInt(out int index) == -1)
+                return await w.Error("height must be an integer");
             
             if (BlockManager.Exists(index))
-                return w.Error("Block already exists");
+                return await w.Error("Block already exists");
             
             w.writerManager.worldBlockManager.BlockNode.index = index;
             
             if (!BlockManager.Add(w.writerManager.worldBlockManager.BlockNode))
-                return w.Error("A problem occured when trying to add the block");
-            
-            Debug.Log("hello");
+                return await w.Error("A problem occured when trying to add the block");
                 
             return 0;
         } },

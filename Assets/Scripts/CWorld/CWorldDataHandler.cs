@@ -32,7 +32,7 @@ public class CWorldDataHandler
         }
     }
     
-    public void SetupSamplePool(string sampleName)
+    public async void SetupSamplePool(string sampleName)
     {
         if (sampleNodes.TryGetValue(sampleName, out var sample))
         {

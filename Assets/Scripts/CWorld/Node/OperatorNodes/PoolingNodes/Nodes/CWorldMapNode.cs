@@ -11,42 +11,8 @@ public class CWorldMapNode : CWAPoolingNode
         sampleHandler = new CWorldSampleHandler();
         biomePool = new List<BiomePool>();
     }
-
-    public int GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldHandler handler)
-    {
-        int i = 0;
-        float noise = 0;
-
-        List<BiomePool> biomes = new List<BiomePool>();
-        
-        foreach (var biome in biomePool)
-        {
-            if (biome.InRange())
-            {
-                biomes.Add(biome);
-            }
-        }
-
-        if (biomes.Count == 1)
-        {
-            return biomes[0].GetBiomePillar(chunkPosition, blocks, x, z);
-        }
-        if (biomes.Count == 2)
-        {
-            foreach (var sample in biomePool[0].samples)
-            {
-                if (biomePool[1].samples.TryGetValue(sample.Key, out var s))
-                {
-                    noise = NoiseLerpSample(sample.Value, s, biomePool[0].biome.sample.noiseValue, biomePool[1].biome.sample.noiseValue, s.sample.noiseValue);
-                    return biomes[0].GetBiomePillar(chunkPosition, blocks, x, z, noise);
-                }
-            }
-        }
-
-        return 0;
-    }
     
-    public int GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldDataHandler handler)
+    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldDataHandler handler)
     {
         int i = 0;
         float noise = 0;
@@ -79,13 +45,6 @@ public class CWorldMapNode : CWAPoolingNode
         }
 
         return 0;
-    }
-
-    public uint GetPillar(int x, int y, int z, Vector3Int chunkPosition, CWorldHandler handler)
-    {
-        sampleHandler.Init(x, y, z);
-
-        return 1;
     }
     
     public float NoiseLerpSample(BiomePoolSample a, BiomePoolSample b, float noiseA, float noiseB, float t)
@@ -127,12 +86,12 @@ public class BiomePool
         return true;
     }
 
-    public int GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z)
+    public uint GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z)
     {
         return biome.GetBlockPillar(chunkPosition, blocks, x, z);
     }
     
-    public int GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float noise)
+    public uint GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float noise)
     {
         return biome.GetBlockPillar(chunkPosition, blocks, x, z, noise);
     }

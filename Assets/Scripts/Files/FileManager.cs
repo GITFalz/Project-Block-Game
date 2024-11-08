@@ -10,9 +10,11 @@ public class FileManager : MonoBehaviour
     public static string WorldFolderPath;
     public static string EditorFolderPath;
     public static string ConfigFolderPath;
+    public static string ProjectPath;
 
     public void Init()
     {
+        ProjectPath = Application.persistentDataPath;
         WorldPacksFolderPath = GenerateFolder("WorldPacks");
         ExecuteOnEnterFolderPath = GenerateFolder("LoadOnEnter");
         ChunkDataFolderPath = GenerateFolder("ChunkData");
@@ -65,7 +67,7 @@ public class FileManager : MonoBehaviour
 
     private static string GenerateFolder(string folderName)
     {
-        string path = Path.Combine(Application.persistentDataPath, folderName);
+        string path = Path.Combine(ProjectPath, folderName);
         if (!Directory.Exists(path))
             Directory.CreateDirectory(path);
         return path;

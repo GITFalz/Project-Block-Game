@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class CWorldSampleManager : CWorldAbstractNode
@@ -20,14 +21,14 @@ public class CWorldSampleManager : CWorldAbstractNode
         overrideNode = sample.overrideNode;
     }
     
-    public Dictionary<string, Func<WMWriter, int>> labels = new Dictionary<string, Func<WMWriter, int>>()
+    public Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "(", (w) => w.Increment(1, 0) },
-        { "name", (w) => w.On_SampleName() },
+        { "name", (w) => w.On_Name(ref w.writerManager.currentName) },
         { ")", (w) => w.Increment(1, 1) },
     };
     
-    public Dictionary<string, Func<WMWriter, int>> settings = new Dictionary<string, Func<WMWriter, int>>()
+    public Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         { "override", (w) => w.On_Settings(w.writerManager.worldSampleManager.overrides) },
@@ -36,142 +37,142 @@ public class CWorldSampleManager : CWorldAbstractNode
         { "}", (w) => w.Increment(0, 1) },
     };
 
-    public Dictionary<string, Func<WMWriter, int>> noises = new Dictionary<string, Func<WMWriter, int>>()
+    public Dictionary<string, Func<WMWriter, Task<int>>> noises = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         {
-            "size", (w) =>
+            "size", async (w) =>
             {
                 Debug.Log(w.writerManager.currentName);
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error setting noise size");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error setting noise size");
                 
-                ChunkGenerationNodes.SetSampleNoiseSize(floats);
+                await ChunkGenerationNodes.SetSampleNoiseSize(floats);
                 return 0;
             }
         },
         {
-            "offset", (w) =>
+            "offset", async (w) =>
             {
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error setting noise offset");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error setting noise offset");
                 
-                ChunkGenerationNodes.SetSampleNoiseOffset(floats);
+                await ChunkGenerationNodes.SetSampleNoiseOffset(floats);
                 return 0;
             }
         },
         
         { 
-            "clamp", (w) =>
+            "clamp", async (w) =>
             {
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error creating clamp");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error creating clamp");
 
-                return !ChunkGenerationNodes.AddSampleNoiseParameter("clamp", floats) ? w.Error("Couldn't add clamp parameter") : 0;
+                return !await ChunkGenerationNodes.AddSampleNoiseParameter("clamp", floats) ? await w.Error("Couldn't add clamp parameter") : 0;
             } 
         },
         { 
-            "lerp", (w) => 
+            "lerp", async (w) => 
             {
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error creating lerp");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error creating lerp");
 
-                return !ChunkGenerationNodes.AddSampleNoiseParameter("lerp", floats) ? w.Error("Couldn't add lerp parameter") : 0;
+                return !await ChunkGenerationNodes.AddSampleNoiseParameter("lerp", floats) ? await w.Error("Couldn't add lerp parameter") : 0;
             } 
         },
         { 
-            "slide", (w) =>
+            "slide", async (w) =>
             {
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error creating slide");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error creating slide");
                 
-                return !ChunkGenerationNodes.AddSampleNoiseParameter("slide", floats) ? w.Error("Couldn't add slide parameter") : 0;
+                return !await ChunkGenerationNodes.AddSampleNoiseParameter("slide", floats) ? await w.Error("Couldn't add slide parameter") : 0;
             } 
         },
         { 
-            "smooth", (w) => 
+            "smooth", async (w) => 
             {
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error creating smooth");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error creating smooth");
                 
-                return !ChunkGenerationNodes.AddSampleNoiseParameter("smooth", floats) ? w.Error("Couldn't add smooth parameter") : 0;
+                return !await ChunkGenerationNodes.AddSampleNoiseParameter("smooth", floats) ? await w.Error("Couldn't add smooth parameter") : 0;
             } 
         },
         { 
-            "ignore", (w) => 
+            "ignore", async (w) => 
             {
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error creating smooth");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error creating smooth");
                 
-                return !ChunkGenerationNodes.AddSampleNoiseParameter("ignore", floats) ? w.Error("Couldn't add ignore parameter") : 0;
+                return !await ChunkGenerationNodes.AddSampleNoiseParameter("ignore", floats) ? await w.Error("Couldn't add ignore parameter") : 0;
             } 
         },
 
         {
-            "amplitude", (w) =>
+            "amplitude", async (w) =>
             {
-                if (w.GetNextFloat(out float value) == -1)
-                    return w.Error("Error creating lerp");
+                if (await w.GetNextFloat(out float value) == -1)
+                    return await w.Error("Error creating lerp");
 
-                ChunkGenerationNodes.SetSampleNoiseAmplitude(value);
+                await ChunkGenerationNodes.SetSampleNoiseAmplitude(value);
                 return 0;
             }
         },
         {
-            "invert", (w) =>
+            "invert", async (w) =>
             {
-                w.Increment(1, 0);
-                ChunkGenerationNodes.SetSampleNoiseInvert();
+                await w.Increment(1, 0);
+                await ChunkGenerationNodes.SetSampleNoiseInvert();
                 return 0;
             }
         },
         { "}", (w) => w.Increment(1, 1) }
     };
 
-    public Dictionary<string, Func<WMWriter, int>> overrides = new Dictionary<string, Func<WMWriter, int>>()
+    public Dictionary<string, Func<WMWriter, Task<int>>> overrides = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         
         { 
-            "add", (w) =>
+            "add", async (w) =>
             {
                 while (true)
                 {
-                    w.writerManager.index++;
-                    if (!ChunkGenerationNodes.AddSampleOverrideAdd(w.writerManager.args[w.writerManager.index]))
-                        return w.Error("Couldn't find sample");
+                    w.Increment();
+                    if (!await ChunkGenerationNodes.AddSampleOverrideAdd(w.Arg))
+                        return await w.Error("Couldn't find sample");
 
-                    w.writerManager.index++;
+                    w.Increment();
                     if (w.writerManager.args[w.writerManager.index].Equals(",")) continue;
                     return 0;
                 }
             } 
         },
         { 
-            "mul", (w) => 
+            "mul", async (w) => 
             {
                 while (true)
                 {
-                    w.writerManager.index++;
-                    if (!ChunkGenerationNodes.AddSampleOverrideMultiply(w.writerManager.args[w.writerManager.index]))
-                        return w.Error("Couldn't find sample");
+                    w.Increment();
+                    if (!await ChunkGenerationNodes.AddSampleOverrideMultiply(w.Arg))
+                        return await w.Error("Couldn't find sample");
 
-                    w.writerManager.index++;
+                    w.Increment();
                     if (w.writerManager.args[w.writerManager.index].Equals(",")) continue;
                     return 0;
                 }
             } 
         },
         { 
-            "sub", (w) => 
+            "sub", async (w) => 
             {
                 while (true)
                 {
-                    w.writerManager.index++;
-                    if (!ChunkGenerationNodes.AddSampleOverrideSubtract(w.writerManager.args[w.writerManager.index]))
-                        return w.Error("Couldn't find sample");
+                    w.Increment();
+                    if (!await ChunkGenerationNodes.AddSampleOverrideSubtract(w.Arg))
+                        return await w.Error("Couldn't find sample");
 
-                    w.writerManager.index++;
+                    w.Increment();
                     if (w.writerManager.args[w.writerManager.index].Equals(",")) continue;
                     return 0;
                 }
@@ -179,56 +180,56 @@ public class CWorldSampleManager : CWorldAbstractNode
         },
         
         { 
-            "clamp", (w) => 
+            "clamp", async (w) => 
             {
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error creating smooth");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error creating smooth");
                 
-                return !ChunkGenerationNodes.AddSampleOverrideParameter("clamp", floats) ? w.Error("Couldn't add clamp parameter") : 0;
+                return !await ChunkGenerationNodes.AddSampleOverrideParameter("clamp", floats) ? await w.Error("Couldn't add clamp parameter") : 0;
             } 
         },
             { 
-                "lerp", (w) => 
+                "lerp", async (w) => 
                 {
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error creating smooth");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error creating smooth");
                 
-                return !ChunkGenerationNodes.AddSampleOverrideParameter("lerp", floats) ? w.Error("Couldn't add lerp parameter") : 0;
+                return !await ChunkGenerationNodes.AddSampleOverrideParameter("lerp", floats) ? await w.Error("Couldn't add lerp parameter") : 0;
             } 
         },
         { 
-            "slide", (w) => 
+            "slide", async (w) => 
             {
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error creating smooth");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error creating smooth");
                 
-                return !ChunkGenerationNodes.AddSampleOverrideParameter("slide", floats) ? w.Error("Couldn't add slide parameter") : 0;
+                return !await ChunkGenerationNodes.AddSampleOverrideParameter("slide", floats) ? await w.Error("Couldn't add slide parameter") : 0;
             } 
         },
         { 
-            "smooth", (w) => 
+            "smooth", async (w) => 
             {
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error creating smooth");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error creating smooth");
                 
-                return !ChunkGenerationNodes.AddSampleOverrideParameter("smooth", floats) ? w.Error("Couldn't add smooth parameter") : 0;
+                return !await ChunkGenerationNodes.AddSampleOverrideParameter("smooth", floats) ? await w.Error("Couldn't add smooth parameter") : 0;
             } 
         },
         { 
-            "ignore", (w) => 
+            "ignore", async (w) => 
             {
-                if (w.GetNext2Floats(out Vector2 floats) == -1)
-                    return w.Error("Error creating smooth");
+                if (await w.GetNext2Floats(out Vector2 floats) == -1)
+                    return await w.Error("Error creating smooth");
                 
-                return !ChunkGenerationNodes.AddSampleOverrideParameter("ignore", floats) ? w.Error("Couldn't add ignore parameter") : 0;
+                return !await ChunkGenerationNodes.AddSampleOverrideParameter("ignore", floats) ? await w.Error("Couldn't add ignore parameter") : 0;
             } 
         },
 
         {
-            "invert", (w) =>
+            "invert", async (w) =>
             {
-                w.Increment(1, 0);
-                ChunkGenerationNodes.SetSampleOverrideInvert();
+                await w.Increment(1, 0);
+                await ChunkGenerationNodes.SetSampleOverrideInvert();
                 return 0;
             } 
         },

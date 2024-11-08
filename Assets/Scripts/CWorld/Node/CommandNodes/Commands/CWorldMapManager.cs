@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class CWorldMapManager
@@ -11,42 +12,42 @@ public class CWorldMapManager
         if (instance == null) instance = this;
     }
     
-    public Dictionary<string, Func<WMWriter, int>> settings = new Dictionary<string, Func<WMWriter, int>>()
+    public Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         { "biomeRange", (w) => w.On_Settings(w.writerManager.worldMapManager.biomeRanges)},
         { "}", (w) => w.Increment(0, 1) },
     };
     
-    public Dictionary<string, Func<WMWriter, int>> biomeRanges = new Dictionary<string, Func<WMWriter, int>>()
+    public Dictionary<string, Func<WMWriter, Task<int>>> biomeRanges = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         {
-            "set", (w) =>
+            "set", async (w) =>
             {
                 w.GetNextValue(out string value);
-                if (!ChunkGenerationNodes.SetMapBiomeRange(value))
-                    return w.Error("Couldn't find biome probably");
+                if (!await ChunkGenerationNodes.SetMapBiomeRange(value))
+                    return await w.Error("Couldn't find biome probably");
                 
-                return w.CommandsTest(w.writerManager.worldMapManager.setRanges) == -1 ? w.Error("Problem with the settings") : 0;
+                return await w.CommandsTest(w.writerManager.worldMapManager.setRanges) == -1 ? await w.Error("Problem with the settings") : 0;
             }
         },
         { "}", (w) => w.Increment(1, 1) },
     };
     
-    public Dictionary<string, Func<WMWriter, int>> setRanges = new Dictionary<string, Func<WMWriter, int>>()
+    public Dictionary<string, Func<WMWriter, Task<int>>> setRanges = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         {
-            "sample", (w) =>
+            "sample", async (w) =>
             {
                 w.GetNext(out var value);
-                if (w.GetNext2Floats(out var floats) == -1)
-                    return w.Error("Not valid range u_u");
+                if (await w.GetNext2Floats(out var floats) == -1)
+                    return await w.Error("Not valid range u_u");
                 
 
-                if (!ChunkGenerationNodes.SetMapSampleRange(value, floats))
-                    return w.Error("Sample may not exists when setting biome range");
+                if (!await ChunkGenerationNodes.SetMapSampleRange(value, floats))
+                    return await w.Error("Sample may not exists when setting biome range");
 
                 return 0;
             }

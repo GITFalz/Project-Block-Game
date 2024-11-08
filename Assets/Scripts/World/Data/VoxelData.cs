@@ -85,17 +85,17 @@ public static class VoxelData
         },
     };
     
-    public static readonly int[] SecondOffsetBase = { 1, 32, 1, 32, 1, 32 };
+    public static readonly int[] SecondOffsetBase = { 1, 32, 1, 32, 1, 1 };
     
     public static readonly int[][] SecondOffset =
     {
         new int[]
         {
-            1, 32, 1, 32, 1, 32
+            1, 32, 1, 32, 1, 1
         },
         new int[]
         {
-            1, 16, 1, 16, 1, 16
+            1, 16, 1, 16, 1, 1
         },
     };
     
@@ -138,7 +138,7 @@ public static class VoxelData
         (x, z) => 31 - x,
         (x, z) => 31 - z,
         (x, z) => 31 - x,
-        (x, z) => 31 - z,
+        (x, z) => 31 - x,
     };
     
     public static readonly Func<int, int, int>[][] SecondLoop = 
@@ -150,7 +150,7 @@ public static class VoxelData
             (x, z) => 31 - x,
             (x, z) => 31 - z,
             (x, z) => 31 - x,
-            (x, z) => 31 - z,
+            (x, z) => 31 - x,
         },
         new Func<int, int, int>[]
         {
@@ -159,7 +159,7 @@ public static class VoxelData
             (x, z) => 15 - x,
             (x, z) => 15 - z,
             (x, z) => 15 - x,
-            (x, z) => 15 - z,
+            (x, z) => 15 - x,
         },
     };
 
