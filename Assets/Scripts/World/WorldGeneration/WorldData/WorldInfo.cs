@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class WorldInfo
 {
-    public static short worldChunkHeight = 5;
+    public static short worldChunkHeight = 10;
     public static int worldSeaLevel = 60;
     public static short worldMaxTerrainHeight = 256;
     public static int worldMinTerrainHeight = 1;

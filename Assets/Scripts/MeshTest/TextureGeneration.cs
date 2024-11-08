@@ -81,22 +81,8 @@ public class TextureGeneration : MonoBehaviour
     public void UpdateTexture()
     {
         noiseTexture = new Texture2D(textureSize, textureSize);
-        GenerateNoise();
+        //GenerateNoise();
         image.texture = noiseTexture;
-    }
-
-    private void GenerateNoise()
-    {
-        for (int i = 0; i < textureSize; i++)
-        {
-            for (int j = 0; j < textureSize; j++)
-            {
-                float height = handler.GetTextureNoise(i + (int)_direction.x, 0, j + (int)_direction.y);
-                noiseTexture.SetPixel(i, j, new Color(height, height, height));
-            }
-        }
-
-        noiseTexture.Apply();
     }
     
     private void GenerateNoise(string sampleName)

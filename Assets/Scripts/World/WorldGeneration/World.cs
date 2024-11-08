@@ -237,7 +237,7 @@ public class World : MonoBehaviour
     {
         if (chunkGenerationQueue.TryDequeue(out Data data))
         {
-            ChunkRenderer chunkRenderer = worldRenderer.RenderChunk(worldData, data.position, data.chunkData);
+            ChunkRenderer chunkRenderer = worldRenderer.RenderChunk(data.position, data.chunkData);
             worldData.activeChunks.Add(data.position, chunkRenderer);
             worldData.canUpdate.TryAdd(data.position, data.chunkData);
             data.Clear();

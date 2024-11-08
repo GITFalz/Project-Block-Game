@@ -138,11 +138,11 @@ public class CWorldSampleManager : CWorldAbstractNode
                 while (true)
                 {
                     w.writerManager.index++;
-                    if (!ChunkGenerationNodes.AddSampleOverrideAdd(w.writerManager.lines[w.writerManager.index]))
+                    if (!ChunkGenerationNodes.AddSampleOverrideAdd(w.writerManager.args[w.writerManager.index]))
                         return w.Error("Couldn't find sample");
 
                     w.writerManager.index++;
-                    if (w.writerManager.lines[w.writerManager.index].Equals(",")) continue;
+                    if (w.writerManager.args[w.writerManager.index].Equals(",")) continue;
                     return 0;
                 }
             } 
@@ -153,11 +153,11 @@ public class CWorldSampleManager : CWorldAbstractNode
                 while (true)
                 {
                     w.writerManager.index++;
-                    if (!ChunkGenerationNodes.AddSampleOverrideMultiply(w.writerManager.lines[w.writerManager.index]))
+                    if (!ChunkGenerationNodes.AddSampleOverrideMultiply(w.writerManager.args[w.writerManager.index]))
                         return w.Error("Couldn't find sample");
 
                     w.writerManager.index++;
-                    if (w.writerManager.lines[w.writerManager.index].Equals(",")) continue;
+                    if (w.writerManager.args[w.writerManager.index].Equals(",")) continue;
                     return 0;
                 }
             } 
@@ -168,11 +168,11 @@ public class CWorldSampleManager : CWorldAbstractNode
                 while (true)
                 {
                     w.writerManager.index++;
-                    if (!ChunkGenerationNodes.AddSampleOverrideSubtract(w.writerManager.lines[w.writerManager.index]))
+                    if (!ChunkGenerationNodes.AddSampleOverrideSubtract(w.writerManager.args[w.writerManager.index]))
                         return w.Error("Couldn't find sample");
 
                     w.writerManager.index++;
-                    if (w.writerManager.lines[w.writerManager.index].Equals(",")) continue;
+                    if (w.writerManager.args[w.writerManager.index].Equals(",")) continue;
                     return 0;
                 }
             } 

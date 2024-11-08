@@ -161,6 +161,18 @@ public class Chunk : MonoBehaviour
     
     public static async Task CreateMapChunk(ChunkData newChunkData, Vector3Int position, CWorldDataHandler handler, CommandSystem commandSystem, int lod)
     {
+        await GenerateMapData(newChunkData, position, handler, lod);
+        commandSystem.chunks.Enqueue(newChunkData);
+    }
+    
+    public static async Task CreateMapChunk(ChunkData newChunkData, Vector3Int position, CWorldDataHandler handler, int lod)
+    {
+        await GenerateMapData(newChunkData, position, handler, lod);
+        WorldGeneration.chunksToRender.Enqueue(newChunkData);
+    }
+
+    public static async Task GenerateMapData(ChunkData newChunkData, Vector3Int position, CWorldDataHandler handler, int lod)
+    {
         newChunkData.meshData = new MeshData();
         
         if (lod == 0)
@@ -174,8 +186,6 @@ public class Chunk : MonoBehaviour
             Block[] blocks = await CreateMapChunkAsync(position, handler, 1);
             GenerateMesh(newChunkData, blocks, lodWidth[lod], lodSize[lod], lod);
         }
-        
-        commandSystem.chunks.Enqueue(newChunkData);
     }
     
     public static Task<Block[]> CreateMapChunkAsync(Vector3Int position, CWorldDataHandler handler)
@@ -295,13 +305,6 @@ public class Chunk : MonoBehaviour
         }
 
         return blockMap;
-    }
-
-    public static Block[] GenerateBlocks(Vector3Int position, string biomeName, CWorldHandler handler)
-    {
-        Block[] newBlocks = new Block[32768];
-        Block[] blocks = handler.GenerateBiome(position, newBlocks, biomeName);
-        return newBlocks;
     }
     
     public static uint[] GenerateTerrain(Vector3Int position, string sampleName, CWorldDataHandler handler)

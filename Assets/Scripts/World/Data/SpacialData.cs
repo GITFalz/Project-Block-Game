@@ -15,4 +15,9 @@ public static class SpacialData
     {
         5, 3, 4, 1, 2, 0
     };
+
+    public static int[,] chunkDirections =
+    {
+        { 1, 0 }, { 0, 1 }, { -1, 0 }, { 0, -1 },
+    };
 }

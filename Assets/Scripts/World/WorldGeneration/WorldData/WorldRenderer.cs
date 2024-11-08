@@ -4,6 +4,7 @@ using UnityEngine;
 public class WorldRenderer : MonoBehaviour
 {
     public GameObject chunkPrefab;
+    public Transform parentChunk;
     public Queue<ChunkRenderer> chunkPool = new Queue<ChunkRenderer>();
 
     public void Clear(WorldData worldData)
@@ -15,22 +16,24 @@ public class WorldRenderer : MonoBehaviour
         chunkPool.Clear();
     }
 
-    internal ChunkRenderer RenderChunk(WorldData worldData, Vector3Int position, ChunkData chunkData)
+    internal ChunkRenderer RenderChunk(Vector3Int position, ChunkData chunkData)
     {
-        ChunkRenderer renderer = null;
+        ChunkRenderer renderer;
+        
         if (chunkPool.Count > 0)
         {
             renderer = chunkPool.Dequeue();
-            renderer.transform.position = position;
+            renderer.transform.position = chunkData.position;
+            renderer.ClearMesh();
             renderer.gameObject.SetActive(true);
         }
         else
         {
             GameObject newChunk = Instantiate(chunkPrefab, position, Quaternion.identity);
             renderer = newChunk.GetComponent<ChunkRenderer>();
+            renderer.RenderChunk(chunkData);
         }
-
-        renderer.RenderChunk(chunkData);
+        
         return renderer;
     }
 
