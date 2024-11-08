@@ -5,7 +5,8 @@ using UnityEngine;
 public class CWorldSampleManager : CWorldAbstractNode
 {
     public static CWorldSampleManager instance;
-    
+
+    public WMWriter writer;
     public CWorldSampleNode sampleNode;
     public CWorldNoiseNode noiseNode;
     public CWOSOverrideNode overrideNode;
@@ -18,7 +19,6 @@ public class CWorldSampleManager : CWorldAbstractNode
         noiseNode = sample.noiseNode;
         overrideNode = sample.overrideNode;
     }
-    
     
     public Dictionary<string, Func<WMWriter, int>> labels = new Dictionary<string, Func<WMWriter, int>>()
     {
@@ -33,30 +33,7 @@ public class CWorldSampleManager : CWorldAbstractNode
         { "override", (w) => w.On_Settings(w.writerManager.worldSampleManager.overrides) },
         { "noise", (w) => w.On_Settings(w.writerManager.worldSampleManager.noises) },
         { "display", (w) => w.On_Display() },
-        { "biome", (w) => w.On_Settings(w.writerManager.worldSampleManager.biomes) },
         { "}", (w) => w.Increment(0, 1) },
-    };
-    
-    public Dictionary<string, Func<WMWriter, int>> biomes = new Dictionary<string, Func<WMWriter, int>>()
-    {
-        { "{", (w) => w.Increment(1, 0) },
-        { "flip", (w) => {
-                
-                ChunkGenerationNodes.SetSampleFlip();
-                return 0;
-            }
-        },
-        { 
-            "range", (w) =>
-            {
-                if (w.GetNext2Ints(out Vector2Int ints) == -1)
-                    return w.Error("no suitable ints found");
-
-                ChunkGenerationNodes.SetSampleRange(ints);
-                return 0;
-            } 
-        },
-        { "}", (w) => w.Increment(1, 1) }
     };
 
     public Dictionary<string, Func<WMWriter, int>> noises = new Dictionary<string, Func<WMWriter, int>>()
@@ -65,6 +42,7 @@ public class CWorldSampleManager : CWorldAbstractNode
         {
             "size", (w) =>
             {
+                Debug.Log(w.writerManager.currentName);
                 if (w.GetNext2Floats(out Vector2 floats) == -1)
                     return w.Error("Error setting noise size");
                 
@@ -160,11 +138,11 @@ public class CWorldSampleManager : CWorldAbstractNode
                 while (true)
                 {
                     w.writerManager.index++;
-                    if (!ChunkGenerationNodes.AddSampleOverrideAdd(w.writerManager.lines[w.writerManager.index]))
+                    if (!ChunkGenerationNodes.AddSampleOverrideAdd(w.writerManager.args[w.writerManager.index]))
                         return w.Error("Couldn't find sample");
 
                     w.writerManager.index++;
-                    if (w.writerManager.lines[w.writerManager.index].Equals(",")) continue;
+                    if (w.writerManager.args[w.writerManager.index].Equals(",")) continue;
                     return 0;
                 }
             } 
@@ -175,11 +153,11 @@ public class CWorldSampleManager : CWorldAbstractNode
                 while (true)
                 {
                     w.writerManager.index++;
-                    if (!ChunkGenerationNodes.AddSampleOverrideMultiply(w.writerManager.lines[w.writerManager.index]))
+                    if (!ChunkGenerationNodes.AddSampleOverrideMultiply(w.writerManager.args[w.writerManager.index]))
                         return w.Error("Couldn't find sample");
 
                     w.writerManager.index++;
-                    if (w.writerManager.lines[w.writerManager.index].Equals(",")) continue;
+                    if (w.writerManager.args[w.writerManager.index].Equals(",")) continue;
                     return 0;
                 }
             } 
@@ -190,11 +168,11 @@ public class CWorldSampleManager : CWorldAbstractNode
                 while (true)
                 {
                     w.writerManager.index++;
-                    if (!ChunkGenerationNodes.AddSampleOverrideSubtract(w.writerManager.lines[w.writerManager.index]))
+                    if (!ChunkGenerationNodes.AddSampleOverrideSubtract(w.writerManager.args[w.writerManager.index]))
                         return w.Error("Couldn't find sample");
 
                     w.writerManager.index++;
-                    if (w.writerManager.lines[w.writerManager.index].Equals(",")) continue;
+                    if (w.writerManager.args[w.writerManager.index].Equals(",")) continue;
                     return 0;
                 }
             } 

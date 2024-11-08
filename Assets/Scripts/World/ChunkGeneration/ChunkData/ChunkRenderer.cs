@@ -55,6 +55,7 @@ public class ChunkRenderer : MonoBehaviour
 
     public void ClearMesh()
     {
+        Debug.Log("ClearMesh");
         mesh.Clear();
     }
 }

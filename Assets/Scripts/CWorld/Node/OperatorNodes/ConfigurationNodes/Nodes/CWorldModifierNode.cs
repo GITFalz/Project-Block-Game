@@ -3,61 +3,91 @@ using UnityEngine;
 
 public class CWorldModifierNode
 {
-    public ModifierRange range;
+    public string name;
+    
+    public CWorldSampleNode sample;
+    public IntRangeNode range;
+    public FloatRangeNode ignore;
+    public List<CWorldModifierGenNode> gen;
+    public bool invert;
+
+    public CWorldModifierNode(string name)
+    {
+        this.name = name;
+        range = new IntRangeNode();
+        gen = new List<CWorldModifierGenNode>();
+        ignore = null;
+        invert = false;
+    }
+
+    public int GetMaxHeight()
+    {
+        return (int)Mathf.Clamp(Mathf.Lerp(range.min, range.max, sample.noiseValue), range.min, range.max);
+    }
 }
 
-public class ModifierSample
+public class IntRangeNode
 {
-    public CWorldSampleNode sampleNode;
     public int min;
     public int max;
-}
 
-public abstract class AbstractModifier
-{
-    public abstract int GetValue();
-}
-
-public class ModifierNoise : AbstractModifier
-{
-    public ModifierSample sample;
-    public int sign;
-    
-    public override int GetValue()
+    public IntRangeNode(int min, int max)
     {
-        return (int)Mathf.Lerp(sample.min, sample.max, sample.sampleNode.noiseValue) * sign;
+        this.min = min;
+        this.max = max;
+    }
+
+    public IntRangeNode()
+    {
+        min = 0;
+        max = WorldInfo.worldMaxTerrainHeight;
+    }
+    
+    public static IntRangeNode operator +(IntRangeNode a, int offset)
+    {
+        return new IntRangeNode(a.min + offset, a.max + offset);
     }
 }
 
-public class ModifierOffset : AbstractModifier
+public class FloatRangeNode
 {
+    public float min;
+    public float max;
+
+    public FloatRangeNode(float min, float max)
+    {
+        this.min = min;
+        this.max = max;
+    }
+
+    public FloatRangeNode()
+    {
+        min = 0;
+        max = 1;
+    }
+}
+
+public class CWorldModifierGenNode
+{
+    public CWorldSampleNode sample;
+    public IntRangeNode range;
     public int offset;
-    
-    public override int GetValue()
+    public bool flip;
+
+    public CWorldModifierGenNode()
     {
-        return offset;
+        offset = 0;
+        flip = false;
     }
-}
 
-public class ModifierRange
-{
-    public List<AbstractModifier> start;
-    public List<AbstractModifier> end;
-
-    public Vector2Int GetRange()
+    public int GetHeight(CWorldModifierNode parent)
     {
-        Vector2Int vector = new Vector2Int();
-
-        foreach (var sample in start)
-        {
-            vector.x += sample.GetValue();
-        }
-        
-        foreach (var sample in end)
-        {
-            vector.y += sample.GetValue();
-        }
-        
-        return vector;
+        if (parent.ignore != null && parent.sample.noiseValue >= parent.ignore.min && parent.sample.noiseValue <= parent.ignore.max)
+            return 0;
+        if (sample.noiseValue < -0.5f)
+            return -1;
+            
+        int maxHeight = parent.GetMaxHeight();
+        return (int)Mathf.Clamp(Mathf.Lerp(maxHeight + range.min, maxHeight + range.max,  sample.noiseValue), maxHeight + range.min, maxHeight + range.max);
     }
 }

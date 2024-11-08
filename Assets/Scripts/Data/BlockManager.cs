@@ -60,8 +60,7 @@ public class BlockManager : MonoBehaviour
 
     public void UpdateInspector()
     {
-        if (inspectorBlocks == null)
-            inspectorBlocks = new List<CWorldBlock>();
+        inspectorBlocks ??= new List<CWorldBlock>();
         
         inspectorBlocks.Clear();
         

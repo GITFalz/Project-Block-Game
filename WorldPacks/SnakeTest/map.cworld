@@ -1,0 +1,14 @@
+Save map
+
+Use SnakeTest>floatingSnakes
+
+Map Force
+{
+	biomeRange
+	{
+		set snakes_biome
+		{
+			sample biome 0, 1
+		} 
+	}
+}

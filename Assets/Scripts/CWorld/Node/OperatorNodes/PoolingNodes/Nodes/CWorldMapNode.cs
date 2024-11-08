@@ -103,18 +103,6 @@ public class CWorldMapNode : CWAPoolingNode
             return noise;
         }
     }
-
-    public CWorldMapNode Copy(CWorldDataHandler handler)
-    {
-        CWorldMapNode mapNode = new CWorldMapNode();
-        
-        foreach (var biome in biomePool)
-        {
-            mapNode.biomePool.Add(biome.Copy(handler));
-        }
-
-        return mapNode;
-    }
 }
 
 public class BiomePool
@@ -147,18 +135,6 @@ public class BiomePool
     public int GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float noise)
     {
         return biome.GetBlockPillar(chunkPosition, blocks, x, z, noise);
-    }
-
-    public BiomePool Copy(CWorldDataHandler handler)
-    {
-        BiomePool biomePool = new BiomePool(biome.Copy(handler));
-
-        foreach (var sample in samples)
-        {
-            biomePool.samples.Add(sample.Key, sample.Value.Copy(handler));
-        }
-
-        return biomePool;
     }
 }
 
