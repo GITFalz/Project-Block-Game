@@ -80,7 +80,7 @@ public class CWorldBiomeNode : CWAExecuteNode
             {
                 handler.Init(x + chunkPosition.x, 0, z + chunkPosition.z);
                 index = x + z * 32;
-                int[] distance = ToList(tops[index], blockMap[index]);
+                int[] distance = ToList(tops[index], (int)blockMap[index]);
                 
                 //Debug.Log($"[{string.Join(", ", distance.Take(32))}]");
                 
@@ -149,7 +149,7 @@ public class CWorldBiomeNode : CWAExecuteNode
             {
                 handler.Init(x + chunkPosition.x, 0, z + chunkPosition.z);
                 index = x + z * 32;
-                int[] distance = ToList(tops[index], blockMap[index]);
+                int[] distance = ToList(tops[index], (int)blockMap[index]);
                 
                 //Debug.Log($"[{string.Join(", ", distance.Take(32))}]");
                 
@@ -177,14 +177,14 @@ public class CWorldBiomeNode : CWAExecuteNode
         return blocks;
     }
 
-    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z)
+    public int GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z)
     {
         return GetBlockPillar(chunkPosition, blocks, x, z, sample.noiseValue);
     }
 
-    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float n)
+    public int GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float n)
     {
-        uint pillar = 0;
+        int pillar = 0;
         int top = 0;
                 
         float noise = n;
@@ -192,17 +192,15 @@ public class CWorldBiomeNode : CWAExecuteNode
         if (noise > -.5f)
         {
             int height = (int)Mathf.Clamp(Mathf.Lerp(sample.min_height, sample.max_height, noise), sample.min_height, sample.max_height);
-                        
             GetPillar(sample, ref pillar, ref top, height, chunkPosition.y);
         }
 
         int index = x + z * 32;
         int[] distance = ToList(top, pillar);
-        
+
         for (int y = 0; y < 32; y++)
         {
             int i = index + y * 1024;
-                    
             blocks[i] = null;
 
             foreach (var sq in SequenceNodes)
@@ -256,52 +254,69 @@ public class CWorldBiomeNode : CWAExecuteNode
         }
     }
     
-    public void GetPillar(CWorldSampleNode sample, ref uint pillar, ref int tops, int height, int y)
+    private void GetPillar(CWorldSampleNode sample, ref int pillar, ref int tops, int height, int y)
     {
-        if (pillar != ~0u && sample.min_height < y + 32 && sample.max_height >= y)
+        if (pillar != ~0 && sample.min_height < y + 32 && sample.max_height >= y)
         {
-            bool top = false;
-            
             if (!sample.flip)
             {
                 if (height >= y && height < y + 32 && sample.min_height <= y)
-                { pillar |= (uint)((1ul << ((height - y) + 1)) - 1); top = true; }
+                {
+                    pillar |= (int)((1L << ((height - y) + 1)) - 1); 
+                    tops = height - (y + 31);;
+                }
                 else if (height >= y && height < y + 32 && sample.min_height > y)
-                { pillar |= (uint)(((1ul << ((height - sample.min_height) + 1)) - 1) << sample.min_height - y); top = true; }
+                {
+                    pillar |= (int)(((1L << ((height - sample.min_height) + 1)) - 1) << sample.min_height - y); 
+                    tops = height - (y + 31);;
+                }
                 else if (height >= y + 32 && sample.min_height >= y)
-                { pillar |= (uint)(((1ul << ((y + 32 - sample.min_height) + 1)) - 1) << sample.min_height - y); top = true; }
+                {
+                    pillar |= (int)(((1L << ((y + 32 - sample.min_height) + 1)) - 1) << sample.min_height - y); 
+                    tops = height - (y + 31);;
+                }
                 else if (height >= y + 32 && sample.min_height <= y)
-                { pillar = ~0u; top = true; }
-                
-                if (top)
-                    tops = height - (y + 31);
+                {
+                    pillar = ~0; 
+                    tops = height - (y + 31);;
+                }
             }
             else
             {
                 int newHeight = sample.min_height + (sample.max_height - height);
-                if (newHeight >= y && newHeight < y + 32 && sample.max_height >= y + 32)
-                { pillar |= (uint)(((1ul << ((y + 32 - newHeight) + 1)) - 1) << newHeight - y); top = true; }
-                else if (newHeight >= y && newHeight < y + 32 && sample.max_height < y + 32)
-                { pillar |= (uint)(((1ul << ((sample.max_height - newHeight) + 1)) - 1) << newHeight - y); top = true; }
-                else if (newHeight <= y && sample.max_height < y + 32)
-                { pillar |= (uint)((1ul << ((sample.max_height - y) + 1)) - 1); top = true; }
-                else if (newHeight <= y && sample.max_height >= y + 32) 
-                { pillar = ~0u; top = true; }
                 
-                if (top)
+                if (newHeight >= y && newHeight < y + 32 && sample.max_height >= y + 32)
+                {
+                    pillar |= (int)(((1L << ((y + 32 - newHeight) + 1)) - 1) << newHeight - y); 
                     tops = sample.max_height - newHeight;
+                }
+                else if (newHeight >= y && newHeight < y + 32 && sample.max_height < y + 32)
+                {
+                    pillar |= (int)(((1L << ((sample.max_height - newHeight) + 1)) - 1) << newHeight - y);
+                    tops = sample.max_height - newHeight;
+                }
+                else if (newHeight <= y && sample.max_height < y + 32)
+                {
+                    pillar |= (int)((1L << ((sample.max_height - y) + 1)) - 1); 
+                    tops = sample.max_height - newHeight;
+                }
+                else if (newHeight <= y && sample.max_height >= y + 32)
+                {
+                    pillar = ~0; 
+                    tops = sample.max_height - newHeight;;
+                }
             }
         }
     }
 
-    public int[] ToList(int start, uint pillar)
+    private int[] ToList(int start, int pillar)
     {
         int[] list = new int[32];
         int count = start;
         
         for (int i = 0; i < 32; i++)
         {
-            if (((pillar >> (31 - i)) & 1u) == 1)
+            if (((pillar >> (31 - i)) & 1) == 1)
                 count++;
             else
                 count = 0;

@@ -31,13 +31,8 @@ public class WriterManager
     public WriterManager(WMWriter writer, bool import)
     {
         worldSampleManager = new CWorldSampleManager();
-        worldSampleManager.writer = writer;
-
         worldBiomeManager = new CWorldBiomeManager();
-        worldBiomeManager.writer = writer;
-
         worldBlockManager = new CWorldBlockManager();
-
         worldMapManager = new CWorldMapManager();
 
         this.import = import;

@@ -40,7 +40,7 @@ public class CWorldMenu : MonoBehaviour
     public void Init()
     {
         fileManager.Init();
-        currentFolderPath = fileManager.worldPacksFolderPath;
+        currentFolderPath = FileManager.EditorFolderPath;
 
         folderNames = new HashSet<string>();
         fileNames = new HashSet<string>();

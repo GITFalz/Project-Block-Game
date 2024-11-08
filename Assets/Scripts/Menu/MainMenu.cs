@@ -13,8 +13,7 @@ public class MainMenu : MonoBehaviour
     public TextureGeneration textureGeneration;
     public FileManager fileManager;
 
-
-    public void Init()
+    private void Start()
     {
         fileManager.Init();
     }

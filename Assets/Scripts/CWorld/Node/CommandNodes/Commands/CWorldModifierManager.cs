@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-public class CWorldMapManager
+public class CWorldModifierManager : CWorldAbstractNode
 {
-    public static CWorldMapManager instance;
+    public static CWorldModifierManager instance;
 
-    public CWorldMapManager()
+    public CWorldModifierManager()
     {
         if (instance == null) instance = this;
     }

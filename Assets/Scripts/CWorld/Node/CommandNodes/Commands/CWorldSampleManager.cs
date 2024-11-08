@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class CWorldSampleManager : CWorldAbstractNode
 {
     public static CWorldSampleManager instance;
-
-    public WMWriter writer;
+    
     public CWorldSampleNode sampleNode;
     public CWorldNoiseNode noiseNode;
     public CWOSOverrideNode overrideNode;
@@ -20,6 +18,7 @@ public class CWorldSampleManager : CWorldAbstractNode
         noiseNode = sample.noiseNode;
         overrideNode = sample.overrideNode;
     }
+    
     
     public Dictionary<string, Func<WMWriter, int>> labels = new Dictionary<string, Func<WMWriter, int>>()
     {
@@ -41,9 +40,8 @@ public class CWorldSampleManager : CWorldAbstractNode
     public Dictionary<string, Func<WMWriter, int>> biomes = new Dictionary<string, Func<WMWriter, int>>()
     {
         { "{", (w) => w.Increment(1, 0) },
-        {
-            "flip", (w) =>
-            {
+        { "flip", (w) => {
+                
                 ChunkGenerationNodes.SetSampleFlip();
                 return 0;
             }

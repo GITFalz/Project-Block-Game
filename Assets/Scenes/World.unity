@@ -858,6 +858,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   worldPacksFolderPath: 
+  executeOnEnterPath: 
 --- !u!1 &351029952
 GameObject:
   m_ObjectHideFlags: 0
@@ -986,7 +987,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainNoise: {fileID: 11400000, guid: b0220d0290844ff4684f17bc0b7385e6, type: 2}
   biome: {fileID: 11400000, guid: 506139288d5887e48ae7009167920ec0, type: 2}
-  blockManager: {fileID: 11400000, guid: 0b5d5af82dd37674fb20281e88305bbc, type: 2}
+  blockManagerSo: {fileID: 11400000, guid: 0b5d5af82dd37674fb20281e88305bbc, type: 2}
   chunkPrefab: {fileID: 3562027380826403404, guid: 297f5176c701de041b6a1dc5e0162658, type: 3}
   chunksToAdd: []
   texture: {fileID: 0}
@@ -1194,7 +1195,7 @@ MonoBehaviour:
   handler: {fileID: 1487717791}
   parentChunk: {fileID: 828697698}
   chunkPrefab: {fileID: 3562027380826403404, guid: 297f5176c701de041b6a1dc5e0162658, type: 3}
-  blockManager: {fileID: 11400000, guid: 0b5d5af82dd37674fb20281e88305bbc, type: 2}
+  blockManager: {fileID: 0}
   biome: {fileID: 11400000, guid: 506139288d5887e48ae7009167920ec0, type: 2}
   threadCount: 4
 --- !u!1 &519322977
@@ -2560,7 +2561,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   commands: {fileID: 252321738}
-  cworld: {fileID: 0}
   textureGeneration: {fileID: 1487717789}
   fileManager: {fileID: 294665023}
 --- !u!4 &1027218707
@@ -3768,7 +3768,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 10000
   field of view: 60
   orthographic: 0
   orthographic size: 5

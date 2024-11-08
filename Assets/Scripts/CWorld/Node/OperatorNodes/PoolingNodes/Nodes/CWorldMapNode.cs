@@ -12,7 +12,7 @@ public class CWorldMapNode : CWAPoolingNode
         biomePool = new List<BiomePool>();
     }
 
-    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldHandler handler)
+    public int GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldHandler handler)
     {
         int i = 0;
         float noise = 0;
@@ -46,7 +46,7 @@ public class CWorldMapNode : CWAPoolingNode
         return 0;
     }
     
-    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldDataHandler handler)
+    public int GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldDataHandler handler)
     {
         int i = 0;
         float noise = 0;
@@ -139,12 +139,12 @@ public class BiomePool
         return true;
     }
 
-    public uint GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z)
+    public int GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z)
     {
         return biome.GetBlockPillar(chunkPosition, blocks, x, z);
     }
     
-    public uint GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float noise)
+    public int GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float noise)
     {
         return biome.GetBlockPillar(chunkPosition, blocks, x, z, noise);
     }

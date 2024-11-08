@@ -142,12 +142,12 @@ public class ChunkGeneration : MonoBehaviour
             {
                 for (int tris = 0; tris < 6; tris++)
                 {
-                    chunkData.meshData.tris.Add(VoxelData.trisIndexTable[tris] + chunkData.meshData.Count());
+                    chunkData.meshData.tris.Add(VoxelData.TrisIndexTable[tris] + chunkData.meshData.Count());
                 }
                 
                 for (int vert = 0; vert < 4; vert++)
                 {
-                    chunkData.meshData.verts.Add(VoxelData.vertexTable[VoxelData.vertexIndexTable[i, vert]] + position);
+                    chunkData.meshData.verts.Add(VoxelData.VertexTable[VoxelData.VertexIndexTable[i, vert]] + position);
                 }
             }
         }

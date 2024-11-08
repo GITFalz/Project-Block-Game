@@ -9,8 +9,6 @@ public class CWorldHandler : MonoBehaviour
     public static Dictionary<string, CWorldSampleNode> sampleNodes;
     public static Dictionary<string, CWorldBiomeNode> biomeNodes;
     public static CWorldMapNode MapNode;
-    //public Dictionary<string, CWAInitializerNode> initializers;
-    //public Dictionary<string, CWAExecuteNode> executes;
 
     public CWorldSampleHandler SampleHandler;
 
@@ -20,15 +18,12 @@ public class CWorldHandler : MonoBehaviour
     {
         sampleNodes = new Dictionary<string, CWorldSampleNode>();
         biomeNodes = new Dictionary<string, CWorldBiomeNode>();
-        //MapNode = null;
     }
 
     public void Init()
     {
         sampleNodes = new Dictionary<string, CWorldSampleNode>();
         biomeNodes = new Dictionary<string, CWorldBiomeNode>();
-        //initializers = new Dictionary<string, CWAInitializerNode>();
-        //executes = new Dictionary<string, CWAExecuteNode>();
     }
 
     public float GetTextureNoise(int x, int y, int z)
@@ -56,25 +51,6 @@ public class CWorldHandler : MonoBehaviour
         return i.GetNoise();
     }
 
-    public CWorldSampleNode SetupSamplePool(string sampleName)
-    {
-        SampleHandler = new CWorldSampleHandler();
-
-        if (sampleNodes.TryGetValue(sampleName, out var sample))
-        {
-            AddSample(sample, SampleHandler);
-            return sample;
-        }
-
-        return null;
-    }
-
-    public float SampleNoise(int x, int y, int z, CWorldSampleNode sample)
-    {
-        SampleHandler.Init(x, y, z);
-        return sample.GetNoise();
-    }
-
     public void AddSample(CWorldSampleNode sample, CWorldSampleHandler sampleHandler)
     {
         sampleHandler.sampleNodes.TryAdd(sample.name, sample);
@@ -97,30 +73,6 @@ public class CWorldHandler : MonoBehaviour
         return blocks;
     }
 
-    public uint GenerateBiomePillar(Vector3Int position, Block[] blocks, int x, int z, string biomeName)
-    {
-        if (biomeNodes.TryGetValue(biomeName.Trim(), out var node))
-        {
-            return node.GetBlockPillar(position, blocks, x, z);
-        }
-
-        return 0;
-    }
-    
-    public uint GenerateMapPillar(Vector3Int position, Block[] blocks, int x, int z)
-    {
-        return MapNode.GetBlockPillar(position, blocks, x, z, this);
-    }
-    
-    public uint GetBlockMapPillar(int x, int y, int z, string sampleName)
-    {
-        if (sampleNodes.TryGetValue(sampleName, out CWorldSampleNode i))
-        {
-            return i.GetPillar(x, y, z);
-        }
-        return 0;
-    }
-
     public void Init(int x, int y, int z)
     {
         foreach (var i in ChunkGenerationNodes.dataHandlers[0].sampleNodes.Values)
@@ -132,18 +84,6 @@ public class CWorldHandler : MonoBehaviour
         {
             i.ApplyOverride();
         }
-    }
-    
-    public Block GetBlock(int x, int y, int z)
-    {
-        Block block = null;
-        foreach (CWorldBiomeNode execute in biomeNodes.Values)
-        {
-            //Block b = execute.GetBlock(x, y, z);
-            //if (b != null) block = b;
-        }
-
-        return block;
     }
 }
 
@@ -236,7 +176,7 @@ public class CWorldDataHandler
         return blocks;
     }
 
-    public uint GenerateBiomePillar(Vector3Int position, Block[] blocks, int x, int z, string biomeName)
+    public int GenerateBiomePillar(Vector3Int position, Block[] blocks, int x, int z, string biomeName)
     {
         if (biomeNodes.TryGetValue(biomeName.Trim(), out var node))
         {
@@ -246,7 +186,7 @@ public class CWorldDataHandler
         return 0;
     }
     
-    public uint GenerateMapPillar(Vector3Int position, Block[] blocks, int x, int z)
+    public int GenerateMapPillar(Vector3Int position, Block[] blocks, int x, int z)
     {
         return MapNode.GetBlockPillar(position, blocks, x, z, this);
     }

@@ -4,24 +4,21 @@ using UnityEngine;
 
 public class FileManager : MonoBehaviour
 {
-    public string worldPacksFolderPath;
-    public string executeOnEnterPath;
+    public static string WorldPacksFolderPath;
+    public static string ExecuteOnEnterFolderPath;
+    public static string ChunkDataFolderPath;
+    public static string WorldFolderPath;
+    public static string EditorFolderPath;
+    public static string ConfigFolderPath;
 
     public void Init()
     {
-        worldPacksFolderPath = Path.Combine(Application.persistentDataPath, "WorldPacks");
-        
-        if (!Directory.Exists(worldPacksFolderPath))
-        {
-            Directory.CreateDirectory(worldPacksFolderPath);
-        }
-        
-        executeOnEnterPath = Path.Combine(Application.persistentDataPath, "LoadOnEnter");
-        
-        if (!Directory.Exists(executeOnEnterPath))
-        {
-            Directory.CreateDirectory(executeOnEnterPath);
-        }
+        WorldPacksFolderPath = GenerateFolder("WorldPacks");
+        ExecuteOnEnterFolderPath = GenerateFolder("LoadOnEnter");
+        ChunkDataFolderPath = GenerateFolder("ChunkData");
+        WorldFolderPath = GenerateFolder("Worlds");
+        ConfigFolderPath = GenerateFolder("Config");
+        EditorFolderPath = GenerateFolder("Editor");
     }
     
     public static Dictionary<string, string> GetFolderNames(string path)
@@ -64,5 +61,13 @@ public class FileManager : MonoBehaviour
         }
 
         return paths;
+    }
+
+    private static string GenerateFolder(string folderName)
+    {
+        string path = Path.Combine(Application.persistentDataPath, folderName);
+        if (!Directory.Exists(path))
+            Directory.CreateDirectory(path);
+        return path;
     }
 }
