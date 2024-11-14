@@ -6,6 +6,7 @@ public class CWorldDataHandler
     public Dictionary<string, CWorldSampleNode> sampleNodes;
     public Dictionary<string, CWorldBiomeNode> biomeNodes;
     public Dictionary<string, CWorldModifierNode> modifierNodes;
+    public Dictionary<string, CWorldLinkNode> linkNodes;
     public CWorldSampleHandler SampleHandler;
     public CWorldSampleNode mainPoolSample;
     public CWorldMapNode MapNode;
@@ -15,6 +16,7 @@ public class CWorldDataHandler
         sampleNodes = new Dictionary<string, CWorldSampleNode>();
         biomeNodes = new Dictionary<string, CWorldBiomeNode>();
         modifierNodes = new Dictionary<string, CWorldModifierNode>();
+        linkNodes = new Dictionary<string, CWorldLinkNode>();
         SampleHandler = new CWorldSampleHandler();
         MapNode = null;
     }

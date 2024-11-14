@@ -10,7 +10,7 @@ public class ConsoleTextManager : MonoBehaviour
     public List<string> lines;
     public int lineCount;
 
-    public ConcurrentQueue<string> lineQueue;
+    public ConcurrentQueue<string> lineQueue = new();
 
     public void Init()
     {
@@ -21,19 +21,17 @@ public class ConsoleTextManager : MonoBehaviour
 
     private void Update()
     {
-        if (lineQueue?.TryDequeue(out var line) == true)
-        {
-            lines ??= new List<string>();
-            
-            if (lineCount == 100)
-                lines.RemoveAt(0);
-            else
-                lineCount++;
+        if (!lineQueue.TryDequeue(out var line))
+            return;
         
-            lines.Add(line);
+        if (lineCount == 100)
+            lines.RemoveAt(0);
+        else
+            lineCount++;
+    
+        lines.Add(line);
 
-            UpdateText();
-        }
+        UpdateText();
     }
 
     private void Awake()

@@ -22,16 +22,16 @@ public class CWorldTreeManager
     public Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
-        { "link", async (w) => },
+        //{ "link", async (w) => },
         { "}", (w) => w.Increment(0, 1) },
     };
     
     public Dictionary<string, Func<WMWriter, Task<int>>> link = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
-        { "sample", async (w) => },
-        { "link", async (w) => },
-        { "range", async (w) => },
+        //{ "sample", async (w) => },
+        //{ "link", async (w) => },
+        //{ "range", async (w) => },
         { "}", (w) => w.Increment(0, 1) },
     };
 }

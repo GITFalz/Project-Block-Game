@@ -12,6 +12,7 @@ public static class ChunkGenerationNodes
     public static string currentBiomeName = "";
     public static string sampleDisplayName = "";
     public static string currentModifierName = "";
+    public static string currentLinkName = "";
 
     public static int threadCount = 4;
     
@@ -80,6 +81,21 @@ public static class ChunkGenerationNodes
             }
 
             currentModifierName = name;
+            return true;
+        });
+    }
+    
+    public static Task<bool> AddLink(string name)
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                if (!dataHandlers[i].linkNodes.TryAdd(name, new CWorldLinkNode(name)))
+                    return false;
+            }
+
+            currentLinkName = name;
             return true;
         });
     }
@@ -566,5 +582,35 @@ public static class ChunkGenerationNodes
 
             return true;
         });
+    }
+
+
+
+    public static void SetLinkAPosition(Vector3Int position, bool overwrite = false)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            SetLinkPointPosition(dataHandlers[i].linkNodes[currentLinkName].A, position, overwrite);
+        }
+    }
+    
+    public static void SetLinkBPosition(Vector3Int position, bool overwrite = false)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            SetLinkPointPosition(dataHandlers[i].linkNodes[currentLinkName].B, position, overwrite);
+        }
+    }
+
+    public static void SetLinkPointPosition(CWorldLinkPoint point, Vector3Int position, bool overwrite = false)
+    {
+        if (overwrite)
+            point.position = position;
+        else
+        {
+            point.position.x = position.x != 0 ? position.x : point.position.x;
+            point.position.y = position.y != 0 ? position.y : point.position.y;
+            point.position.z = position.z != 0 ? position.z : point.position.z;
+        }
     }
 }

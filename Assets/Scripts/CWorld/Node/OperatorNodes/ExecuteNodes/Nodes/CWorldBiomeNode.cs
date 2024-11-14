@@ -41,7 +41,7 @@ public class CWorldBiomeNode : CWAExecuteNode
                 {
                     height = gen.GetHeight(modifier);
                     if (height != -1)
-                        GetPillar((gen.range + modifier.GetMaxHeight()), false, ref pillar, ref top,
+                        GetPillar(gen.range, false, ref pillar, ref top,
                             height, chunkPosition.y);
                 }
             }

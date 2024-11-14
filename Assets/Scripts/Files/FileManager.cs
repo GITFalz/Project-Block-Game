@@ -48,8 +48,17 @@ public class FileManager : MonoBehaviour
     {
         if (path.Equals(""))
             return false;
-        
+
         File.WriteAllText(path, text);
+        return true;
+    }
+    
+    public static bool Save(string root, string path, string text)
+    {
+        if (path.Equals(""))
+            return false;
+
+        File.WriteAllText(Path.Combine(root, path), text);
         return true;
     }
     

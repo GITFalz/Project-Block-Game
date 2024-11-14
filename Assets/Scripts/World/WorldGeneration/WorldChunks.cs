@@ -6,7 +6,7 @@ public static class WorldChunks
 {
     public static ConcurrentDictionary<Vector3Int, ChunkRenderer> activeChunks = new();
     public static ConcurrentDictionary<Vector3Int, ChunkData> activeChunkData = new();
-    public static ConcurrentDictionary<Vector3Int, ChunkData> toBeGenerated = new();
+    public static ConcurrentDictionary<Vector3Int, ChunkData> chunksToUpdate = new();
     
     public static HashSet<Vector3Int> existingChunks = new();
     public static HashSet<Vector3Int> chunksToIgnore = new();

@@ -82,9 +82,14 @@ public class GameCommandSystem : MonoBehaviour
         {
             if (chunks.TryDequeue(out var result))
             {
-                if (!WorldChunks.activeChunkData.TryAdd(result.position, result)) return;
+                if (!WorldChunks.activeChunkData.ContainsKey(result.position)) 
+                    return;
+                
                 GameObject newChunk = Instantiate(chunkPrefab, result.position, Quaternion.identity, parentChunk);
-                newChunk.GetComponent<ChunkRenderer>().RenderChunk(result);
+                ChunkRenderer chunkRenderer = newChunk.GetComponent<ChunkRenderer>();
+                chunkRenderer.RenderChunk(result);
+                
+                WorldChunks.activeChunks.TryAdd(result.position, chunkRenderer);
             }
         }
     }
@@ -129,10 +134,12 @@ public class GameCommandSystem : MonoBehaviour
             {
                 if (_mapChunks.TryDequeue(out var result))
                 {
+                    WorldChunks.activeChunkData.TryAdd(result, new ChunkData(result));
+                    
                     if (Vector3Int.Distance(center, result) > distance)
-                        ChunkGenerationNodes.tasks[i] = Chunk.CreateMapChunk(new ChunkData(result), result, ChunkGenerationNodes.dataHandlers[i], this, 1);
+                        ChunkGenerationNodes.tasks[i] = Chunk.CreateMapChunk(WorldChunks.activeChunkData[result], result, ChunkGenerationNodes.dataHandlers[i], this, 1);
                     else
-                        ChunkGenerationNodes.tasks[i] = Chunk.CreateMapChunk(new ChunkData(result), result, ChunkGenerationNodes.dataHandlers[i], this, 0);
+                        ChunkGenerationNodes.tasks[i] = Chunk.CreateMapChunk(WorldChunks.activeChunkData[result], result, ChunkGenerationNodes.dataHandlers[i], this, 0);
                 
                     await ChunkGenerationNodes.tasks[i];
                     ChunkGenerationNodes.tasks[i] = null;

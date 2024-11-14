@@ -41,7 +41,7 @@ public class CWorldMapManager
         {
             "sample", async (w) =>
             {
-                w.GetNext(out var value);
+                w.GetNextValue(out var value);
                 if (await w.GetNext2Floats(out var floats) == -1)
                     return await w.Error("Not valid range u_u");
                 

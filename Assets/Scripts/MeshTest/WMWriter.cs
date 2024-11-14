@@ -86,16 +86,20 @@ public class WMWriter : MonoBehaviour
 
     public async void LoadOnEnter()
     {
-        if (!FileManager.EditorFolderPath.Equals(""))
+        currentPath = FileManager.ExecuteOnEnterFolderPath;
+        if (!currentPath.Equals(""))
         {
             Console.Log("Loading files...");
             string[] files = GetCWorldFilesInFolder();
             string f = files.Length <= 1 ? "file was" : "files were";
             Console.Log(files.Length + $" {f} found");
-            
+
+            int i = 0;
             foreach (var filePath in files)
             {
+                Console.Log($"File {i}: " + filePath);
                 await Load(filePath);
+                i++;
             }
         }
     }
@@ -117,9 +121,7 @@ public class WMWriter : MonoBehaviour
             return -1;
         }
         
-        writerManager.savePath = currentPath;
-        
-        Console.Log("Loading: " + currentPath + "\n\">> Initializing lines...\"");
+        Console.Log("Loading: " + currentPath + "\n>> Initializing lines...");
         
         try {
             await writerManager.InitLines(currentFileConent);
@@ -195,11 +197,15 @@ public class WMWriter : MonoBehaviour
 
     public async void SaveFile()
     {
+        currentFileConent = inputField.text;
         await SaveFileAsync();
     }
 
     public async Task SaveFileAsync()
     {
+        if (menu == null)
+            return;
+        
         Console.Log("Saving file...");
 
         try
@@ -217,8 +223,8 @@ public class WMWriter : MonoBehaviour
         {
             if (quitNext)
             {
-                
-                FileManager.Save(value + ".cworld", currentFileConent);
+                string path = value + ".cworld";
+                FileManager.Save(menu.currentFolderPath, path, currentFileConent);
                 break;
             }
 
@@ -410,6 +416,23 @@ public class WMWriter : MonoBehaviour
         }
         
         if (await CommandsTest(writerManager.worldModifierManager.settings) == -1) return await Error("Problem in the modifier settings found");
+        return 0;
+    }
+    
+    public async Task<int> On_Link()
+    {
+        Increment();
+        
+        if (await CommandsTest(CWorldLinkManager.labels) == -1) return await Error("Couldn't assign label to link");
+        if (!await ChunkGenerationNodes.AddLink(CWorldLinkManager.currentLink))
+        {
+            if (!writerManager.import)
+                return await Error("name is used twice");
+            if (writerManager.import)
+                return await SkipNode();
+        }
+        
+        if (await CommandsTest(CWorldLinkManager.settings) == -1) return await Error("Problem in the link settings found");
         return 0;
     }
 
@@ -609,16 +632,46 @@ public class WMWriter : MonoBehaviour
         }
     }
     
-    public void GetNext(out string value)
+    public Task<int> GetNextNInts(int n, out List<int> ints)
     {
+        ints = new List<int>();
+
+        //Check if there are enough arguments
+        if (n <= 0)
+            return Task.FromResult(0);
+        
+        int v;
+        
+        //Get the first int
         Increment();
+        if (!int.TryParse(Arg, out v)) return Error("No valid int found");
+        ints.Add(v);
+        
+        for (int i = 0; i < n-1; i++)
+        {
+            //loop over ", int" n-1 times
+            Increment();
+            if (!Arg.Equals(",")) return Error("',' is missing");
+            Increment();
+            if (!int.TryParse(Arg, out v)) return Error("No valid int found");
+            ints.Add(v);
+        }
+
+        //Increment to the next command
+        Increment();
+        
+        return Task.FromResult(0);
+    }
+
+    public void GetValue(out string value)
+    {
         value = Arg;
     }
     
     public void GetNextValue(out string value)
     {
-        GetNext(out value);
         Increment();
+        value = Arg;
     }
     
     public Task<int> GetNext2Values(out string[] values)
@@ -644,6 +697,7 @@ public class WMWriter : MonoBehaviour
     public Dictionary<string, Func<WMWriter, Task<int>>> types = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "Save", async (w) => await w.On_Save() },
+        { "Link", async (w) => await w.On_Link() },
         { "Use", async (w) => await w.On_Use() },
         { "Sample", async (w) => await w.On_Sample() },
         { "Biome", async (w) => await w.On_Biome() },
