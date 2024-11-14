@@ -1,17 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
 
 public class WMWriter : MonoBehaviour
 {
@@ -31,6 +25,7 @@ public class WMWriter : MonoBehaviour
     public WriterManager writerManager;
 
     private string currentPath;
+    private string currentFileConent;
 
     private int Index => writerManager.index;
     private string[] Args => writerManager.args;
@@ -59,11 +54,13 @@ public class WMWriter : MonoBehaviour
 
     public async void ExecuteCode()
     {
+        ChunkGenerationNodes.Clear();
         await Load(menu.currentFilePath);
     }
 
     public async Task Main()
     {
+        Console.Log("Executing code...");
         while (writerManager.index <= writerManager.args.Length)
         {
             if (writerManager.index == writerManager.args.Length)
@@ -74,13 +71,16 @@ public class WMWriter : MonoBehaviour
             if (message == -1)
             {
                 Console.Log(Regex.Replace(writerManager.GetLine(), "\t", "") + " <<");
-                break;
+                throw new Exception("An error occured");
             }
 
             writerManager.index++;
         }
         
         blockManager.UpdateInspector();
+        
+        Console.Log("Done with: " + currentPath);
+        Console.Log(">--------------------<");
     }
 
 
@@ -105,46 +105,52 @@ public class WMWriter : MonoBehaviour
         currentPath = path;
 
         WriterManager oldWriter = writerManager;
+        string oldContent = currentFileConent;
+        
         writerManager = new WriterManager(this, true);
-
-        string content;
-
-        try
-        {
-            content = await File.ReadAllTextAsync(path);
+        
+        try {
+            currentFileConent = await File.ReadAllTextAsync(currentPath);
         }
-        catch (FileNotFoundException)
-        {
-            Console.Log($"File not found: {path}");
-            return -1;
-        }
-
-        writerManager.savePath = path;
-        Console.Log("Initializing lines...");
-        await writerManager.InitLines(content);
-        Console.Log("Done!");
-
-        try
-        {
-            await Main();
-            if (!simpleLoad)
-            {
-                textureGeneration?.SetMove(true);
-                
-                menu?.Save(writerManager.savePath, writerManager.fileContent);
-
-                if (!ChunkGenerationNodes.sampleDisplayName.Equals(""))
-                {
-                    textureGeneration?.UpdateTexture(ChunkGenerationNodes.sampleDisplayName);
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            Console.Log("A problem occured when running the main loop");
+        catch (FileNotFoundException) {
+            Console.Log($"File not found: {currentPath}");
             return -1;
         }
         
+        writerManager.savePath = currentPath;
+        
+        Console.Log("Loading: " + currentPath + "\n\">> Initializing lines...\"");
+        
+        try {
+            await writerManager.InitLines(currentFileConent);
+        }
+        catch (NullReferenceException) {
+            Console.Log("Falz forgot to init the writerManager that fucking idiot, please tell him");
+            return -1;
+        }
+        
+        Console.Log("Done!");
+
+        try {
+            await Main();
+        }
+        catch (Exception e) {
+            Console.Log("A problem occured when running the main loop with exception:\n " + e.Message);
+            return -1;
+        }
+        
+        if (!simpleLoad)
+        {
+            textureGeneration?.SetMove(true);
+                
+            if (!ChunkGenerationNodes.sampleDisplayName.Equals(""))
+            {
+                Console.Log(">> Drawing texture...");
+                textureGeneration?.UpdateTexture(ChunkGenerationNodes.sampleDisplayName);
+            }
+        }
+
+        currentFileConent = oldContent;
         writerManager = oldWriter;
 
         return 1;
@@ -186,31 +192,42 @@ public class WMWriter : MonoBehaviour
 
         return files.ToArray();
     }
-    
-    /**
-     * 
-     */
-    
-
 
     public async void SaveFile()
     {
-        writerManager.args = await writerManager.InitLines(inputField.text);
-            
+        await SaveFileAsync();
+    }
+
+    public async Task SaveFileAsync()
+    {
+        Console.Log("Saving file...");
+
+        try
+        {
+            writerManager.args = await writerManager.InitLines(currentFileConent);
+        }
+        catch (NullReferenceException)
+        {
+            Console.Log("Falz forgot to init the writerManager that fucking idiot, please tell him");
+            return;
+        }
+
         bool quitNext = false;
         foreach (string value in writerManager.args)
         {
             if (quitNext)
             {
-                menu.Save(value + ".cworld", inputField.text);
+                
+                FileManager.Save(value + ".cworld", currentFileConent);
                 break;
             }
-            
+
             if (value.Equals("Save"))
             {
                 quitNext = true;
             }
         }
+        Console.Log("File saved!");
     }
 
     public string DisplayContent(string filePath)
@@ -228,23 +245,29 @@ public class WMWriter : MonoBehaviour
     }
 
 
-    public Task<int> On_Save()
+    public async Task<int> On_Save()
     {
         Increment();
-        writerManager.saveFile = Arg;
-        return Task.FromResult(1);
+        await SaveFileAsync();
+        Increment();
+        return 1;
     }
 
     public async Task<int> On_Use()
     {
-        writerManager.index++;
+        Increment();
         string[] path = writerManager.args[writerManager.index].Split(new[] { '/', '\'', '|', '>' }, StringSplitOptions.RemoveEmptyEntries);
         string mainPath = FileManager.EditorFolderPath;
+
+        string consolePath = "";
         
         foreach (string p in path)
         {
+            consolePath += $" {p}";
             mainPath = Path.Combine(mainPath, p);
         }
+        
+        Console.Log("Using: " + consolePath);
         
         mainPath += ".cworld";
 
@@ -291,11 +314,6 @@ public class WMWriter : MonoBehaviour
                 
         Console.Log(message);
         return Task.FromResult(-1);
-    }
-
-    private bool MaxIndex(int i)
-    {
-        return writerManager.index + i < writerManager.args.Length;
     }
     
 
@@ -474,6 +492,8 @@ public class WMWriter : MonoBehaviour
     {
         writerManager.index++;
         ChunkGenerationNodes.sampleDisplayName = writerManager.currentName;
+        
+        Console.Log("Drawing texture...");
         
         return Task.FromResult(0);
     }

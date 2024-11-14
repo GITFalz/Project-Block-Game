@@ -212,7 +212,7 @@ public class CWorldMenu : MonoBehaviour
             File.WriteAllText(filePath, text);
         }
         
-        GenerateCWorldButtons();
+        //GenerateCWorldButtons();
     }
     
     public void SaveToPath(string filePath, string text)

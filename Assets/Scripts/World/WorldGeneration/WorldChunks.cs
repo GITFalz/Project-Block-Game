@@ -6,9 +6,18 @@ public static class WorldChunks
 {
     public static ConcurrentDictionary<Vector3Int, ChunkRenderer> activeChunks = new();
     public static ConcurrentDictionary<Vector3Int, ChunkData> activeChunkData = new();
+    public static ConcurrentDictionary<Vector3Int, ChunkData> toBeGenerated = new();
     
     public static HashSet<Vector3Int> existingChunks = new();
     public static HashSet<Vector3Int> chunksToIgnore = new();
+
+    public static void ClearChunks()
+    {
+        activeChunkData.Clear();
+        activeChunks.Clear();
+        existingChunks.Clear();
+        chunksToIgnore.Clear();
+    }
 
     public static bool Exists(Vector3Int pos)
     {

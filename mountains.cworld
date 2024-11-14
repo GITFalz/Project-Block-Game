@@ -1,0 +1,110 @@
+Save mountains
+
+Sample ( name = mountMapNoise )
+{
+	override
+	{
+		add mn1, mn2
+		invert
+	}
+
+	noise
+	{
+		size 800, 800
+		offset 9000, 9000
+		amplitude 0.8
+	}
+}
+
+
+
+
+Sample ( name = m0 )
+{
+	noise
+	{
+		size 80, 80
+		offset 9000, 9000
+		smooth 0.3, 0.7
+		amplitude 0.1
+	}
+}
+
+Sample ( name = m1 )
+{
+	noise
+	{
+		size 320, 320
+		offset 10000, 10000
+		smooth 0.3, 0.7
+		amplitude 0.2
+	}
+}
+
+Sample ( name = m2 )
+{
+	noise
+	{
+		size 160, 160
+		offset 8000, 8000
+		smooth 0.3, 0.7
+		amplitude 0.25
+	}
+}
+
+Sample ( name = m3 )
+{
+	override
+	{
+		add mountMapNoise 
+		slide 0.45, 0.9
+	}
+	
+	noise
+	{
+		size 1, 1
+		amplitude 0
+	}
+
+	display
+}
+
+Sample ( name = m4 )
+{
+	override
+	{
+		add m1, m2, m0
+		mul m3
+	}
+	
+	noise
+	{
+		size 640, 640
+		offset 7000, 7000
+	}
+}
+
+
+
+
+
+
+Biome ( name = mount )
+{
+	sample
+	{
+		set m4
+	}
+
+	sequence
+	{
+		id 1
+		fixed 1
+	}
+
+	sequence
+	{
+		id 3
+		set 2, 999
+	}
+}

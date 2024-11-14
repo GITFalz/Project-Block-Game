@@ -44,6 +44,13 @@ public static class VoxelData
     };
     
     public static readonly int[] IndexOffset = { -32, 1, 1024, -1, -1024, 32 };
+    
+    public static readonly int[,] IndexOffsetLod =
+    {
+        { -32, 1, 1024, -1, -1024, 32 },
+        { -16, 1, 256, -1, -256, 16 },
+    };
+    
     public static readonly byte[] ShiftPosition = { 1, 2, 4, 8, 16, 32 };
 
     public static bool InBounds(int x, int y, int z, int side, int size)

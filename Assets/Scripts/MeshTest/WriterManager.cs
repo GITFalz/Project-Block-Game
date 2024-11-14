@@ -28,6 +28,7 @@ public class WriterManager
     public string currentBiomeName = "";
     public string currentBlockName = "";
     public string currentModifierName = "";
+    public string currentLinkName = "";
     public string currentType = "";
 
     public string displayName = "";
@@ -56,6 +57,7 @@ public class WriterManager
             currentBiomeName = "";
             currentBlockName = "";
             currentModifierName = "";
+            currentLinkName = "";
             currentType = "";
             displayName = "";
 

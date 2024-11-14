@@ -44,6 +44,15 @@ public class FileManager : MonoBehaviour
         return names;
     }
     
+    public static bool Save(string path, string text)
+    {
+        if (path.Equals(""))
+            return false;
+        
+        File.WriteAllText(path, text);
+        return true;
+    }
+    
     public static List<string> GetFolderPaths(string path)
     {
         List<string> paths = new List<string>();

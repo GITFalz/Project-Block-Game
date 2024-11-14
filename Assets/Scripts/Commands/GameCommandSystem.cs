@@ -6,9 +6,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class CommandSystem : MonoBehaviour
+public class GameCommandSystem : MonoBehaviour
 {
-    public static CommandSystem instance;
+    public static GameCommandSystem instance;
     [SerializeField]
     public TMP_Text textField;
     [SerializeField]
@@ -82,6 +82,7 @@ public class CommandSystem : MonoBehaviour
         {
             if (chunks.TryDequeue(out var result))
             {
+                if (!WorldChunks.activeChunkData.TryAdd(result.position, result)) return;
                 GameObject newChunk = Instantiate(chunkPrefab, result.position, Quaternion.identity, parentChunk);
                 newChunk.GetComponent<ChunkRenderer>().RenderChunk(result);
             }
@@ -142,11 +143,23 @@ public class CommandSystem : MonoBehaviour
 
     public void ExecuteCommand()
     {
-        string input = textField.text;
+        ExecuteCommand(textField.text);
+        textField.text = "";
+    }
+    
+    public void ExecuteCommand(string content)
+    {
+        string input = content;
         input = input.Replace("\u200B", "").Trim();
         args = input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         log.text = CommandTest(0, baseCommands);
-        textField.text = "";
+        args = null;
+    }
+    
+    public void ExecuteCommand(string[] preArgs)
+    {
+        args = preArgs;
+        log.text = CommandTest(0, baseCommands);
         args = null;
     }
 
@@ -391,8 +404,80 @@ public class CommandSystem : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+        
+        WorldChunks.ClearChunks();
 
         return "Done";
+    }
+
+    public string Do_Generate_Line()
+    {
+        if (IsNumericValue(2, out int x1) && 
+            IsNumericValue(3, out int y1) && 
+            IsNumericValue(4, out int z1) &&
+            IsNumericValue(5, out int x2) && 
+            IsNumericValue(6, out int y2) && 
+            IsNumericValue(7, out int z2) &&
+            IsNumericValue(8, out float r))
+        {
+            Vector3Int a = new Vector3Int(x1, y1, z1);
+            Vector3Int b = new Vector3Int(x2, y2, z2);
+
+            List<Vector3Int> points = Chunk.Bresenham3D(a, b, r);
+            HashSet<Vector3Int> chunksToUpdate = new HashSet<Vector3Int>();
+            HashSet<Vector3Int> chunksToCreate = new HashSet<Vector3Int>();
+
+            foreach (var point in points)
+            {
+                Vector3Int chunkPosition = Chunk.GetChunkPosition(point);
+                chunksToUpdate.Add(chunkPosition);
+
+                if (WorldChunks.activeChunkData.TryGetValue(chunkPosition, out var chunkData))
+                {
+                    chunkData ??= new ChunkData(chunkPosition);
+                    chunkData.blocks ??= new Block[32768];
+                }
+                else
+                {
+                    chunkData = new ChunkData(chunkPosition)
+                    {
+                        meshData = new MeshData(),
+                        blocks = new Block[32768]
+                    };
+                    
+                    if (WorldChunks.activeChunkData.TryAdd(chunkPosition, chunkData))
+                        chunksToCreate.Add(chunkPosition);
+                }
+
+                Vector3Int position = Chunk.GetRelativeBlockPosition(chunkPosition, point);
+                
+                int index = position.x + position.z * 32 + position.y * 1024;
+                
+                chunkData.blocks[index] = new Block(2, 0);
+            }
+            
+            foreach (var chunk in chunksToCreate)
+            {
+                if (WorldChunks.activeChunks.ContainsKey(chunk)) continue;
+                
+                GameObject newChunk = Instantiate(chunkPrefab, chunk, Quaternion.identity, parentChunk);
+                WorldChunks.activeChunks.TryAdd(chunk, newChunk.GetComponent<ChunkRenderer>());
+            }
+            
+            foreach (var chunk in chunksToUpdate)
+            {
+                Console.Log(chunk.ToString());
+                if (!WorldChunks.activeChunkData.TryGetValue(chunk, out var chunkData) || 
+                    !WorldChunks.activeChunks.TryGetValue(chunk, out var chunkRenderer)) continue;
+                
+                Chunk.UpdateChunk(chunkData);
+                chunkRenderer.RenderChunk(chunkData);
+            }
+            
+            return "Done";
+        }
+        
+        return "The values set are not valid";
     }
     
 
@@ -442,5 +527,6 @@ public class CommandSystem : MonoBehaviour
         { "box", () => instance.Do_Generate_Box() },
         { "distance", () => instance.Do_Generate_Distance() },
         { "clear", () => instance.Do_Generate_Clear() },
+        { "line", () => instance.Do_Generate_Line() },
     };
 }

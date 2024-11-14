@@ -72,6 +72,7 @@ public class TextureGeneration : MonoBehaviour
     
     public void UpdateTexture(string sampleName)
     {
+        Console.Log("Drawing texture...");
         noiseTexture = new Texture2D(textureSize, textureSize);
         _sampleName = sampleName;
         GenerateNoise(sampleName);

@@ -1,0 +1,22 @@
+Save blocks
+
+Block ( name = grass_block )
+{
+	id 1
+	texture 0, 0, 1, 0, 2, 0
+	priority 3
+}
+
+Block ( name = dirt_block )
+{
+	id 2
+	texture 2, 2, 2, 2, 2, 2
+	priority 2
+}
+
+Block ( name = stone_block )
+{
+	id 3
+	texture 3, 3, 3, 3, 3, 3
+	priority 1
+}

@@ -11,6 +11,9 @@ public class ConsoleManager : MonoBehaviour
     public TMP_InputField inputField;
 
     public WMWriter writer;
+    public GameCommandSystem commandSystem;
+
+    private char[] prefixes = { '!' };
 
     private string[] args;
     
@@ -29,9 +32,18 @@ public class ConsoleManager : MonoBehaviour
         string input = inputField.text;
         input = input.Replace("\u200B", "").Trim();
         args = input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-        await CommandTest(0, baseCommands);
-        inputField.text = "";
-        args = null;
+        if (args.Length >= 1 && args[0].StartsWith('!'))
+        {
+            Console.Log("Accessing game commands...");
+            args[0] = args[0].Trim('!');
+            commandSystem.ExecuteCommand(args);
+        }
+        else
+        {
+            await CommandTest(0, SystemCommands.baseCommands);
+            inputField.text = "";
+            args = null;
+        }
     }
     
     private async Task<string> CommandTest(int index, Dictionary<string, Func<ConsoleManager, Task<string>>> commands)
@@ -46,14 +58,11 @@ public class ConsoleManager : MonoBehaviour
         return $"The command {command} doesn't exist";
     }
 
-    private async Task<string> Do_Load()
+    public async Task<string> Do_Load()
     {
-        string result = await CommandTest(1, loadCommands);
+        string result = await CommandTest(1, SystemCommands.loadCommands);
         if (result.Equals(""))
             return "";
-        
-        if (!args[1].EndsWith(".cworld"))
-            args[1] += ".cworld";
         
         string[] paths = args[1].Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
         
@@ -63,6 +72,8 @@ public class ConsoleManager : MonoBehaviour
         {
             mainPath = Path.Combine(mainPath, path);
         }
+
+        mainPath += mainPath.EndsWith(".cworld") ? "" : ".cworld";
 
         if (!File.Exists(mainPath))
             return Console.Log("The file doesn't exist");
@@ -74,15 +85,19 @@ public class ConsoleManager : MonoBehaviour
     public Task<string> Do_LoadClear()
     {
         ChunkGenerationNodes.Clear();
+        Console.Log("Cleared nodes!");
         return Task.FromResult("");
     }
-    
-    private Dictionary<string, Func<ConsoleManager, Task<string>>> baseCommands = new Dictionary<string, Func<ConsoleManager, Task<string>>>
+}
+
+public static class SystemCommands
+{
+    public static Dictionary<string, Func<ConsoleManager, Task<string>>> baseCommands = new Dictionary<string, Func<ConsoleManager, Task<string>>>
     {
         { "load", (c) => c.Do_Load() },
     };
     
-    private Dictionary<string, Func<ConsoleManager, Task<string>>> loadCommands = new Dictionary<string, Func<ConsoleManager, Task<string>>>
+    public static Dictionary<string, Func<ConsoleManager, Task<string>>> loadCommands = new Dictionary<string, Func<ConsoleManager, Task<string>>>
     {
         { "clear", (c) => c.Do_LoadClear() },
     };

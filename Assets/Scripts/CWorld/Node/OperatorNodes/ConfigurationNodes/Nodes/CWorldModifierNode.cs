@@ -71,14 +71,8 @@ public class CWorldModifierGenNode
 {
     public CWorldSampleNode sample;
     public IntRangeNode range;
-    public int offset;
-    public bool flip;
-
-    public CWorldModifierGenNode()
-    {
-        offset = 0;
-        flip = false;
-    }
+    public int offset = 0;
+    public bool flip = false;
 
     public int GetHeight(CWorldModifierNode parent)
     {

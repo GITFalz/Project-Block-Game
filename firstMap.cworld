@@ -1,0 +1,21 @@
+Save firstMap
+
+Use MapTest\noiseTest
+Use MapTest\biomeTest
+Use MapTest\mountains
+
+Map Force
+{
+	biomeRange
+	{
+		set mount
+		{
+			sample mapNoise 0, 0.51
+		} 
+
+		set plains
+		{
+			sample mapNoise 0.48, 1
+		} 
+	}
+}

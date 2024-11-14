@@ -26,7 +26,7 @@ public class Chunk : MonoBehaviour
     public World worldScript;
 
     public CWorldHandler handler;
-    public CommandSystem commandSystem;
+    [FormerlySerializedAs("commandSystem")] public GameCommandSystem gameCommandSystem;
 
     public bool generateSingle;
 
@@ -80,7 +80,7 @@ public class Chunk : MonoBehaviour
         return newChunkData;
     }
     
-    public static async Task CreateChunk(ChunkData newChunkData, Vector3Int position, string sampleName, CommandSystem commandSystem, CWorldDataHandler handler, BiomeSO biome)
+    public static async Task CreateChunk(ChunkData newChunkData, Vector3Int position, string sampleName, GameCommandSystem gameCommandSystem, CWorldDataHandler handler, BiomeSO biome)
     {
         newChunkData.meshData = new MeshData();
 
@@ -89,7 +89,7 @@ public class Chunk : MonoBehaviour
 
         GenerateMesh(newChunkData);
         
-        commandSystem.chunks.Enqueue(newChunkData);
+        gameCommandSystem.chunks.Enqueue(newChunkData);
     }
     
     public static Task<Block[]> CreateChunkAsync(Vector3Int position, string sampleName, CWorldDataHandler handler, BiomeSO biome)
@@ -101,7 +101,7 @@ public class Chunk : MonoBehaviour
         });
     }
     
-    public static async Task CreateBiomeChunk(ChunkData newChunkData, Vector3Int position, string biomeName, CWorldDataHandler handler, CommandSystem commandSystem)
+    public static async Task CreateBiomeChunk(ChunkData newChunkData, Vector3Int position, string biomeName, CWorldDataHandler handler, GameCommandSystem gameCommandSystem)
     {
         newChunkData.meshData = new MeshData();
         
@@ -110,7 +110,7 @@ public class Chunk : MonoBehaviour
 
         GenerateMesh(newChunkData);
         
-        commandSystem.chunks.Enqueue(newChunkData);
+        gameCommandSystem.chunks.Enqueue(newChunkData);
     }
     
     public static Task<Block[]> CreateBiomeChunkAsync(Vector3Int position, string biomeName, CWorldDataHandler handler)
@@ -166,10 +166,10 @@ public class Chunk : MonoBehaviour
         1, 2, 4, 8, 16, 32
     };
     
-    public static async Task CreateMapChunk(ChunkData newChunkData, Vector3Int position, CWorldDataHandler handler, CommandSystem commandSystem, int lod)
+    public static async Task CreateMapChunk(ChunkData newChunkData, Vector3Int position, CWorldDataHandler handler, GameCommandSystem gameCommandSystem, int lod)
     {
         await GenerateMapData(newChunkData, position, handler, lod);
-        commandSystem.chunks.Enqueue(newChunkData);
+        gameCommandSystem.chunks.Enqueue(newChunkData);
     }
     
     public static async Task CreateMapChunk(ChunkData newChunkData, Vector3Int position, CWorldDataHandler handler, int lod)
@@ -278,49 +278,39 @@ public class Chunk : MonoBehaviour
             }
 
             Block[] newBlocks = GenerateLodBlocks(blocks, lodWidth[lod], lodSize[lod], lod);
-
-            int height = lodWidth[lod] * lodWidth[lod];
-
-            int index = 0;
-            for (int y = 0; y < lodWidth[lod]; y++)
-            {
-                for (int z = 0; z < lodWidth[lod]; z++)
-                {
-                    for (int x = 0; x < lodWidth[lod]; x++)
-                    {
-                        if (newBlocks[index] != null)
-                        {
-                            newBlocks[index].occlusion = 0;
-                            
-                            byte occlusion = 0;
-
-                            if (z - 1 >= 0 && newBlocks[index - lodWidth[lod]] != null)
-                                occlusion = 1;
-                            
-                            if (x + 1 < lodWidth[lod] && newBlocks[index + 1] != null)
-                                occlusion |= 2;
-                            
-                            if (y + 1 < lodWidth[lod] && newBlocks[index + height] != null)
-                                occlusion |= 4;
-                            
-                            if (x - 1 >= 0 && newBlocks[index - 1] != null)
-                                occlusion |= 8;
-                            
-                            if (y - 1 >= 0 && newBlocks[index - height] != null)
-                                occlusion |= 16;
-                            
-                            if (z + 1 < lodWidth[lod] && newBlocks[index + lodWidth[lod]] != null)
-                                occlusion |= 32;
-
-                            newBlocks[index].occlusion = occlusion;
-                        }
-                        index++;
-                    }
-                }
-            }
+            
+            GenerateOcclusion(newBlocks, lodWidth[lod], lod);
 
             return newBlocks;
         });
+    }
+    
+    public static void GenerateOcclusion(Block[] blocks, int width, int lod)
+    {
+        int index = 0;
+        for (int y = 0; y < width; y++)
+        {
+            for (int z = 0; z < width; z++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (blocks[index] != null)
+                    {
+                        byte occlusion = 0;
+                            
+                        for (int i = 0; i < 6; i++)
+                        {
+                            if (VoxelData.InBounds(x, y, z, i, width) && blocks[index + VoxelData.IndexOffsetLod[lod, i]] != null)
+                                occlusion |= VoxelData.ShiftPosition[i];
+                        }
+                            
+                        blocks[index].occlusion = occlusion;
+                    }
+                        
+                    index++;
+                }
+            }
+        }
     }
 
     public uint[] GenerateTerrain(Vector3Int position)
@@ -759,50 +749,92 @@ public class Chunk : MonoBehaviour
         }
     }
 
-/**
- *  for (int tris = 0; tris < 6; tris++)
+    public static List<Vector3Int> Bresenham3D(Vector3Int a, Vector3Int b, float r)
     {
-        chunkData.meshData.tris.Add(VoxelData.TrisIndexTable[tris] +
-                                    chunkData.meshData.Count());
+        List<Vector3Int> points = new List<Vector3Int>();
+
+        int dx = Math.Abs(b.x - a.x);
+        int dy = Math.Abs(b.y - a.y);
+        int dz = Math.Abs(b.z - a.z);
+
+        int xs = b.x > a.x ? 1 : -1;
+        int ys = b.y > a.y ? 1 : -1;
+        int zs = b.z > a.z ? 1 : -1;
+
+        if (dx >= dy && dx >= dz) {
+            Bresenham3DStep(a, b, r, points, dx, dy, dz, xs, ys, zs, 0);
+        }
+        else if (dy >= dx && dy >= dz) {
+            Bresenham3DStep(a, b, r, points, dy, dx, dz, ys, xs, zs, 1);
+        }
+        else {
+            Bresenham3DStep(a, b, r, points, dz, dy, dx, zs, ys, xs, 2);
+        }
+
+        return points;
     }
-    
-    chunkData.meshData.uvs.Add(new Vector3(0, 0, id));
-    chunkData.meshData.uvs.Add(new Vector3(0, height, id));
-    chunkData.meshData.uvs.Add(new Vector3(width, height, id));
-    chunkData.meshData.uvs.Add(new Vector3(width, 0, id));
-    
-    chunkData.meshData.verts.Add(position + positions[0] * size);
-    chunkData.meshData.verts.Add(position + positions[1] * size);
-    chunkData.meshData.verts.Add(position + positions[2] * size);
-    chunkData.meshData.verts.Add(position + positions[3] * size);
- */
-    
-    /**
-     * Add a certain block to the mesh based on it's x, y, z coords and what face to occlude
-     */
-    public void AddBlockToMesh(ChunkData chunkData, Block block, int x, int y, int z)
+
+    private static void Bresenham3DStep(Vector3Int a, Vector3Int b, float r, List<Vector3Int> points, int d1, int d2, int d3, int s1, int s2, int s3, int axis)
     {
-        Vector3 position = new Vector3(x, y, z);
-        for (int i = 0; i < 6; i++)
+        int p1 = 2 * d2 - d1;
+        int p2 = 2 * d3 - d1;
+
+        while (a[axis] != b[axis])
         {
-            if ((block.occlusion & (1 << i)) == 0)
+            a[axis] += s1;
+            if (p1 >= 0)
             {
-                for (int tris = 0; tris < 6; tris++)
+                a[(axis + 1) % 3] += s2;
+                p1 -= 2 * d1;
+            }
+            if (p2 >= 0)
+            {
+                a[(axis + 2) % 3] += s3;
+                p2 -= 2 * d1;
+            }
+            p1 += 2 * d2;
+            p2 += 2 * d3;
+            AddThickPoints(points, a, r);
+        }
+    }
+
+    private static void AddThickPoints(List<Vector3Int> points, Vector3Int center, float r)
+    {
+        int intR = Mathf.CeilToInt(r);
+        for (int x = -intR; x <= intR; x++)
+        {
+            for (int y = -intR; y <= intR; y++)
+            {
+                for (int z = -intR; z <= intR; z++)
                 {
-                    chunkData.meshData.tris.Add(VoxelData.TrisIndexTable[tris] + chunkData.meshData.Count());
-                }
-                
-                for (int vert = 0; vert < 4; vert++)
-                {
-                    chunkData.meshData.verts.Add(VoxelData.VertexTable[VoxelData.VertexIndexTable[i, vert]] + position);
-                    float2 uv = VoxelData.UVTable[vert];
-                    chunkData.meshData.uvs.Add(new Vector3(uv.x, uv.y, blockManagerSo.GetBlock(block.blockData).GetUVs()[i]));
+                    Vector3Int point = new Vector3Int(center.x + x, center.y + y, center.z + z);
+                    if (Vector3.Distance(center, point) <= r && !points.Contains(point))
+                    {
+                        points.Add(point);
+                    }
                 }
             }
         }
     }
-
     
+    public static Vector3Int GetChunkPosition(Vector3Int blockPosition)
+    {
+        int chunkX = Mathf.FloorToInt(blockPosition.x / 32f) * 32;
+        int chunkY = Mathf.FloorToInt(blockPosition.y / 32f) * 32;
+        int chunkZ = Mathf.FloorToInt(blockPosition.z / 32f) * 32;
+
+        return new Vector3Int(chunkX, chunkY, chunkZ);
+    }
+    
+    public static Vector3Int GetRelativeBlockPosition(Vector3Int chunkPosition, Vector3Int blockPosition)
+    {
+        return new Vector3Int(blockPosition.x - chunkPosition.x, blockPosition.y - chunkPosition.y, blockPosition.z - chunkPosition.z);
+    }
+
+    public static bool BlockInExistingChunk(Vector3Int pos)
+    {
+        return WorldChunks.activeChunkData.ContainsKey(GetChunkPosition(pos));
+    }
     
     /**
      * Update the chunk if a new chunk is generated next to it
@@ -817,6 +849,12 @@ public class Chunk : MonoBehaviour
         GenerateMesh(sideUpdate.sideChunk);
 
         return sideUpdate;
+    }
+
+    public static void UpdateChunk(ChunkData chunkData)
+    {
+        GenerateOcclusion(chunkData.blocks, 32, 0);
+        GenerateMesh(chunkData);
     }
     
     /**
@@ -849,78 +887,6 @@ public class Chunk : MonoBehaviour
         return sideUpdate;
     }
     
-    /**
-     * Get the occlusion of each face of a block based on the blocks beside it
-     */
-    public static bool GetOcclusion(ChunkData chunkData, int index, int x, int y, int z)
-    {
-        int offset;
-        bool hasFace = false;
-        
-        for (int i = 0; i < 6; i++)
-        {
-            offset = index + SpacialData.sideChecks[i];
-            
-            if (occlusionOffset[i](x, y, z))
-            {
-                if (chunkData.sideChunks[i] != null)
-                {
-                    if (sideChunkBlockCheck[i](chunkData.sideChunks[i].blocks, offset))
-                    {
-                        chunkData.blocks[index].occlusion |= (byte)(1 << i);
-                    }
-                }
-                else
-                {
-                    hasFace = true;
-                }
-            }
-            else
-            {
-                if (chunkData.blocks[offset] == null)
-                {
-                    hasFace = true;
-                }
-                else
-                {
-                    chunkData.blocks[index].occlusion |= (byte)(1 << i);
-                }
-            }
-        }
-
-        return hasFace;
-    }
-    
-    
-    public int TrailingZeros(uint pillar)
-    {
-        if (pillar == 0) return 32;
-        int y = 0;
-        while ((pillar >> y & 1u) == 0)
-            y++;
-        return y;
-    }
-    
-    public int TrailingOnes(uint pillar)
-    {
-        int y = 0;
-        while ((pillar >> y & 1u) == 1)
-            y++;
-        return y;
-    }
-    
-    public uint HAsMask(uint h)
-    {
-        if (h >= 32)
-        {
-            return 0xFFFFFFFF; // Return all bits set to 1 if h >= 32 (since shifting by 32 or more bits is invalid)
-        }
-        else
-        {
-            return (1u << (int)h) - 1; // Perform the shift and subtract 1
-        }
-    }
-    
     public void AddChunks()
     {
         foreach (var pos in chunksToAdd)
@@ -950,40 +916,9 @@ public class Chunk : MonoBehaviour
         chunksToAdd.Clear();
     }
 
-    public static Func<int, int, int>[] sideIndex = new Func<int, int, int>[]
-    {
-        (i, j) => { return i + j * 1024; },
-        (i, j) => { return i * 32 + j * 1024 + 31; },
-        (i, j) => { return i + j * 32 + 31744; }, //31744
-        (i, j) => { return i * 32 + j * 1024; },
-        (i, j) => { return i + j * 32; },
-        (i, j) => { return i + j * 1024 + 992; },
-    };
-
     public static int[,] sideBlockCheck = new[,]
     {
         { -32, 0 }, { 1, 0 }, { 0, 1 }, { -1, 0 }, { 0, -1 }, { 32, 0 },
-    };
-    
-
-    public static Func<int, int, int, bool>[] occlusionOffset = new Func<int, int, int, bool>[]
-    {
-        (x, y, z) => { return z == 0; },
-        (x, y, z) => { return x == 31;},
-        (x, y, z) => { return y == 31;},
-        (x, y, z) => { return x == 0; },
-        (x, y, z) => { return y == 0; },
-        (x, y, z) => { return z == 31;},
-    };
-
-    public static Func<Block[], int, bool>[] sideChunkBlockCheck = new Func<Block[], int, bool>[]
-    {
-        (blocks, index) => { return blocks[index + 992] != null; },
-        (blocks, index) => { return blocks[index - 31] != null; },
-        (blocks, index) => { return blocks[index - 31744] != null; },
-        (blocks, index) => { return blocks[index + 31] != null; },
-        (blocks, index) => { return blocks[index + 31744] != null; },
-        (blocks, index) => { return blocks[index - 992] != null; },
     };
     
     static float GetTerrainHeight(int x, int z, NoiseSettings noise)
@@ -993,12 +928,4 @@ public class Chunk : MonoBehaviour
 
         return Mathf.Lerp(WorldInfo.worldMinTerrainHeight, WorldInfo.worldMaxTerrainHeight, value);
     }
-}
-
-public struct GreedyQuad
-{
-    public int x;
-    public int y;
-    public int w;
-    public int h;
 }
