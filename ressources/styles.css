@@ -1,0 +1,100 @@
+/* General body styling */
+body {
+    background: linear-gradient(135deg, #1f1f1f 25%, #111 25%, #111 50%, #1f1f1f 50%, #1f1f1f 75%, #111 75%, #111 100%);
+    background-size: 20px 20px;
+    color: #ffffff;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 20px;
+    backdrop-filter: blur(5px);
+}
+
+/* Navigation bar */
+nav {
+    background-color: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(5px);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    padding: 0;
+    margin: 0;
+}
+
+nav li {
+    display: inline;
+}
+
+nav a {
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #4dabf7; /* Light blue hover effect */
+}
+
+/* Container styling */
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.container div {
+    width: 45%; /* Adjusts the width for larger screens */
+    flex-shrink: 0;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .container {
+        flex-direction: column; /* Stack vertically */
+    }
+
+    .container div {
+        width: 100%; /* Full width for smaller screens */
+    }
+}
+
+/* Text box styling */
+.text-box {
+    padding: 20px;
+    background: rgba(20, 20, 20, 0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    transition: transform 0.3s;
+}
+
+.text-box:hover {
+    transform: translateY(-5px); /* Moves text up when hovered */
+}
+
+/* Video box styling */
+.video-box {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    transition: transform 0.3s;
+}
+
+.video-box:hover {
+    transform: translateY(-5px); /* Moves video up when hovered */
+}
+
+.video-box video {
+    width: 100%; /* Responsive video */
+    border-radius: 10px; /* Rounded corners */
+    object-fit: cover;
+}
