@@ -1,9 +1,0 @@
-Save basicNoise40
-
-Sample ( name = noise40 )
-{
-	noise
-	{
-		size : 40, 40
-	}
-}
