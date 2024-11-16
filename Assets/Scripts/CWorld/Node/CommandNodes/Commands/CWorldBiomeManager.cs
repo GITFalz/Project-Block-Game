@@ -132,7 +132,7 @@ public class CWorldBiomeManager : CWorldAbstractNode
             {
                 if (await w.GetNext2Ints(out Vector2Int ints) == -1)
                     return await w.Error("no suitable ints found");
-                ChunkGenerationNodes.SetBiomeRange(ints);
+                await ChunkGenerationNodes.SetBiomeRange(ints);
                 return 0;
             } 
         },
