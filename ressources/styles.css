@@ -375,6 +375,10 @@ h2 {
     .socials h2 {
         margin-bottom: 10px;
     }
+
+    .top {
+        flex-direction: collum;
+    }
 }
 
 nav ul {
