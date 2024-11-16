@@ -4,39 +4,156 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="ressources/styles.css">
 </head>
 <body>
+<div class="content">
     <nav>
-        <ul>
-            <li><a href="#">Bio</a></li>
-            <li><a href="#">Future Plans</a></li>
-            <li><a href="#">Info</a></li>
-            <li><a href="#">Projects</a></li>
-        </ul>
+        <div id="acceuil">
+            <a href="index.html">
+                <img src="ressources/images/acceuil.png" alt="Home" class="home-icon">
+            </a>
+        </div>
+        <div class="nav-items">
+            <ul>
+                <li>
+                    <div class="nav-box">
+                        <a href="#">Bio</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="nav-box">
+                        <a href="#">Future Plans</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="nav-box">
+                        <a href="#">Info</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="nav-box">
+                        <a href="#">Projects</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div id="hamburger-menu" onclick="toggle()" class="hamburger-menu">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+        <div id="hamburger-menu-items" class="mobile-menu">
+            <div class="h-box">
+                <a href="#">Bio</a>
+            </div>
+            <div class="h-box">
+                <a href="#">Future</a>
+            </div>
+            <div class="h-box">
+                <a href="#">Info</a>
+            </div>
+            <div class="h-box">
+                <a href="#">Projects</a>
+            </div>
+        </div>
     </nav>
-
-    <div class="container">
-        <!-- Example of a left-aligned div -->
-        <div class="A">
-            <div class="text-box">
-                <h2>Welcome to My Portfolio</h2>
-                <p>This is where I showcase my journey, projects, and plans for the future. Feel free to explore!</p>
-            </div>
+    <div class="top">
+        <div id="profile-container" class="top-box">
+            <img id="profile-picture"  src="ressources/images/profile-photo.png" alt="Photo Schinkel Björnar">
         </div>
-
-        <!-- Example of a right-aligned div with a video -->
-        <div class="B">
-            <div class="video-box">
-                <video controls>
-                    <source src="video1.mp4" type="video/mp4">
-                    <source src="video1.ogg" type="video/ogg">
-                    Your browser does not support the video tag.
-                </video>
-            </div>
+        <div id="name" class="top-box">
+            <h1>SCHINKEL Björnar</h1>
         </div>
-
-        <!-- Add more divs as needed -->
     </div>
+    <div class="presentation">
+        <div id="about" class="presentaion-box">
+            <div class="about-title">
+                <h2>About</h2>
+            </div>
+            <p>
+                bla
+                bla
+                bla
+            </p>
+        </div>
+        <div id="education" class="presentaion-box">
+            <div id="formation-iut">
+                <div class="formation-title">
+                    <h2>BUT Informatique</h2>
+                </div>
+                <p>
+                    bla
+                    bla
+                    bla
+                </p>
+            </div>
+            <div id="formation-sti2d">
+                <div class="formation-title">
+                    <h2>STI2D</h2>
+                </div>
+                <p>
+                    bla
+                    bla
+                    bla
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="videos">
+        <div id="video1" class="video-box">
+            <video width="600" height="400" controls poster="placeholder-image.jpg">
+                <source src="fake-video.mp4" type="video/mp4">
+                <p>Your browser does not support the video tag.</p>
+            </video>
+        </div>
+        <div id="video2" class="video-box">
+            <video width="600" height="400" controls poster="placeholder-image.jpg">
+                <source src="fake-video.mp4" type="video/mp4">
+                <p>Your browser does not support the video tag.</p>
+            </video>
+        </div>
+        <div id="video3" class="video-box">
+            <video width="600" height="400" controls poster="placeholder-image.jpg">
+                <source src="fake-video.mp4" type="video/mp4">
+                <p>Your browser does not support the video tag.</p>
+            </video>
+        </div>
+    </div>
+</div>
 </body>
+<footer>
+    <div class="contact">
+        <div id="contact-text">
+            <h1>Contactez moi</h1>
+        </div>
+        <div class="socials">
+            <h2>bjornarvalkea@gmail.com</h2>
+            <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/">
+                <img src="ressources/images/linkedIn.png" alt="linkedIn-profil" >
+            </a>
+            <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/">
+                <img src="ressources/images/linkedIn.png" alt="linkedIn-profil" >
+            </a>
+        </div>
+    </div>
+</footer>
 </html>
+
+<script>
+    function toggle() {
+        const menu = document.querySelector('.mobile-menu');
+        menu.classList.toggle('active');
+    }
+
+    function handleResize() {
+        const menu = document.querySelector('.mobile-menu');
+
+        if (window.innerWidth > 768) {
+            menu.classList.remove('active');
+        }
+    }
+
+    window.addEventListener('resize', handleResize);
+</script>
