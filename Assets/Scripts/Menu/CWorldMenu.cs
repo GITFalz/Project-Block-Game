@@ -32,22 +32,19 @@ public class CWorldMenu : MonoBehaviour
     private List<GameObject> folderButtons;
     private List<GameObject> fileButtons;
 
-    private bool _move;
+    private bool _move = false;
 
     private string _selectedFilePath;
 
 
-    public void Init()
+    public void Awake()
     {
-        fileManager.Init();
-        currentFolderPath = FileManager.EditorFolderPath;
-
         folderNames = new HashSet<string>();
         fileNames = new HashSet<string>();
         folderButtons = new List<GameObject>();
         fileButtons = new List<GameObject>();
-
-        _move = false;
+        
+        currentFolderPath = FileManager.EditorFolderPath;
         
         GenerateCWorldButtons();
     }

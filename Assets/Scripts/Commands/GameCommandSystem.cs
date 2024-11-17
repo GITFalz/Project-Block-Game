@@ -85,6 +85,8 @@ public class GameCommandSystem : MonoBehaviour
                 if (!WorldChunks.activeChunkData.ContainsKey(result.position)) 
                     return;
                 
+                Debug.Log("Rendering: " + result.position);
+                
                 GameObject newChunk = Instantiate(chunkPrefab, result.position, Quaternion.identity, parentChunk);
                 ChunkRenderer chunkRenderer = newChunk.GetComponent<ChunkRenderer>();
                 chunkRenderer.RenderChunk(result);
@@ -118,6 +120,7 @@ public class GameCommandSystem : MonoBehaviour
             {
                 if (_biomeChunks.TryDequeue(out var result))
                 {
+                    Debug.Log("Dequeued: " + result);
                     ChunkGenerationNodes.tasks[i] = Chunk.CreateBiomeChunk(new ChunkData(result), result, currentName, ChunkGenerationNodes.dataHandlers[i], this);
                     await ChunkGenerationNodes.tasks[i];
                     ChunkGenerationNodes.tasks[i] = null;
@@ -252,6 +255,7 @@ public class GameCommandSystem : MonoBehaviour
     public string Do_Generate_Box()
     {
         bool setupPool = true;
+        
         if (IsNumericValue(2, out int x1) && 
             IsNumericValue(3, out int y1) && 
             IsNumericValue(4, out int z1) &&
@@ -263,63 +267,80 @@ public class GameCommandSystem : MonoBehaviour
             y1 -= y1 & 31; 
             z1 -= z1 & 31;
             
-            for (int x = 0; x < x2; x++)
+            if (args[8].Trim().Equals("sample"))
             {
-                for (int y = 0; y < y2; y++)
+                if (ChunkGenerationNodes.dataHandlers[0].sampleNodes.ContainsKey(args[9]))
                 {
-                    for (int z = 0; z < z2; z++)
+                    Console.Log("The sample was found");
+                    Console.Log("Generating sample...");
+                    ChunkGenerationNodes.SetupSamplePool(args[9]);
+                    
+                    for (int x = 0; x < x2; x++)
                     {
-                        if (args.Length > 9)
+                        for (int y = 0; y < y2; y++)
                         {
-                            if (args[8].Trim().Equals("sample"))
+                            for (int z = 0; z < z2; z++)
                             {
-                                if (ChunkGenerationNodes.dataHandlers[0].sampleNodes.ContainsKey(args[9]))
-                                {
-                                    Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
-
-                                    if (setupPool)
-                                    {
-                                        currentName = args[9];
-                                        ChunkGenerationNodes.SetupSamplePool(currentName);
-                                        setupPool = false;
-                                    }
-
-                                    _sampleChunks.Enqueue(position);
-                                }
+                                Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
+                                _sampleChunks.Enqueue(position);
                             }
-                            else if (args[8].Trim().Equals("biome"))
-                            {
-                                if (ChunkGenerationNodes.dataHandlers[0].biomeNodes.ContainsKey(args[9]))
-                                {
-                                    Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
-
-                                    if (setupPool)
-                                    {
-                                        currentName = args[9];
-                                        ChunkGenerationNodes.SetupSamplePool(currentName);
-                                        setupPool = false;
-                                    }
-
-                                    _biomeChunks.Enqueue(position);
-                                }
-                            }
-                        }
-                        else if (args[8].Trim().Equals("map"))
-                        {
-                            Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
-
-                            _mapChunks.Enqueue(position);
-                        }
-                        else
-                        {
-                            Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
-                            ChunkData chunkData = new ChunkData(position);
-                            chunkScript.CreateChunk(chunkData, position);
-
-                            GameObject newChunk = Instantiate(chunkPrefab, position, Quaternion.identity, parentChunk);
-                            newChunk.GetComponent<ChunkRenderer>().RenderChunk(chunkData);
                         }
                     }
+                }
+                else
+                {
+                    Console.Log("The sample doesn't exist");
+                }
+            }
+            else if (args[8].Trim().Equals("biome"))
+            {
+                if (ChunkGenerationNodes.dataHandlers[0].biomeNodes.ContainsKey(args[9]))
+                {
+                    Console.Log("The biome was found");
+                    Console.Log("Generating biome...");
+                    
+                    currentName = args[9];
+                    
+                    for (int x = 0; x < x2; x++)
+                    {
+                        for (int y = 0; y < y2; y++)
+                        {
+                            for (int z = 0; z < z2; z++)
+                            {
+                                Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
+                                _biomeChunks.Enqueue(position);
+                                
+                                Debug.Log("Enqueued: " + position);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Console.Log("The biome doesn't exist");
+                }
+            }
+            else if (args[8].Trim().Equals("map"))
+            {
+                if (ChunkGenerationNodes.dataHandlers[0].MapNode != null)
+                {
+                    Console.Log("Generating map...");
+                    
+                    for (int x = 0; x < x2; x++)
+                    {
+                        for (int y = 0; y < y2; y++)
+                        {
+                            for (int z = 0; z < z2; z++)
+                            {
+                                Vector3Int position = new Vector3Int(x1 + x * 32, y1 + y * 32, z1 + z * 32);
+                                _mapChunks.Enqueue(position);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Console.Log("The map doesn't exist");
                 }
             }
             
@@ -457,9 +478,7 @@ public class GameCommandSystem : MonoBehaviour
                 }
 
                 Vector3Int position = Chunk.GetRelativeBlockPosition(chunkPosition, point);
-                
                 int index = position.x + position.z * 32 + position.y * 1024;
-                
                 chunkData.blocks[index] = new Block(2, 0);
             }
             
@@ -485,6 +504,99 @@ public class GameCommandSystem : MonoBehaviour
         }
         
         return "The values set are not valid";
+    }
+
+    public string Do_Generate_Tree()
+    {
+        Console.Log("Generating tree...");
+        if (IsNumericValue(2, out int x1) && 
+            IsNumericValue(3, out int y1) && 
+            IsNumericValue(4, out int z1))
+        {
+            if (ChunkGenerationNodes.dataHandlers[0].treeNodes.TryGetValue(args[5], out var treeNode))
+            {
+                Console.Log("The tree was found");
+                treeNode.sampler.Init(x1, y1, z1);
+                treeNode.GenerateTree(x1, z1);
+                foreach (var chunk in WorldChunks.chunksToUpdate)
+                {
+                    ChunkData chunkData = chunk.Value;
+                    chunkData.meshData = new MeshData();
+                    Chunk.UpdateChunk(chunkData);
+                    WorldChunks.activeChunkData.TryAdd(chunk.Key, chunkData);
+                    chunks.Enqueue(chunkData);
+                }
+                
+                return "Done";
+            }
+            
+            Console.Log("The tree was not found, generating default tree");
+            
+            if (IsNumericValue(5, out int min) && 
+                IsNumericValue(6, out int max))
+            {
+                HashSet<Vector3Int> chunksToUpdate = new HashSet<Vector3Int>();
+                HashSet<Vector3Int> chunksToCreate = new HashSet<Vector3Int>();
+
+                ITreeSampler sampler = new TreeBasic(y1);
+                IntRangeNode range = new IntRangeNode(min, max);
+
+                int height = sampler.Sample();
+                int treeHeight = (int)NoiseUtils.GetRandomRange(range.min, range.max);
+
+                Debug.Log(height + " " + treeHeight);
+
+                for (int y = 0; y < treeHeight; y++)
+                {
+                    Vector3Int point = new Vector3Int(x1, y + height, z1);
+                    Debug.Log(point);
+                    Vector3Int chunkPosition = Chunk.GetChunkPosition(point);
+                    chunksToUpdate.Add(chunkPosition);
+
+                    if (WorldChunks.activeChunkData.TryGetValue(chunkPosition, out var chunkData))
+                    {
+                        chunkData ??= new ChunkData(chunkPosition);
+                        chunkData.blocks ??= new Block[32768];
+                    }
+                    else
+                    {
+                        chunkData = new ChunkData(chunkPosition)
+                        {
+                            meshData = new MeshData(),
+                            blocks = new Block[32768]
+                        };
+
+                        if (WorldChunks.activeChunkData.TryAdd(chunkPosition, chunkData))
+                            chunksToCreate.Add(chunkPosition);
+                    }
+
+                    Vector3Int position = Chunk.GetRelativeBlockPosition(chunkPosition, point);
+                    int index = position.x + position.z * 32 + position.y * 1024;
+                    chunkData.blocks[index] = new Block(2, 0);
+                }
+
+                foreach (var chunk in chunksToCreate)
+                {
+                    if (WorldChunks.activeChunks.ContainsKey(chunk)) continue;
+
+                    GameObject newChunk = Instantiate(chunkPrefab, chunk, Quaternion.identity, parentChunk);
+                    WorldChunks.activeChunks.TryAdd(chunk, newChunk.GetComponent<ChunkRenderer>());
+                }
+
+                foreach (var chunk in chunksToUpdate)
+                {
+                    Console.Log(chunk.ToString());
+                    if (!WorldChunks.activeChunkData.TryGetValue(chunk, out var chunkData) ||
+                        !WorldChunks.activeChunks.TryGetValue(chunk, out var chunkRenderer)) continue;
+
+                    Chunk.UpdateChunk(chunkData);
+                    chunkRenderer.RenderChunk(chunkData);
+                }
+                return "Done";
+            }
+        }
+
+        return "Error";
     }
     
 
@@ -535,5 +647,6 @@ public class GameCommandSystem : MonoBehaviour
         { "distance", () => instance.Do_Generate_Distance() },
         { "clear", () => instance.Do_Generate_Clear() },
         { "line", () => instance.Do_Generate_Line() },
+        { "tree", () => instance.Do_Generate_Tree() },
     };
 }

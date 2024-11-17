@@ -7,6 +7,12 @@ public class CWorldBiomeNode : CWAExecuteNode
     public CWorldSampleNode sample;
     public IntRangeNode sampleRange;
     public CWorldModifierNode modifier;
+    
+    //Tree distribution range
+    public CWorldTreeNode treeNode;
+    public CWorldSampleNode treeSampleNode;
+    public FloatRangeNode treeRange;
+    
     public string name;
     
     public List<CWOCSequenceNode> SequenceNodes;
@@ -16,6 +22,7 @@ public class CWorldBiomeNode : CWAExecuteNode
         SequenceNodes = new List<CWOCSequenceNode>();
         sampleRange = new IntRangeNode(0, 256);
         modifier = null;
+        
         this.name = name;
     }
     
@@ -34,6 +41,14 @@ public class CWorldBiomeNode : CWAExecuteNode
             int height = (int)Mathf.Clamp(Mathf.Lerp(sample.min_height, sample.max_height, noise), sample.min_height, sample.max_height);
                         
             GetPillar(sampleRange, false, ref pillar, ref top, height, chunkPosition.y);
+            
+            if (treeNode != null && treeSampleNode != null && treeRange != null)
+            {
+                float treeNoise = treeSampleNode.noiseValue;
+                
+                if (treeNoise >= treeRange.min && treeNoise <= treeRange.max)
+                    treeNode.GenerateTree(x + chunkPosition.x, z + chunkPosition.z);
+            }
             
             if (modifier != null)
             {

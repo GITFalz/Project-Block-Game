@@ -7,17 +7,10 @@ using UnityEngine;
 public class ConsoleTextManager : MonoBehaviour
 {
     public TMP_InputField inputField;
-    public List<string> lines;
-    public int lineCount;
+    public List<string> lines = new List<string>();
+    public int lineCount = 0;
 
     public ConcurrentQueue<string> lineQueue = new();
-
-    public void Init()
-    {
-        lines = new List<string>();
-        lineQueue = new ConcurrentQueue<string>();
-        lineCount = 0;
-    }
 
     private void Update()
     {
@@ -48,6 +41,14 @@ public class ConsoleTextManager : MonoBehaviour
         }
         inputField.text = text;
     }
+    
+    public void Clear()
+    {
+        lineQueue.Clear();
+        lines.Clear();
+        lineCount = 0;
+        UpdateText();
+    }
 }
 
 public static class Console
@@ -62,6 +63,11 @@ public static class Console
     public static int LineCount()
     {
         return console.lineCount;
+    }
+
+    public static void Clear()
+    {
+        console.Clear();
     }
 
     public static bool RemoveLineAt(int index)

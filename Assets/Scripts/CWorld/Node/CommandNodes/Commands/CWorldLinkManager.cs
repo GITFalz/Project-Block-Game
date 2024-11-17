@@ -5,12 +5,12 @@ using UnityEngine;
 
 public static class CWorldLinkManager
 {
-    public static string currentLink;
+    public static string name;
     
     public static Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "(", (w) => w.Increment(1, 0) },
-        { "name", (w) => w.On_Name(ref currentLink) },
+        { "name", (w) => w.On_Name(ref name) },
         { ")", (w) => w.Increment(1, 1) },
     };
     

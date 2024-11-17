@@ -1,28 +1,36 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
 public class FileManager : MonoBehaviour
 {
+    public static string ProjectPath;
     public static string WorldPacksFolderPath;
     public static string ExecuteOnEnterFolderPath;
     public static string ChunkDataFolderPath;
     public static string WorldFolderPath;
     public static string EditorFolderPath;
     public static string ConfigFolderPath;
-    public static string ProjectPath;
+    
+    public static FileManager Instance;
 
-    public void Init()
+    private void Awake()
     {
+        if (Instance!=null) { Destroy(gameObject); return; }
+        DontDestroyOnLoad(gameObject);
+        Instance = this;
+
         ProjectPath = Application.persistentDataPath;
+        
         WorldPacksFolderPath = GenerateFolder("WorldPacks");
         ExecuteOnEnterFolderPath = GenerateFolder("LoadOnEnter");
         ChunkDataFolderPath = GenerateFolder("ChunkData");
         WorldFolderPath = GenerateFolder("Worlds");
-        ConfigFolderPath = GenerateFolder("Config");
         EditorFolderPath = GenerateFolder("Editor");
+        ConfigFolderPath = GenerateFolder("Config");
     }
-    
+
     public static Dictionary<string, string> GetFolderNames(string path)
     {
         Dictionary<string, string> names = new Dictionary<string, string>();

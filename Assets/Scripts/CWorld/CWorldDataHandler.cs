@@ -7,6 +7,7 @@ public class CWorldDataHandler
     public Dictionary<string, CWorldBiomeNode> biomeNodes;
     public Dictionary<string, CWorldModifierNode> modifierNodes;
     public Dictionary<string, CWorldLinkNode> linkNodes;
+    public Dictionary<string, CWorldTreeNode> treeNodes;
     public CWorldSampleHandler SampleHandler;
     public CWorldSampleNode mainPoolSample;
     public CWorldMapNode MapNode;
@@ -17,6 +18,7 @@ public class CWorldDataHandler
         biomeNodes = new Dictionary<string, CWorldBiomeNode>();
         modifierNodes = new Dictionary<string, CWorldModifierNode>();
         linkNodes = new Dictionary<string, CWorldLinkNode>();
+        treeNodes = new Dictionary<string, CWorldTreeNode>();
         SampleHandler = new CWorldSampleHandler();
         MapNode = null;
     }
@@ -63,7 +65,7 @@ public class CWorldDataHandler
 
     public uint GenerateBiomePillar(Vector3Int position, Block[] blocks, int x, int z, string biomeName)
     {
-        if (biomeNodes.TryGetValue(biomeName.Trim(), out var node))
+        if (biomeNodes.TryGetValue(biomeName, out var node))
         {
             return node.GetBlockPillar(position, blocks, x, z);
         }

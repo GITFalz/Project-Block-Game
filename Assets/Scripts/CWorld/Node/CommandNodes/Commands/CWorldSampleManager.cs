@@ -3,41 +3,27 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class CWorldSampleManager : CWorldAbstractNode
+public static class CWorldSampleManager
 {
-    public static CWorldSampleManager instance;
-
-    public WMWriter writer;
-    public CWorldSampleNode sampleNode;
-    public CWorldNoiseNode noiseNode;
-    public CWOSOverrideNode overrideNode;
-
-    public CWorldSampleManager() { if (instance == null) instance = this; }
-
-    public void SetSample(CWorldSampleNode sample)
-    {
-        sampleNode = sample;
-        noiseNode = sample.noiseNode;
-        overrideNode = sample.overrideNode;
-    }
+    public static string name;
     
-    public Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "(", (w) => w.Increment(1, 0) },
-        { "name", (w) => w.On_Name(ref w.writerManager.currentName) },
+        { "name", (w) => w.On_Name(ref name) },
         { ")", (w) => w.Increment(1, 1) },
     };
     
-    public Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
-        { "override", (w) => w.On_Settings(w.writerManager.worldSampleManager.overrides) },
-        { "noise", (w) => w.On_Settings(w.writerManager.worldSampleManager.noises) },
+        { "override", (w) => w.On_Settings(overrides) },
+        { "noise", (w) => w.On_Settings(noises) },
         { "display", (w) => w.On_Display() },
         { "}", (w) => w.Increment(0, 1) },
     };
 
-    public Dictionary<string, Func<WMWriter, Task<int>>> noises = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> noises = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         {
@@ -128,7 +114,7 @@ public class CWorldSampleManager : CWorldAbstractNode
         { "}", (w) => w.Increment(1, 1) }
     };
 
-    public Dictionary<string, Func<WMWriter, Task<int>>> overrides = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> overrides = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         

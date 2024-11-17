@@ -79,7 +79,7 @@ public static class NoiseUtils
         return angleArray[angleIndex];
     }
     
-    public static float GetRandomRange(int a, int b)
+    public static float GetRandomRange(float a, float b)
     {
         vA = (vA + 1) % 256;
         vB += offsetArray1[vA];

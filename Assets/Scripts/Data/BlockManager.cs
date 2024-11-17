@@ -4,13 +4,8 @@ using Unity.VisualScripting;
 using UnityEngine;
 public class BlockManager : MonoBehaviour
 {
-    public static Dictionary<int, CWorldBlock> Blocks;
+    public static Dictionary<int, CWorldBlock> Blocks = new Dictionary<int, CWorldBlock>();
     public List<CWorldBlock> inspectorBlocks;
-
-    public static void Init()
-    {
-        Blocks = new Dictionary<int, CWorldBlock>();
-    }
 
     public static CWorldBlock GetBlock(int index)
     {

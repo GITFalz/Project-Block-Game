@@ -13,12 +13,16 @@ public static class ChunkGenerationNodes
     public static string sampleDisplayName = "";
     public static string currentModifierName = "";
     public static string currentLinkName = "";
+    public static string currentTreeName = "";
 
     public static int threadCount = 4;
+    public static bool set = true;
     
     
     public static void Set()
     {
+        if (!set) return;
+        
         tasks = new List<Task>();
         dataHandlers = new List<CWorldDataHandler>();
         
@@ -27,6 +31,8 @@ public static class ChunkGenerationNodes
             tasks.Add(null);
             dataHandlers.Add(new CWorldDataHandler());
         }
+
+        set = false;
     }
 
     public static void Clear()
@@ -111,6 +117,21 @@ public static class ChunkGenerationNodes
             }
 
             currentBiomeName = name;
+            return true;
+        });
+    }
+    
+    public static Task<bool> AddTree(string name)
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                if (!dataHandlers[i].treeNodes.TryAdd(name, new CWorldTreeNode(name)))
+                    return false;
+            }
+
+            currentTreeName = name;
             return true;
         });
     }
@@ -536,6 +557,49 @@ public static class ChunkGenerationNodes
         });
     }
 
+    public static Task<bool> SetBiomeTree(string treeName)
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                if (!dataHandlers[i].treeNodes.TryGetValue(treeName, out var treeNode))
+                    return false;
+
+                dataHandlers[i].biomeNodes[currentBiomeName].treeNode = treeNode;
+            }
+
+            return true;
+        });
+    }
+    
+    public static Task<bool> SetBiomeTreeSample(string sampleName)
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                if (!dataHandlers[i].sampleNodes.TryGetValue(sampleName, out var sampleNode))
+                    return false;
+
+                dataHandlers[i].biomeNodes[currentBiomeName].treeSampleNode = sampleNode;
+            }
+
+            return true;
+        });
+    }
+    
+    public static Task SetBiomeTreeSampleRange(Vector2 value)
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                dataHandlers[i].biomeNodes[currentBiomeName].treeRange = new FloatRangeNode(value.x, value.y);
+            }
+        });
+    }
+
     public static Task SetBiomeRange(Vector2Int ints)
     {
         return Task.Run(() =>
@@ -612,5 +676,68 @@ public static class ChunkGenerationNodes
             point.position.y = position.y != 0 ? position.y : point.position.y;
             point.position.z = position.z != 0 ? position.z : point.position.z;
         }
+    }
+    
+    
+    
+    
+    public static Task<bool> SetTreeSample(string sampleName)
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                if (!dataHandlers[i].sampleNodes.TryGetValue(sampleName, out var sampleNode))
+                    return false;
+
+                dataHandlers[i].treeNodes[currentTreeName].sampler = new TreeSample { sampleNode = sampleNode };
+            }
+
+            Console.Log("Sample was found");
+            return true;
+        });
+    }
+    
+    public static Task<bool> SetTreeModifier(string sampleName)
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                if (!dataHandlers[i].modifierNodes.TryGetValue(sampleName, out var sampleNode))
+                    return false;
+
+                dataHandlers[i].treeNodes[currentTreeName].sampler = new TreeModifier { modifierNode = sampleNode };
+            }
+
+            Console.Log("Modifier was found");
+            return true;
+        });
+    }
+    
+    public static Task SetTreeBasic()
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                dataHandlers[i].treeNodes[currentTreeName].sampler = new TreeBasic();
+            }
+
+            return true;
+        });
+    }
+
+    public static Task SetTreeRange(Vector2Int ints)
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                dataHandlers[i].treeNodes[currentTreeName].range = new IntRangeNode(ints.x, ints.y);
+            }
+
+            return true;
+        });
     }
 }

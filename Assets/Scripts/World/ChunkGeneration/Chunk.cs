@@ -107,9 +107,16 @@ public class Chunk : MonoBehaviour
         
         Block[] blocks = await CreateBiomeChunkAsync(position, biomeName, handler);
         newChunkData.SetBlocks(blocks);
-
-        GenerateMesh(newChunkData);
         
+        if (WorldChunks.chunksToUpdate.TryGetValue(position, out var chunkData))
+        {
+            newChunkData += chunkData;
+        }
+        
+        GenerateOcclusion(newChunkData.blocks, 32, 0);
+        
+        GenerateMesh(newChunkData);
+        WorldChunks.activeChunkData.TryAdd(position, newChunkData);
         gameCommandSystem.chunks.Enqueue(newChunkData);
     }
     
@@ -125,30 +132,6 @@ public class Chunk : MonoBehaviour
                 {
                     handler.Init(x + position.x, 0, z + position.z);
                     handler.GenerateBiomePillar(position, blocks, x, z, biomeName);
-                }
-            }
-
-            int index = 0;
-            for (int y = 0; y < 32; y++)
-            {
-                for (int z = 0; z < 32; z++)
-                {
-                    for (int x = 0; x < 32; x++)
-                    {
-                        if (blocks[index] != null)
-                        {
-                            byte occlusion = 0;
-                            
-                            for (int i = 0; i < 6; i++)
-                            {
-                                if (VoxelData.InBounds(x, y, z, i, 32) && blocks[index + VoxelData.IndexOffset[i]] != null)
-                                    occlusion |= VoxelData.ShiftPosition[i];
-                            }
-                            
-                            blocks[index].occlusion = occlusion;
-                        }
-                        index++;
-                    }
                 }
             }
 
@@ -186,6 +169,11 @@ public class Chunk : MonoBehaviour
         {
             Block[] blocks = await CreateMapChunkAsync(newChunkData, position, handler);
             newChunkData.SetBlocks(blocks);
+            if (WorldChunks.chunksToUpdate.TryGetValue(position, out var chunkData))
+            {
+                newChunkData += chunkData;
+            }
+            GenerateOcclusion(newChunkData.blocks, 32, 0);
             GenerateMesh(newChunkData);
             //ChunkDataHandler.WriteChunkData(newChunkData);
             
@@ -193,7 +181,13 @@ public class Chunk : MonoBehaviour
         else
         {
             Block[] blocks = await CreateMapChunkAsync(newChunkData, position, handler, lod);
-            GenerateMesh(newChunkData, blocks, lodWidth[lod], lodSize[lod], lod);
+            if (WorldChunks.chunksToUpdate.TryGetValue(position, out var chunkData))
+            {
+                newChunkData += chunkData;
+            }
+            Block[] newBlocks = GenerateLodBlocks(blocks, lodWidth[lod], lodSize[lod], lod);
+            GenerateOcclusion(newBlocks, lodWidth[lod], lod);
+            GenerateMesh(newChunkData, newBlocks, lodWidth[lod], lodSize[lod], lod);
             //ChunkDataHandler.WriteChunkData(newChunkData);
         }
     }
@@ -218,31 +212,6 @@ public class Chunk : MonoBehaviour
                     {
                         handler.Init(x + position.x, 0, z + position.z);
                         handler.GenerateMapPillar(position, blocks, x, z);
-                    }
-                }
-            }
-
-            int index = 0;
-            for (int y = 0; y < 32; y++)
-            {
-                for (int z = 0; z < 32; z++)
-                {
-                    for (int x = 0; x < 32; x++)
-                    {
-                        if (blocks[index] != null)
-                        {
-                            byte occlusion = 0;
-                            
-                            for (int i = 0; i < 6; i++)
-                            {
-                                if (VoxelData.InBounds(x, y, z, i, 32) && blocks[index + VoxelData.IndexOffset[i]] != null)
-                                    occlusion |= VoxelData.ShiftPosition[i];
-                            }
-                            
-                            blocks[index].occlusion = occlusion;
-                        }
-                        
-                        index++;
                     }
                 }
             }
@@ -277,11 +246,7 @@ public class Chunk : MonoBehaviour
                 chunkData.blocks = blocks;
             }
 
-            Block[] newBlocks = GenerateLodBlocks(blocks, lodWidth[lod], lodSize[lod], lod);
-            
-            GenerateOcclusion(newBlocks, lodWidth[lod], lod);
-
-            return newBlocks;
+            return blocks;
         });
     }
     
@@ -815,6 +780,34 @@ public class Chunk : MonoBehaviour
                 }
             }
         }
+    }
+    
+    public static List<Vector3Int> GenerateStretchedSphere(int sizeX, int sizeY, int sizeZ)
+    {
+        List<Vector3Int> points = new List<Vector3Int>();
+        float radiusX = sizeX / 2f;
+        float radiusY = sizeY / 2f;
+        float radiusZ = sizeZ / 2f;
+
+        for (int x = -sizeX; x <= sizeX; x++)
+        {
+            for (int y = -sizeY; y <= sizeY; y++)
+            {
+                for (int z = -sizeZ; z <= sizeZ; z++)
+                {
+                    float normalizedX = x / radiusX;
+                    float normalizedY = y / radiusY;
+                    float normalizedZ = z / radiusZ;
+
+                    if (normalizedX * normalizedX + normalizedY * normalizedY + normalizedZ * normalizedZ <= 1)
+                    {
+                        points.Add(new Vector3Int(x, y, z));
+                    }
+                }
+            }
+        }
+
+        return points;
     }
     
     public static Vector3Int GetChunkPosition(Vector3Int blockPosition)

@@ -3,29 +3,24 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class CWorldModifierManager
+public static class CWorldModifierManager
 {
-    public static CWorldModifierManager instance;
-    public CWorldMapNode MapNode;
-
-    public CWorldModifierManager()
-    {
-        if (instance == null) instance = this;
-    }
+    public static string name;
+    public static CWorldMapNode MapNode;
     
-    public void SetMap(CWorldMapNode map)
+    public static void SetMap(CWorldMapNode map)
     {
         MapNode = map;
     }
     
-    public Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "(", (w) => w.Increment(1, 0) },
-        { "name", (w) => w.On_Name(ref w.writerManager.currentModifierName) },
+        { "name", (w) => w.On_Name(ref name) },
         { ")", (w) => w.Increment(1, 1) },
     };
     
-    public Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         {
@@ -34,6 +29,7 @@ public class CWorldModifierManager
                 w.GetNextValue(out var value);
                 if (!await ChunkGenerationNodes.SetModifierSample(value))
                     return await w.Error("Can't find the sample specified in the modifier");
+                w.Increment();
                 return 0;
             }
         },
@@ -66,13 +62,13 @@ public class CWorldModifierManager
             "gen", async (w) =>
             {
                 await ChunkGenerationNodes.AddModifierGen();
-                return await w.On_Settings(w.writerManager.worldModifierManager.biomeRanges);
+                return await w.On_Settings(biomeRanges);
             } 
         },
         { "}", (w) => w.Increment(0, 1) },
     };
     
-    public Dictionary<string, Func<WMWriter, Task<int>>> biomeRanges = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> biomeRanges = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         {
@@ -81,6 +77,7 @@ public class CWorldModifierManager
                 w.GetNextValue(out var value);
                 if (!await ChunkGenerationNodes.SetModifierGenSample(value))
                     return await w.Error("Can't find the sample specified in the modifier gen");
+                w.Increment();
                 return 0;
             }
         },

@@ -9,7 +9,7 @@ using UnityEngine;
 
 public class WMWriter : MonoBehaviour
 {
-    public static WMWriter instance;
+    public static WMWriter Instance;
 
     public TMP_InputField inputField;
     public TextureGeneration textureGeneration;
@@ -34,22 +34,16 @@ public class WMWriter : MonoBehaviour
     private void Start()
     {
         ChunkGenerationNodes.Set();
-        
         writerManager = new WriterManager(this, false);
-            
-        BlockManager.Init();
-        handler.Init();
-        fileManager.Init();
-        menu?.Init();
-        consoleTextManager?.Init();
-
-        LoadOnEnter();
     }
 
     private void Awake()
     {
-        if (instance == null)
-            instance = this;
+        if (Instance!=null) { Destroy(gameObject); return; }
+        DontDestroyOnLoad(gameObject);
+        Instance = this;
+        
+        LoadOnEnter();
     }
 
     public async void ExecuteCode()
@@ -65,8 +59,8 @@ public class WMWriter : MonoBehaviour
         {
             if (writerManager.index == writerManager.args.Length)
                 break;
-
-            int message = await CommandTest(writerManager.index, types);
+            
+            int message = await CommandTest(Index, types);
             
             if (message == -1)
             {
@@ -198,6 +192,8 @@ public class WMWriter : MonoBehaviour
     public async void SaveFile()
     {
         currentFileConent = inputField.text;
+        writerManager = new WriterManager(this, true);
+        writerManager.args = await writerManager.InitLines(currentFileConent);
         await SaveFileAsync();
     }
 
@@ -207,16 +203,6 @@ public class WMWriter : MonoBehaviour
             return;
         
         Console.Log("Saving file...");
-
-        try
-        {
-            writerManager.args = await writerManager.InitLines(currentFileConent);
-        }
-        catch (NullReferenceException)
-        {
-            Console.Log("Falz forgot to init the writerManager that fucking idiot, please tell him");
-            return;
-        }
 
         bool quitNext = false;
         foreach (string value in writerManager.args)
@@ -255,7 +241,6 @@ public class WMWriter : MonoBehaviour
     {
         Increment();
         await SaveFileAsync();
-        Increment();
         return 1;
     }
 
@@ -293,6 +278,7 @@ public class WMWriter : MonoBehaviour
         {
             return await func(this);
         }
+        Console.Log("The command " + command + " is not recognized");
         return -1;
     }
 
@@ -329,7 +315,11 @@ public class WMWriter : MonoBehaviour
         while (!done)
         { 
             int message = await CommandTest(writerManager.index, commands);
-            if(message == -1) return await Error("Problem in the label found");
+            if(message == -1)
+            {
+                Console.Log("A command wasn't recognized");
+                return -1;
+            }
             if(message == 1) done = true;
         }
         return 0;
@@ -342,8 +332,8 @@ public class WMWriter : MonoBehaviour
     {
         Increment();
         
-        if (await CommandsTest(writerManager.worldSampleManager.labels) == -1) return await Error("Problem in the label found");
-        if (!await ChunkGenerationNodes.AddSamples(writerManager.currentName))
+        if (await CommandsTest(CWorldSampleManager.labels) == -1) return await Error("Problem in the label found");
+        if (!await ChunkGenerationNodes.AddSamples(CWorldSampleManager.name))
         {
             if (!writerManager.import)
                 return await Error("name is used twice");
@@ -351,7 +341,8 @@ public class WMWriter : MonoBehaviour
                 return await SkipNode();
         }
 
-        if (await CommandsTest(writerManager.worldSampleManager.settings) == -1) return await Error("Problem in the sample settings found");
+        if (await CommandsTest(CWorldSampleManager.settings) == -1) return await Error("Problem in the sample settings found");
+        
         return 0;
     }
 
@@ -359,8 +350,8 @@ public class WMWriter : MonoBehaviour
     {
         Increment();
         
-        if (await CommandsTest(writerManager.worldBiomeManager.labels) == -1) return await Error("Problem in the label found");
-        if (!await ChunkGenerationNodes.AddBiomes(writerManager.currentBiomeName))
+        if (await CommandsTest(CWorldBiomeManager.labels) == -1) return await Error("Problem in the label found");
+        if (!await ChunkGenerationNodes.AddBiomes(CWorldBiomeManager.name))
         {
             if (!writerManager.import)
                 return await Error("name is used twice");
@@ -368,7 +359,7 @@ public class WMWriter : MonoBehaviour
                 return await SkipNode();
         }
         
-        if (await CommandsTest(writerManager.worldBiomeManager.settings) == -1) return await Error("Problem in the biome settings found");
+        if (await CommandsTest(CWorldBiomeManager.settings) == -1) return await Error("Problem in the biome settings found");
         return 0;
     }
     
@@ -376,13 +367,30 @@ public class WMWriter : MonoBehaviour
     {
         Increment();
         
-        writerManager.worldBlockManager.SetBlock(new CWorldBlock());
+        CWorldBlockManager.SetBlock(new CWorldBlock());
         
-        if (await CommandsTest(writerManager.worldBlockManager.labels) == -1) return await Error("Problem in the label found");
+        if (await CommandsTest(CWorldBlockManager.labels) == -1) return await Error("Problem in the label found");
 
-        writerManager.worldBlockManager.BlockNode.blockName = writerManager.currentBlockName;
+        CWorldBlockManager.BlockNode.blockName = CWorldBlockManager.name;
         
-        if (await CommandsTest(writerManager.worldBlockManager.settings) == -1) return await Error("Problem in the biome settings found");
+        if (await CommandsTest(CWorldBlockManager.settings) == -1) return await Error("Problem in the biome settings found");
+        return 0;
+    }
+    
+    public async Task<int> On_Tree()
+    {
+        Increment();
+        
+        if (await CommandsTest(CWorldTreeManager.labels) == -1) return await Error("Problem in the label found");
+        if (!await ChunkGenerationNodes.AddTree(CWorldTreeManager.name))
+        {
+            if (!writerManager.import)
+                return await Error("name is used twice");
+            if (writerManager.import)
+                return await SkipNode();
+        }
+        
+        if (await CommandsTest(CWorldTreeManager.settings) == -1) return await Error("Problem in the tree settings found");
         return 0;
     }
     
@@ -398,7 +406,7 @@ public class WMWriter : MonoBehaviour
         
         Increment();
         
-        if (await CommandsTest(writerManager.worldMapManager.settings) == -1) return await Error("Problem in the map settings found");
+        if (await CommandsTest(CWorldMapManager.settings) == -1) return await Error("Problem in the map settings found");
         return 0;
     }
     
@@ -406,8 +414,8 @@ public class WMWriter : MonoBehaviour
     {
         Increment();
         
-        if (await CommandsTest(writerManager.worldModifierManager.labels) == -1) return await Error("Problem in the label found");
-        if (!await ChunkGenerationNodes.AddModifier(writerManager.currentModifierName))
+        if (await CommandsTest(CWorldModifierManager.labels) == -1) return await Error("Problem in the label found");
+        if (!await ChunkGenerationNodes.AddModifier(CWorldModifierManager.name))
         {
             if (!writerManager.import)
                 return await Error("name is used twice");
@@ -415,7 +423,7 @@ public class WMWriter : MonoBehaviour
                 return await SkipNode();
         }
         
-        if (await CommandsTest(writerManager.worldModifierManager.settings) == -1) return await Error("Problem in the modifier settings found");
+        if (await CommandsTest(CWorldModifierManager.settings) == -1) return await Error("Problem in the modifier settings found");
         return 0;
     }
     
@@ -424,7 +432,7 @@ public class WMWriter : MonoBehaviour
         Increment();
         
         if (await CommandsTest(CWorldLinkManager.labels) == -1) return await Error("Couldn't assign label to link");
-        if (!await ChunkGenerationNodes.AddLink(CWorldLinkManager.currentLink))
+        if (!await ChunkGenerationNodes.AddLink(CWorldLinkManager.name))
         {
             if (!writerManager.import)
                 return await Error("name is used twice");
@@ -474,7 +482,7 @@ public class WMWriter : MonoBehaviour
             if (await GetNextInt(out int t) == -1)
                 return await Error("A problem occured when trying to get the texture indexes, check if they are indeed integers");
 
-            if (!BlockManager.SetUv(writerManager.worldBlockManager.BlockNode.index, i, t))
+            if (!BlockManager.SetUv(CWorldBlockManager.BlockNode.index, i, t))
                 return await Error("A problem occured when trying set the uv texture index, too many indices could be the problem");
 
             i++;
@@ -488,7 +496,7 @@ public class WMWriter : MonoBehaviour
         if (await GetNextInt(out int t) == -1)
             return await Error("A problem occured when trying to get the priority value, make sure it's an integer");
 
-        if (!BlockManager.SetPriority(writerManager.worldBlockManager.BlockNode.index, t))
+        if (!BlockManager.SetPriority(CWorldBlockManager.BlockNode.index, t))
             return await Error("Couldn't find block to set priority");
 
         return 0;
@@ -514,7 +522,7 @@ public class WMWriter : MonoBehaviour
     public Task<int> On_Display()
     {
         writerManager.index++;
-        ChunkGenerationNodes.sampleDisplayName = writerManager.currentName;
+        ChunkGenerationNodes.sampleDisplayName = CWorldSampleManager.name;
         
         Console.Log("Drawing texture...");
         
@@ -704,5 +712,6 @@ public class WMWriter : MonoBehaviour
         { "Block", async (w) => await w.On_Block() },
         { "Modifier", async (w) => await w.On_Modifier() },
         { "Map", async (w) => await w.On_Map() },
+        { "Tree", async (w) => await w.On_Tree() },
     };
 }

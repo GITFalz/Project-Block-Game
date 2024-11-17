@@ -24,10 +24,10 @@ public class World : MonoBehaviour
 
     public int chunkCount = 0;
 
-    private static ConcurrentQueue<Data> chunkGenerationQueue;
-    private static ConcurrentQueue<Vector3Int> chunkPositionQueue;
-    private static ConcurrentQueue<SideUpdate> chunkUpdateQueue;
-    private static ConcurrentQueue<MeshDataUpdate> chunkRerenderQueue;
+    private static ConcurrentQueue<Data> chunkGenerationQueue = new ConcurrentQueue<Data>();
+    private static ConcurrentQueue<Vector3Int> chunkPositionQueue = new ConcurrentQueue<Vector3Int>();
+    private static ConcurrentQueue<SideUpdate> chunkUpdateQueue = new ConcurrentQueue<SideUpdate>();
+    private static ConcurrentQueue<MeshDataUpdate> chunkRerenderQueue = new ConcurrentQueue<MeshDataUpdate>();
 
     public WorldData worldData;
 
@@ -36,7 +36,13 @@ public class World : MonoBehaviour
     
     private bool updating = false;
 
-    
+    private void Awake()
+    {
+        chunkGenerationQueue = new ConcurrentQueue<Data>();
+        chunkPositionQueue = new ConcurrentQueue<Vector3Int>();
+        chunkUpdateQueue = new ConcurrentQueue<SideUpdate>();
+        chunkRerenderQueue = new ConcurrentQueue<MeshDataUpdate>();
+    }
 
     private void Start()
     {
@@ -45,11 +51,6 @@ public class World : MonoBehaviour
         worldData.activeChunks = new Dictionary<Vector3Int, ChunkRenderer>();
         worldData.activeChunkData = new ConcurrentDictionary<Vector3Int, ChunkData>();
         worldData.canUpdate = new ConcurrentDictionary<Vector3Int, ChunkData>();
-        
-        chunkGenerationQueue = new ConcurrentQueue<Data>();
-        chunkPositionQueue = new ConcurrentQueue<Vector3Int>();
-        chunkUpdateQueue = new ConcurrentQueue<SideUpdate>();
-        chunkRerenderQueue = new ConcurrentQueue<MeshDataUpdate>();
 
         worldData.chunksToRemove = new HashSet<Vector3Int>();
 

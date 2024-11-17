@@ -15,12 +15,18 @@ public class ChunkData
 
     public void SetBlocks(Block[] newBlocks)
     {
+        int count = 0;
+        
         blocks ??= new Block[newBlocks.Length];
                 
         for (int i = 0; i < newBlocks.Length; i++)
         {
             blocks[i] = newBlocks[i];
+            if (newBlocks[i] != null)
+                count++;
         }
+        
+        Debug.Log($"SetBlocks: {count} blocks set");
     }
 
     public void Clear()
@@ -36,5 +42,16 @@ public class ChunkData
                $"Blocks: {ChunkInfo.GetBlockCount(this)} \n" +
                $"Mesh: {MeshInfo.GetMeshVertexCount(this)} \n" +
                $"SideChunks: {ChunkInfo.GetSideChunks(sideChunks)}\n";
+    }
+
+    public static ChunkData operator +(ChunkData a, ChunkData b)
+    {
+        for (int i = 0; i < b.blocks.Length; i++)
+        {
+            if (b.blocks[i] != null && a.blocks[i] == null)
+                a.blocks[i] = b.blocks[i];
+        }
+
+        return a;
     }
 }

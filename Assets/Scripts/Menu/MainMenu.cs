@@ -11,12 +11,6 @@ public class MainMenu : MonoBehaviour
 {
     public GameObject commands;
     public TextureGeneration textureGeneration;
-    public FileManager fileManager;
-
-    private void Start()
-    {
-        fileManager.Init();
-    }
 
     public void SwitchScene(string scene)
     {

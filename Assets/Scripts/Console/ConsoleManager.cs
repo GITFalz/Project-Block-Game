@@ -81,6 +81,12 @@ public class ConsoleManager : MonoBehaviour
         await writer.Load(mainPath);
         return "";
     }
+    
+    public async Task<string> Do_Clear()
+    {
+        Console.Clear();
+        return await Task.Run(() => "Clearing console...");
+    }
 
     public Task<string> Do_LoadClear()
     {
@@ -95,6 +101,7 @@ public static class SystemCommands
     public static Dictionary<string, Func<ConsoleManager, Task<string>>> baseCommands = new Dictionary<string, Func<ConsoleManager, Task<string>>>
     {
         { "load", (c) => c.Do_Load() },
+        { "clear", (c) => c.Do_Clear() },
     };
     
     public static Dictionary<string, Func<ConsoleManager, Task<string>>> loadCommands = new Dictionary<string, Func<ConsoleManager, Task<string>>>

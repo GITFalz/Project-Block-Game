@@ -1,44 +1,32 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class CWorldBiomeManager : CWorldAbstractNode
+public static class CWorldBiomeManager
 {
-    public static CWorldBiomeManager instance;
+    public static string name;
+    public static CWOCSequenceNode sequenceNode;
     
-    public WMWriter writer;
-    public CWorldBiomeNode biomeNode;
-    public CWorldSampleNode sampleNode;
-
-    public CWorldBiomeManager() { if (instance == null) instance = this; }
-    
-    private int id = -1;
-    private CWOCSequenceNode _sequenceNode;
-
-    public void SetBiome(CWorldBiomeNode biome)
-    {
-        biomeNode = biome;
-        sampleNode = biomeNode.sample;
-    }
-    
-    public Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "(", (w) => w.Increment(1, 0) },
-        { "name", (w) => w.On_Name(ref w.writerManager.currentBiomeName) },
+        { "name", (w) => w.On_Name(ref name) },
         { ")", (w) => w.Increment(1, 1) },
     };
     
-    public Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
-        { "sample", (w) => w.On_Settings(w.writerManager.worldBiomeManager.samples) },
-        { "modifier", (w) => w.On_Settings(w.writerManager.worldBiomeManager.modifiers) },
-        { "sequence", (w) => w.On_Settings(w.writerManager.worldBiomeManager.sequences) },
+        { "sample", (w) => w.On_Settings(samples) },
+        { "modifier", (w) => w.On_Settings(modifiers) },
+        { "tree", (w) => w.On_Settings(trees) },
+        { "sequence", (w) => w.On_Settings(sequences) },
         { "}", (w) => w.Increment(0, 1) },
     };
 
-    public Dictionary<string, Func<WMWriter, Task<int>>> sequences = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> sequences = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         { "id", async (w) =>
@@ -46,8 +34,8 @@ public class CWorldBiomeManager : CWorldAbstractNode
             if (await w.GetNextInt(out int result) == -1)
                 return await w.Error("id needs to be an integer");
 
-            w.writerManager.worldBiomeManager._sequenceNode = new CWOCSequenceNode();
-            w.writerManager.worldBiomeManager._sequenceNode.block = new Block((short)result, 0);
+            sequenceNode = new CWOCSequenceNode();
+            sequenceNode.block = new Block((short)result, 0);
             return 0;
         } },
         { "fixed", async (w) =>
@@ -55,8 +43,8 @@ public class CWorldBiomeManager : CWorldAbstractNode
             if (await w.GetNextInt(out int value) == -1)
                 return await w.Error("height must be an integer");
 
-            w.writerManager.worldBiomeManager._sequenceNode.top_min = value;
-            w.writerManager.worldBiomeManager._sequenceNode.top_max = value;
+            sequenceNode.top_min = value;
+            sequenceNode.top_max = value;
             return 0;
         } },
         { 
@@ -73,8 +61,8 @@ public class CWorldBiomeManager : CWorldAbstractNode
                     {
                         if (result >= 1)
                         {
-                            w.writerManager.worldBiomeManager._sequenceNode.top_min = 1;
-                            w.writerManager.worldBiomeManager._sequenceNode.top_max = result;
+                            sequenceNode.top_min = 1;
+                            sequenceNode.top_max = result;
                             return 0;
                         }
                         
@@ -85,8 +73,8 @@ public class CWorldBiomeManager : CWorldAbstractNode
                     {
                         if (result2 >= result1)
                         {
-                            w.writerManager.worldBiomeManager._sequenceNode.top_min = result1;
-                            w.writerManager.worldBiomeManager._sequenceNode.top_max = result2;
+                            sequenceNode.top_min = result1;
+                            sequenceNode.top_max = result2;
                             return 0;
                         }
                         
@@ -95,27 +83,27 @@ public class CWorldBiomeManager : CWorldAbstractNode
                     
                     if (int.TryParse(values[0], out result) && values[1].Equals("min"))
                     {
-                        w.writerManager.worldBiomeManager._sequenceNode.top_min = result;
-                        w.writerManager.worldBiomeManager._sequenceNode.top_max = 9999;
+                        sequenceNode.top_min = result;
+                        sequenceNode.top_max = 9999;
                         return 0;
                     }
                     
                     return await w.Error("uhm... error");
                 }
                 
-                w.writerManager.worldBiomeManager._sequenceNode.top_min = ints.x;
-                w.writerManager.worldBiomeManager._sequenceNode.top_max = ints.y;
+                sequenceNode.top_min = ints.x;
+                sequenceNode.top_max = ints.y;
                 return 0;
             } 
         },
         { "}", (w) =>
         {
-            ChunkGenerationNodes.SetBiomeSequence(w.writerManager.worldBiomeManager._sequenceNode);
+            ChunkGenerationNodes.SetBiomeSequence(sequenceNode);
             return w.Increment(1, 1);
         } }
     };
 
-    public Dictionary<string, Func<WMWriter, Task<int>>> samples = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> samples = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         {
@@ -124,6 +112,7 @@ public class CWorldBiomeManager : CWorldAbstractNode
                 w.GetNextValue(out var value);
                 if (!await ChunkGenerationNodes.SetBiomeSample(value))
                     return await w.Error("Can't find the sample specified in the biome");
+                w.Increment();
                 return 0;
             }
         },
@@ -139,7 +128,7 @@ public class CWorldBiomeManager : CWorldAbstractNode
         { "}", (w) => w.Increment(1, 1) }
     };
     
-    public Dictionary<string, Func<WMWriter, Task<int>>> modifiers = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> modifiers = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         {
@@ -148,6 +137,42 @@ public class CWorldBiomeManager : CWorldAbstractNode
                 w.GetNextValue(out var value);
                 if (!await ChunkGenerationNodes.SetBiomeModifier(value))
                     return await w.Error("Can't find the modifier specified in the biome");
+                w.Increment();
+                return 0;
+            }
+        },
+        { "}", (w) => w.Increment(1, 1) }
+    };
+    
+    public static Dictionary<string, Func<WMWriter, Task<int>>> trees = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    {
+        { "{", (w) => w.Increment(1, 0) },
+        {
+            "use", async (w) =>
+            {
+                w.GetNextValue(out var value);
+                if (!await ChunkGenerationNodes.SetBiomeTree(value))
+                    return await w.Error("Can't find the tree specified in the biome");
+                w.Increment();
+                return 0;
+            }
+        },
+        {
+            "sample", async (w) =>
+            {
+                w.GetNextValue(out var value);
+                if (!await ChunkGenerationNodes.SetBiomeTreeSample(value))
+                    return await w.Error("Can't find the sample specified in the biome");
+                w.Increment();
+                return 0;
+            }
+        },
+        {
+            "range", async (w) =>
+            {
+                if (await w.GetNext2Floats(out var values) == -1)
+                    return await w.Error("no suitable floats found");
+                await ChunkGenerationNodes.SetBiomeTreeSampleRange(values);
                 return 0;
             }
         },

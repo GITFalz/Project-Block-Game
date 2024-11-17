@@ -3,30 +3,56 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-public class CWorldTreeManager
+public static class CWorldTreeManager
 {
-    public static CWorldTreeManager instance;
-
-    public CWorldTreeManager()
-    {
-        if (instance == null) instance = this;
-    }
+    public static string name;
     
-    public Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "(", (w) => w.Increment(1, 0) },
-        { "name", (w) => w.On_Name(ref w.writerManager.currentLinkName) },
+        { "name", (w) => w.On_Name(ref name) },
         { ")", (w) => w.Increment(1, 1) },
     };
     
-    public Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
+        {
+            "sample", async (w) =>
+            {
+                w.GetNextValue(out var value);
+                if (!await ChunkGenerationNodes.SetTreeSample(value))
+                {
+                    Console.Log("Sample not found, trying to set as modifier");
+                    if (!await ChunkGenerationNodes.SetTreeModifier(value))
+                    {
+                        Console.Log("Modifier not found, setting as basic");
+                        await ChunkGenerationNodes.SetTreeBasic();
+                    }
+                }
+                
+                w.Increment();
+                return 0;
+            }
+        },
+        {
+            "range", async (w) =>
+            {
+                if (await w.GetNext2Ints(out var value) == -1)
+                {
+                    Console.Log("Error: range needs to be two integers");
+                    return -1;
+                }
+                
+                await ChunkGenerationNodes.SetTreeRange(value);
+                return 0;
+            }
+        },
         //{ "link", async (w) => },
         { "}", (w) => w.Increment(0, 1) },
     };
     
-    public Dictionary<string, Func<WMWriter, Task<int>>> link = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> link = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         //{ "sample", async (w) => },
