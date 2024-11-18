@@ -13,6 +13,11 @@ public class PlayerAdminState : PlayerBaseState
 
     public override void UpdateState(PlayerStateMachine state)
     {
+        
+    }
+
+    public override void Physics(PlayerStateMachine state)
+    {
         input = state.moveInput();
         
         Vector3 direction = new Vector3(0, 0, 0);
@@ -33,11 +38,6 @@ public class PlayerAdminState : PlayerBaseState
         }
         
         state.Move(direction, 100);
-    }
-
-    public override void Physics(PlayerStateMachine state)
-    {
-        //state.floatingCapsule(25);
     }
 
     public override void ExitState(PlayerStateMachine state)

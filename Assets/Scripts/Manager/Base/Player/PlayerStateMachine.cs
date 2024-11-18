@@ -9,6 +9,8 @@ public class PlayerStateMachine : BaseState
     public PlayerBaseState oldState;
     public PlayerBaseState afterJumpState;
     
+    public Rigidbody playerRigidbody;
+    
     public PlayerIdleState idleState = new();
     public PlayerWalkState walkState = new();
     public PlayerRunState runState = new();
@@ -92,6 +94,8 @@ public class PlayerStateMachine : BaseState
 
         afterJumpState = idleState;
         currentState = adminState;
+        
+        playerRigidbody = player.GetComponent<Rigidbody>();
     }
 
     public override void EnterState(StateMachine state)
@@ -167,7 +171,7 @@ public class PlayerStateMachine : BaseState
 
     public void Move(Vector3 direction, float maxSpeed)
     {
-        player.position += maxSpeed * Time.deltaTime * direction;
+        playerRigidbody.MovePosition(playerRigidbody.position + maxSpeed * Time.deltaTime * direction);
     }
 
     public void HandleVelocity()

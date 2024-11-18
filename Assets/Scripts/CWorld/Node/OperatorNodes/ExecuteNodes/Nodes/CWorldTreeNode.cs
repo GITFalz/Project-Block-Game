@@ -19,8 +19,12 @@ public class CWorldTreeNode
     {
         if (sampler == null || range == null)
             return;
+        
+        if (sampler.Ignore() == -1)
+            return;
 
         int height = sampler.Sample();
+        
         int treeHeight = (int)NoiseUtils.GetRandomRange(range.min, range.max);
 
         Vector3Int treeTop = new Vector3Int(x, height + treeHeight - 1, z);
@@ -43,7 +47,7 @@ public class CWorldTreeNode
             chunkData.blocks[index] = new Block(4, 0);
         }
 
-        List<Vector3Int> points = Chunk.GenerateStretchedSphere(3, 3, 3);
+        List<Vector3Int> points = Chunk.GenerateStretchedSphere(5, 5, 5);
 
         foreach (var point in points)
         {
@@ -59,7 +63,8 @@ public class CWorldTreeNode
 
             Vector3Int position = Chunk.GetRelativeBlockPosition(chunkPosition, point + treeTop);
             int index = position.x + position.z * 32 + position.y * 1024;
-            chunkData.blocks[index] = new Block(5, 0);
+            if (chunkData.blocks[index] == null)
+                chunkData.blocks[index] = new Block(5, 0);
         }
     }
 }
@@ -67,7 +72,7 @@ public class CWorldTreeNode
 public interface ITreeSampler
 {
     int Sample();
-    void Init(int x, int y, int z);
+    int Ignore();
 }
 
 public class TreeBasic : ITreeSampler
@@ -82,9 +87,9 @@ public class TreeBasic : ITreeSampler
         return 0 + _height;
     }
     
-    public void Init(int x, int y, int z)
+    public int Ignore()
     {
-        
+        return 0;
     }
 }
 
@@ -101,27 +106,32 @@ public class TreeSample : ITreeSampler
         return (int)Mathf.Lerp(range.min, range.max, sampleNode.noiseValue);
     }
     
-    public void Init(int x, int y, int z)
+    public int Ignore()
     {
-        sampleNode.Init(x, y, z);
+        return 0;
     }
 }
 
 public class TreeModifier : ITreeSampler
 {
     public CWorldModifierNode modifierNode = null;
-    public IntRangeNode range = null;
 
     public int Sample()
     {
-        if (modifierNode == null || range == null || modifierNode.gen.Count == 0)
+        if (modifierNode == null || modifierNode.gen.Count == 0)
             return -1;
-        
-        return (int)Mathf.Lerp(range.min, range.max, modifierNode.gen[0].GetHeight(modifierNode));
+
+        return modifierNode.GetMaxHeight() + modifierNode.gen[0].GetHeight(modifierNode);
     }
     
-    public void Init(int x, int y, int z)
+    public int Ignore()
     {
-        
+        foreach (var gen in modifierNode.gen)
+        {
+            if (gen.GetHeight(modifierNode) == -1)
+                return -1;
+        }
+
+        return 0;
     }
 }
