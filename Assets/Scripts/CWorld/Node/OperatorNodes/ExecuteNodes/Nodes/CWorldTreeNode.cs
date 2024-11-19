@@ -9,18 +9,28 @@ public class CWorldTreeNode
     public string name;
     public ITreeSampler sampler;
     public IntRangeNode range;
+    public CWorldLinkNode link;
     
     public CWorldTreeNode(string name)
     {
         this.name = name;
     }
 
+    public Vector3Int GetBasePosition()
+    {
+        return link.A.GetPosition();
+    }
+
     public void GenerateTree(int x, int z)
     {
-        if (sampler == null || range == null)
+        if (sampler == null || range == null || link == null)
             return;
-
+        
         int height = sampler.Sample();
+        
+        link.GenerateLink(new Vector3Int(x, height, z));
+
+        /*
         int treeHeight = (int)NoiseUtils.GetRandomRange(range.min, range.max);
 
         Vector3Int treeTop = new Vector3Int(x, height + treeHeight - 1, z);
@@ -42,7 +52,9 @@ public class CWorldTreeNode
             int index = position.x + position.z * 32 + position.y * 1024;
             chunkData.blocks[index] = new Block(4, 0);
         }
+        */
 
+        /*
         List<Vector3Int> points = Chunk.GenerateStretchedSphere(3, 3, 3);
 
         foreach (var point in points)
@@ -61,6 +73,7 @@ public class CWorldTreeNode
             int index = position.x + position.z * 32 + position.y * 1024;
             chunkData.blocks[index] = new Block(5, 0);
         }
+        */
     }
 }
 

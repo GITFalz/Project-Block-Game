@@ -59,6 +59,12 @@ public static class Console
         console.lineQueue.Enqueue(message);
         return message;
     }
+    
+    public static int LogError(string message)
+    {
+        Log(message);
+        return -1;
+    }
 
     public static int LineCount()
     {

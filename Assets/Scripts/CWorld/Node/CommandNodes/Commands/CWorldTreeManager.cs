@@ -48,6 +48,19 @@ public static class CWorldTreeManager
                 return 0;
             }
         },
+        {
+            "link", async (w) =>
+            {
+                w.GetNextValue(out var value);
+                if (!await ChunkGenerationNodes.SetTreeLink(value))
+                {
+                    return Console.LogError("Link not found");
+                }
+                
+                w.Increment();
+                return 0;
+            }
+        },
         //{ "link", async (w) => },
         { "}", (w) => w.Increment(0, 1) },
     };

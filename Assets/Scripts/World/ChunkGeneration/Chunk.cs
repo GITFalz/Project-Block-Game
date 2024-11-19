@@ -722,18 +722,81 @@ public class Chunk : MonoBehaviour
         int dy = Math.Abs(b.y - a.y);
         int dz = Math.Abs(b.z - a.z);
 
-        int xs = b.x > a.x ? 1 : -1;
-        int ys = b.y > a.y ? 1 : -1;
-        int zs = b.z > a.z ? 1 : -1;
+        int xs = a.x < b.x ? 1 : -1;
+        int ys = a.y < b.y ? 1 : -1;
+        int zs = a.z < b.z ? 1 : -1;
 
-        if (dx >= dy && dx >= dz) {
-            Bresenham3DStep(a, b, r, points, dx, dy, dz, xs, ys, zs, 0);
+        // Driving axis is X-axis
+        if (dx >= dy && dx >= dz)
+        {
+            int p1 = 2 * dy - dx;
+            int p2 = 2 * dz - dx;
+
+            while (a.x != b.x)
+            {
+                a.x += xs;
+                if (p1 >= 0)
+                {
+                    a.y += ys;
+                    p1 -= 2 * dx;
+                }
+                if (p2 >= 0)
+                {
+                    a.z += zs;
+                    p2 -= 2 * dx;
+                }
+                p1 += 2 * dy;
+                p2 += 2 * dz;
+                AddThickPoints(points, new Vector3Int(a.x, a.y, a.z), r);
+            }
         }
-        else if (dy >= dx && dy >= dz) {
-            Bresenham3DStep(a, b, r, points, dy, dx, dz, ys, xs, zs, 1);
+        // Driving axis is Y-axis
+        else if (dy >= dx && dy >= dz)
+        {
+            int p1 = 2 * dx - dy;
+            int p2 = 2 * dz - dy;
+
+            while (a.y != b.y)
+            {
+                a.y += ys;
+                if (p1 >= 0)
+                {
+                    a.x += xs;
+                    p1 -= 2 * dy;
+                }
+                if (p2 >= 0)
+                {
+                    a.z += zs;
+                    p2 -= 2 * dy;
+                }
+                p1 += 2 * dx;
+                p2 += 2 * dz;
+                AddThickPoints(points, new Vector3Int(a.x, a.y, a.z), r);
+            }
         }
-        else {
-            Bresenham3DStep(a, b, r, points, dz, dy, dx, zs, ys, xs, 2);
+        // Driving axis is Z-axis
+        else
+        {
+            int p1 = 2 * dy - dz;
+            int p2 = 2 * dx - dz;
+
+            while (a.z != b.z)
+            {
+                a.z += zs;
+                if (p1 >= 0)
+                {
+                    a.y += ys;
+                    p1 -= 2 * dz;
+                }
+                if (p2 >= 0)
+                {
+                    a.x += xs;
+                    p2 -= 2 * dz;
+                }
+                p1 += 2 * dy;
+                p2 += 2 * dx;
+                AddThickPoints(points, new Vector3Int(a.x, a.y, a.z), r);
+            }
         }
 
         return points;

@@ -649,23 +649,81 @@ public static class ChunkGenerationNodes
     }
 
 
-
+    
     public static void SetLinkAPosition(Vector3Int position, bool overwrite = false)
     {
+        /*
         for (int i = 0; i < threadCount; i++)
         {
             SetLinkPointPosition(dataHandlers[i].linkNodes[currentLinkName].A, position, overwrite);
         }
+        */
+    }
+    
+    public static void SetLinkAxRange(Vector2Int ints)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            dataHandlers[i].linkNodes[currentLinkName].A.x = SetLinkPointRange(ints);
+        }
+    }
+    
+    public static void SetLinkAyRange(Vector2Int ints)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            dataHandlers[i].linkNodes[currentLinkName].A.y = SetLinkPointRange(ints);
+        }
+    }
+    
+    public static void SetLinkAzRange(Vector2Int ints)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            dataHandlers[i].linkNodes[currentLinkName].A.z = SetLinkPointRange(ints);
+        }
+    }
+    
+    public static void SetLinkBxRange(Vector2Int ints)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            dataHandlers[i].linkNodes[currentLinkName].B.x = SetLinkPointRange(ints);
+        }
+    }
+    
+    public static void SetLinkByRange(Vector2Int ints)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            dataHandlers[i].linkNodes[currentLinkName].B.y = SetLinkPointRange(ints);
+        }
+    }
+    
+    public static void SetLinkBzRange(Vector2Int ints)
+    {
+        for (int i = 0; i < threadCount; i++)
+        {
+            dataHandlers[i].linkNodes[currentLinkName].B.z = SetLinkPointRange(ints);
+        }
+    }
+
+    public static IPoint SetLinkPointRange(Vector2Int ints)
+    {
+        return new PointRange { range = new IntRangeNode(ints.x, ints.y) };
     }
     
     public static void SetLinkBPosition(Vector3Int position, bool overwrite = false)
     {
+        /*
         for (int i = 0; i < threadCount; i++)
         {
             SetLinkPointPosition(dataHandlers[i].linkNodes[currentLinkName].B, position, overwrite);
         }
+        */
     }
 
+    /*
     public static void SetLinkPointPosition(CWorldLinkPoint point, Vector3Int position, bool overwrite = false)
     {
         if (overwrite)
@@ -677,10 +735,38 @@ public static class ChunkGenerationNodes
             point.position.z = position.z != 0 ? position.z : point.position.z;
         }
     }
+    */
     
-    
-    
-    
+    public static Task<bool> SetLinkLink(string linkName)
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                if (!dataHandlers[i].linkNodes.TryGetValue(linkName, out var linkNode))
+                    return false;
+
+                linkNode.spikes.Add(dataHandlers[i].linkNodes[currentLinkName]);
+            }
+            
+            return true;
+        });
+    }
+
+    public static Task SetLinkThreshold(float value)
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                dataHandlers[i].linkNodes[currentLinkName].threshold = value;
+            }
+        });
+    }
+
+
+
+
     public static Task<bool> SetTreeSample(string sampleName)
     {
         return Task.Run(() =>
@@ -697,7 +783,7 @@ public static class ChunkGenerationNodes
             return true;
         });
     }
-    
+
     public static Task<bool> SetTreeModifier(string sampleName)
     {
         return Task.Run(() =>
@@ -714,7 +800,7 @@ public static class ChunkGenerationNodes
             return true;
         });
     }
-    
+
     public static Task SetTreeBasic()
     {
         return Task.Run(() =>
@@ -724,6 +810,22 @@ public static class ChunkGenerationNodes
                 dataHandlers[i].treeNodes[currentTreeName].sampler = new TreeBasic();
             }
 
+            return true;
+        });
+    }
+
+    public static Task<bool> SetTreeLink(string linkName)
+    {
+        return Task.Run(() =>
+        {
+            for (int i = 0; i < threadCount; i++)
+            {
+                if (!dataHandlers[i].linkNodes.TryGetValue(linkName, out var linkNode))
+                    return false;
+
+                dataHandlers[i].treeNodes[currentTreeName].link = linkNode;
+            }
+            
             return true;
         });
     }
