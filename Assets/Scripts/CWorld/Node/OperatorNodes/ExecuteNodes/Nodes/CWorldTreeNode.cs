@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class CWorldTreeNode
@@ -16,12 +12,12 @@ public class CWorldTreeNode
         this.name = name;
     }
 
-    public Vector3Int GetBasePosition()
+    public Vector3Int GetBasePosition(Vector3Int p)
     {
-        return link.A.GetPosition();
+        return link.A.GetPosition(p);
     }
 
-    public void GenerateTree(int x, int z)
+    public void GenerateTree(int x, int y, int z)
     {
         if (sampler == null || range == null || link == null)
             return;
@@ -31,7 +27,7 @@ public class CWorldTreeNode
         
         int height = sampler.Sample();
         
-        link.GenerateLink(new Vector3Int(x, height, z));
+        link.GenerateLink(new Vector3Int(x, height, z), y);
 
         /*
         int treeHeight = (int)NoiseUtils.GetRandomRange(range.min, range.max);

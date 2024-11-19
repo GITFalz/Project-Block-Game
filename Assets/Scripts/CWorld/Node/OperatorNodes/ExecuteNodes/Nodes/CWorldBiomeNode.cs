@@ -52,13 +52,7 @@ public class CWorldBiomeNode : CWAExecuteNode
                 
                 if (treeNoise >= treeRange.min && treeNoise <= treeRange.max)
                 {
-                    Vector3Int basePosition = treeNode.GetBasePosition();
-                    {
-                        if (basePosition.y >= chunkPosition.y && basePosition.y < chunkPosition.y + 32)
-                        {
-                            treeNode.GenerateTree(x + chunkPosition.x, z + chunkPosition.z);
-                        }
-                    }
+                    treeNode.GenerateTree(x + chunkPosition.x, chunkPosition.y, z + chunkPosition.z);
                 }
             }
             

@@ -516,8 +516,7 @@ public class GameCommandSystem : MonoBehaviour
             if (ChunkGenerationNodes.dataHandlers[0].treeNodes.TryGetValue(args[5], out var treeNode))
             {
                 Console.Log("The tree was found");
-                treeNode.sampler.Ignore();
-                treeNode.GenerateTree(x1, z1);
+                treeNode.GenerateTree(x1, y1, z1);
                 foreach (var chunk in WorldChunks.chunksToUpdate)
                 {
                     ChunkData chunkData = chunk.Value;

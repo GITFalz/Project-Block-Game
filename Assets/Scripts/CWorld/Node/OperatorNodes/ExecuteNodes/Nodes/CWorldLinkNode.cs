@@ -24,14 +24,23 @@ public class CWorldLinkNode
         radius = 1;
     }
 
-    public void GenerateLink(Vector3Int offset)
+    public void GenerateLink(Vector3Int offset, int y)
     {
-        Vector3Int pointA = A.GetPosition() + offset;
-        Vector3Int pointB = B.GetPosition() + offset;
+        Vector3Int pointA = A.GetPosition(offset) + offset;
         
-        Debug.Log("positionA: " + pointA + " positionB: " + pointB);
+        if (pointA.y < y || pointA.y >= y + 32)
+            return;
+        
+        Vector3Int pointB = B.GetPosition(offset) + offset;
+        
+        GenerateLink(pointA, pointB);
+    }
 
-        var points = Chunk.Bresenham3D(pointA, pointB, radius);
+    public void GenerateLink(Vector3Int a, Vector3Int b)
+    {
+        Debug.Log("positionA: " + a + " positionB: " + b);
+
+        var points = Chunk.Bresenham3D(a, b, radius);
         var chunkDataCache = new Dictionary<Vector3Int, ChunkData>();
 
         foreach (var point in points)
@@ -64,21 +73,22 @@ public class CWorldLinkNode
             WorldChunks.chunksToUpdate[chunkData.Key] = chunkData.Value;
         }
 
-        GenerateSpikes(pointA, pointB);
+        GenerateSpikes(a, b);
     }
     
     public void GenerateSpikes(Vector3Int a, Vector3Int b)
     {
         foreach (var spike in spikes)
         {
-            Vector3Int lerpOffset = new Vector3Int(
+            Vector3Int pointA = new Vector3Int(
                 Mathf.RoundToInt(Mathf.Lerp(a.x, b.x, spike.threshold)), 
                 Mathf.RoundToInt(Mathf.Lerp(a.y, b.y, spike.threshold)), 
                 Mathf.RoundToInt(Mathf.Lerp(a.z, b.z, spike.threshold))
                 );
-            Debug.Log("Spike: " + a + " " + b + " " + lerpOffset);
-            
-            spike.GenerateLink(lerpOffset);
+            Debug.Log("Spike: " + a + " " + b + " " + pointA);
+
+            Vector3Int pointB = spike.B.GetPosition(pointA) + pointA;
+            spike.GenerateLink(pointA, pointB);
         }
     }
 
@@ -110,15 +120,16 @@ public class LinkPoint
     public IPoint y;
     public IPoint z;
     
-    public Vector3Int GetPosition()
+    public Vector3Int GetPosition(Vector3Int p)
     {
-        return new Vector3Int(x.Get(), y.Get(), z.Get());
+        return new Vector3Int(x.Get(p), y.Get(p), z.Get(p));
     }
 }
 
 public interface IPoint
 {
     int Get();
+    int Get(Vector3Int position);
 }
 
 public class PointRange : IPoint
@@ -129,6 +140,11 @@ public class PointRange : IPoint
     {
         return (int)NoiseUtils.GetRandomRange(range.min, range.max);
     }
+    
+    public int Get(Vector3Int p)
+    {
+        return (int)NoiseUtils.GetRandomRange(range.min, range.max, p.x, p.y, p.z);
+    }
 }
 
 public class PointBasic : IPoint
@@ -136,6 +152,11 @@ public class PointBasic : IPoint
     public int point;
     
     public int Get()
+    {
+        return point;
+    }
+    
+    public int Get(Vector3Int p)
     {
         return point;
     }

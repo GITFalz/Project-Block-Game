@@ -91,6 +91,12 @@ public static class NoiseUtils
         return Mathf.Lerp(a, b, variations[variationIndex]);
     }
     
+    public static float GetRandomRange(float a, float b, float x, float y, float z)
+    {
+        float noise = Mathf.PerlinNoise((float)((float)x / 10 + y + 0.001f) , (float)((float)z / 10 + y + 0.001f));
+        return Mathf.Lerp(a, b, noise);
+    }
+    
     private static int[] GetRandomOffset(int a, int b)
     {
         int[] array = new int[256];
