@@ -7,7 +7,9 @@ Shader "Custom/TextureArrayShaderWithDirectionalShading"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
+        Blend SrcAlpha OneMinusSrcAlpha
+        Cull Off
         
         Pass
         {
@@ -53,13 +55,23 @@ Shader "Custom/TextureArrayShaderWithDirectionalShading"
             
             half4 frag(v2f i) : SV_Target
             {
-                // Sample the texture array
+                /*
                 half4 color = UNITY_SAMPLE_TEX2DARRAY(_mainTexture, float3(i.uv_MainTex, i.arrayIndex));
-
-                // Normalize and use _ShadeDirection to adjust brightness based on its alignment with the world normal
+                
                 float3 shadeDir = normalize(_ShadeDirection.xyz);
                 float alignment = saturate(dot(i.worldNormal, shadeDir));
-                color.rgb *= lerp(1.0, 0.5, alignment); // Adjust brightness based on alignment with shade direction
+                color.rgb *= lerp(1.0, 0.5, alignment);
+
+                return color;
+                */
+
+                half4 color = UNITY_SAMPLE_TEX2DARRAY(_mainTexture, float3(i.uv_MainTex, i.arrayIndex));
+
+                float3 shadeDir = normalize(_ShadeDirection.xyz);
+                float alignment = saturate(dot(i.worldNormal, shadeDir));
+                color.rgb *= lerp(1.0, 0.5, alignment);
+                
+                color.a = max(color.a, 0.05);
 
                 return color;
             }

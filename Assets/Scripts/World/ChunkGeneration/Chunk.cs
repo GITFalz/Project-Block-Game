@@ -174,9 +174,9 @@ public class Chunk : MonoBehaviour
                 newChunkData += chunkData;
             }
             GenerateOcclusion(newChunkData.blocks, 32, 0);
+            Debug.Log("Generating mesh");
             GenerateMesh(newChunkData);
             //ChunkDataHandler.WriteChunkData(newChunkData);
-            
         }
         else
         {

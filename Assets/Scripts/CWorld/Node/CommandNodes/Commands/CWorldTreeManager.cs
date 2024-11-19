@@ -31,7 +31,7 @@ public static class CWorldTreeManager
                     }
                 }
                 
-                w.Increment();
+                w.Increment(); //thanks! ^w^
                 return 0;
             }
         },

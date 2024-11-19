@@ -80,8 +80,7 @@ public class CWorldModifierGenNode
             return 0;
         if (sample.noiseValue < -0.5f)
             return -1;
-            
-        int maxHeight = parent.GetMaxHeight();
-        return (int)Mathf.Clamp(Mathf.Lerp(maxHeight + range.min, maxHeight + range.max,  sample.noiseValue), maxHeight + range.min, maxHeight + range.max);
+        
+        return (int)Mathf.Clamp(Mathf.Lerp(range.min, range.max,  sample.noiseValue), range.min, range.max);
     }
 }

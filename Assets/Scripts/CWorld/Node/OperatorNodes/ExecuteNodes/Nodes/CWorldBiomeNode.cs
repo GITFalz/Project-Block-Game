@@ -28,7 +28,7 @@ public class CWorldBiomeNode : CWAExecuteNode
     
     public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z)
     {
-        return GetBlockPillar(chunkPosition, blocks, x, z, sample.noiseValue);
+        return GetBlockPillar(chunkPosition, blocks, x, z, sample?.noiseValue ?? 0);
     }
 
     public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float noise)
@@ -38,9 +38,13 @@ public class CWorldBiomeNode : CWAExecuteNode
 
         if (noise > -.5f)
         {
-            int height = (int)Mathf.Clamp(Mathf.Lerp(sample.min_height, sample.max_height, noise), sample.min_height, sample.max_height);
-                        
-            GetPillar(sampleRange, false, ref pillar, ref top, height, chunkPosition.y);
+            if (sample != null)
+            {
+                int height = (int)Mathf.Clamp(Mathf.Lerp(sample.min_height, sample.max_height, noise),
+                    sample.min_height, sample.max_height);
+
+                GetPillar(sampleRange, false, ref pillar, ref top, height, chunkPosition.y);
+            }
             
             if (treeNode != null && treeSampleNode != null && treeRange != null)
             {
@@ -62,10 +66,12 @@ public class CWorldBiomeNode : CWAExecuteNode
             {
                 foreach (var gen in modifier.gen)
                 {
-                    height = gen.GetHeight(modifier);
+                    int height = gen.GetHeight(modifier);
+                    int maxHeight = modifier.GetMaxHeight();
+                    
                     if (height != -1)
-                        GetPillar(gen.range, false, ref pillar, ref top,
-                            height, chunkPosition.y);
+                        GetPillar(gen.range + maxHeight, false, ref pillar, ref top,
+                            height + maxHeight, chunkPosition.y);
                 }
             }
         }
