@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../ressources/styles.css">
+</head>
+<body>
+<div class="content">
+    <div class="top-content">
+        <nav>
+            <div id="acceuil">
+                <a href="../index.html">
+                    <img src="../ressources/images/acceuil.png" alt="Home" class="home-icon">
+                </a>
+            </div>
+            <div class="nav-items">
+                <ul>
+                    <li>
+                        <div class="nav-box">
+                            <a href="Bio.html">Bio</a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="nav-box">
+                            <a href="School.html">School</a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="nav-box">
+                            <a href="cv.html">Info</a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="nav-box">
+                            <a href="projects.html">Projects</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div id="hamburger-menu" onclick="toggle()" class="hamburger-menu">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <div id="hamburger-menu-items" class="mobile-menu">
+                <div class="h-box">
+                    <a href="Bio.html">Bio</a>
+                </div>
+                <div class="h-box">
+                    <a href="School.html">School</a>
+                </div>
+                <div class="h-box">
+                    <a href="cv.html">Info</a>
+                </div>
+                <div class="h-box">
+                    <a href="projects.html">Projects</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+</div>
+</body>
+<footer>
+    <div class="contact">
+        <div id="contact-text">
+            <h1>Contactez moi</h1>
+        </div>
+        <div class="email">
+            <h2>bjornarvalkea@gmail.com</h2>
+        </div>
+        <div class="socials">
+            <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/">
+                <img src="../ressources/images/linkedIn.png" alt="linkedIn-profil" >
+            </a>
+            <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/">
+                <img src="../ressources/images/linkedIn.png" alt="linkedIn-profil" >
+            </a>
+        </div>
+    </div>
+</footer>
+</html>
+
+<script>
+    function toggle() {
+        const menu = document.querySelector('.mobile-menu');
+        menu.classList.toggle('active');
+    }
+
+    function handleResize() {
+        const menu = document.querySelector('.mobile-menu');
+
+        if (window.innerWidth > 768) {
+            menu.classList.remove('active');
+        }
+    }
+
+    window.addEventListener('resize', handleResize);
+</script>
