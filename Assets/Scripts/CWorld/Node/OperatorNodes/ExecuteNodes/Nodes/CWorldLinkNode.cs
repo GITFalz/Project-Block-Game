@@ -9,7 +9,11 @@ public class CWorldLinkNode
 
     public LinkPoint A;
     public LinkPoint B;
-    public float radius;
+
+    public Vector3Int posA = Vector3Int.zero;
+    public Vector3Int posB = Vector3Int.zero;
+    
+    public float radius = 1;
     public float threshold = 0;
     
     public List<CWorldLinkNode> spikes = new List<CWorldLinkNode>();
@@ -20,18 +24,29 @@ public class CWorldLinkNode
         
         A = new LinkPoint();
         B = new LinkPoint();
-        
-        radius = 1;
+    }
+    
+    public void GetPositions(out Vector3Int a, out Vector3Int b)
+    {
+        a = posA;
+        b = posB;
     }
 
-    public void GenerateLink(Vector3Int offset)
+    public void SetPositions(Vector3Int offset, int height)
     {
-        Vector3Int pointA = A.GetPosition() + offset;
-        Vector3Int pointB = B.GetPosition() + offset;
-        
-        Debug.Log("positionA: " + pointA + " positionB: " + pointB);
+        posA = offset;
+        posB = offset + new Vector3Int(0, height, 0);
+    }
+    
+    public void SetPositions(Vector3 a, Vector3 b)
+    {
+        posA = Vector3Int.RoundToInt(a);
+        posB = Vector3Int.RoundToInt(b);
+    }
 
-        var points = Chunk.Bresenham3D(pointA, pointB, radius);
+    public void GenerateLink(float r)
+    {
+        var points = Chunk.Bresenham3D(posA, posB, r);
         var chunkDataCache = new Dictionary<Vector3Int, ChunkData>();
 
         foreach (var point in points)
@@ -63,23 +78,11 @@ public class CWorldLinkNode
         {
             WorldChunks.chunksToUpdate[chunkData.Key] = chunkData.Value;
         }
-
-        GenerateSpikes(pointA, pointB);
     }
     
-    public void GenerateSpikes(Vector3Int a, Vector3Int b)
+    public List<Vector3Int> GenerateLinkVE(float r)
     {
-        foreach (var spike in spikes)
-        {
-            Vector3Int lerpOffset = new Vector3Int(
-                Mathf.RoundToInt(Mathf.Lerp(a.x, b.x, spike.threshold)), 
-                Mathf.RoundToInt(Mathf.Lerp(a.y, b.y, spike.threshold)), 
-                Mathf.RoundToInt(Mathf.Lerp(a.z, b.z, spike.threshold))
-                );
-            Debug.Log("Spike: " + a + " " + b + " " + lerpOffset);
-            
-            spike.GenerateLink(lerpOffset);
-        }
+        return Chunk.Bresenham3D(posA, posB, r);
     }
 
     private void GenerateDebug(Vector3Int pos)
@@ -106,28 +109,31 @@ public class CWorldLinkNode
 
 public class LinkPoint
 {
-    public IPoint x;
-    public IPoint y;
-    public IPoint z;
+    public IPoint X = new PointBasic { point = 0 };
+    public IPoint Y = new PointBasic { point = 0 };
+    public IPoint Z = new PointBasic { point = 0 };
     
-    public Vector3Int GetPosition()
+    public Vector3Int GetPosition(int x, int y, int z)
     {
-        return new Vector3Int(x.Get(), y.Get(), z.Get());
+        return new Vector3Int(X.Get(x, y, z), Y.Get(y, z, x), Z.Get(z, x ,y));
     }
 }
 
 public interface IPoint
 {
-    int Get();
+    int Get(int x, int y, int z);
 }
 
 public class PointRange : IPoint
 {
     public IntRangeNode range;
     
-    public int Get()
+    public int Get(int x, int y, int z)
     {
-        return (int)NoiseUtils.GetRandomRange(range.min, range.max);
+        float X = (float)((float)x + (float)y + 0.001f);
+        float Y = (float)((float)z + (float)y + 0.001f);
+        
+        return (int)Mathf.Lerp(range.min, range.max, Mathf.PerlinNoise(X / 4, Y / 4));
     }
 }
 
@@ -135,7 +141,7 @@ public class PointBasic : IPoint
 {
     public int point;
     
-    public int Get()
+    public int Get(int x, int y, int z)
     {
         return point;
     }

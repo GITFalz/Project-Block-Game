@@ -16,22 +16,22 @@ public class CWorldTreeNode
         this.name = name;
     }
 
-    public Vector3Int GetBasePosition()
+    public Vector3Int GetBasePosition(int x, int y, int z)
     {
-        return link.A.GetPosition();
+        return link.A.GetPosition(x, y, z);
     }
 
-    public void GenerateTree(int x, int z)
+    public void GenerateTree(int x, int y, int z)
     {
         if (sampler == null || range == null || link == null)
             return;
         
-        if (sampler.Ignore() == -1)
+        if (sampler.Ignore())
             return;
         
         int height = sampler.Sample();
         
-        link.GenerateLink(new Vector3Int(x, height, z));
+        //link.GenerateLink(x, y, z, new Vector3Int(x, height, z));
 
         /*
         int treeHeight = (int)NoiseUtils.GetRandomRange(range.min, range.max);
@@ -84,7 +84,7 @@ public class CWorldTreeNode
 public interface ITreeSampler
 {
     int Sample();
-    int Ignore();
+    bool Ignore();
 }
 
 public class TreeBasic : ITreeSampler
@@ -99,9 +99,9 @@ public class TreeBasic : ITreeSampler
         return 0 + _height;
     }
     
-    public int Ignore()
+    public bool Ignore()
     {
-        return 0;
+        return false;
     }
 }
 
@@ -118,9 +118,9 @@ public class TreeSample : ITreeSampler
         return (int)Mathf.Lerp(range.min, range.max, sampleNode.noiseValue);
     }
     
-    public int Ignore()
+    public bool Ignore()
     {
-        return 0;
+        return false;
     }
 }
 
@@ -136,14 +136,14 @@ public class TreeModifier : ITreeSampler
         return modifierNode.GetMaxHeight() + modifierNode.gen[0].GetHeight(modifierNode);
     }
     
-    public int Ignore()
+    public bool Ignore()
     {
         foreach (var gen in modifierNode.gen)
         {
             if (gen.GetHeight(modifierNode) == -1)
-                return -1;
+                return true;
         }
 
-        return 0;
+        return false;
     }
 }

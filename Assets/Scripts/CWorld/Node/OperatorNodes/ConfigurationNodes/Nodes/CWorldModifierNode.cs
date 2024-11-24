@@ -36,6 +36,12 @@ public class IntRangeNode
         this.min = min;
         this.max = max;
     }
+    
+    public IntRangeNode(Vector2Int range)
+    {
+        min = range.x;
+        max = range.y;
+    }
 
     public IntRangeNode()
     {
@@ -58,6 +64,12 @@ public class FloatRangeNode
     {
         this.min = min;
         this.max = max;
+    }
+    
+    public FloatRangeNode(Vector2 range)
+    {
+        min = range.x;
+        max = range.y;
     }
 
     public FloatRangeNode()

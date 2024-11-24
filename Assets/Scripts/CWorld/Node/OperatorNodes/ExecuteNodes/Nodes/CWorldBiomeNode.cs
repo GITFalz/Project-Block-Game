@@ -9,7 +9,7 @@ public class CWorldBiomeNode : CWAExecuteNode
     public CWorldModifierNode modifier;
     
     //Tree distribution range
-    public CWorldTreeNode treeNode;
+    public CWorldFoliageNode foliageNode;
     public CWorldSampleNode treeSampleNode;
     public FloatRangeNode treeRange;
     
@@ -26,12 +26,12 @@ public class CWorldBiomeNode : CWAExecuteNode
         this.name = name;
     }
     
-    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z)
+    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int y, int z)
     {
-        return GetBlockPillar(chunkPosition, blocks, x, z, sample?.noiseValue ?? 0);
+        return GetBlockPillar(chunkPosition, blocks, x, y, z, sample?.noiseValue ?? 0);
     }
 
-    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float noise)
+    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int y, int z, float noise)
     {
         uint pillar = 0;
         int top = 0;
@@ -46,18 +46,17 @@ public class CWorldBiomeNode : CWAExecuteNode
                 GetPillar(sampleRange, false, ref pillar, ref top, height, chunkPosition.y);
             }
             
-            if (treeNode != null && treeSampleNode != null && treeRange != null)
+            if (foliageNode != null && treeSampleNode != null && treeRange != null)
             {
                 float treeNoise = treeSampleNode.noiseValue;
                 
+                
                 if (treeNoise >= treeRange.min && treeNoise <= treeRange.max)
                 {
-                    Vector3Int basePosition = treeNode.GetBasePosition();
+                    int height = foliageNode.sampler.Sample();
+                    if (height >= chunkPosition.y && height < chunkPosition.y + 32)
                     {
-                        if (basePosition.y >= chunkPosition.y && basePosition.y < chunkPosition.y + 32)
-                        {
-                            treeNode.GenerateTree(x + chunkPosition.x, z + chunkPosition.z);
-                        }
+                        foliageNode.Generate(x + chunkPosition.x, y + chunkPosition.y, z + chunkPosition.z);
                     }
                 }
             }
@@ -79,14 +78,14 @@ public class CWorldBiomeNode : CWAExecuteNode
         int index = x + z * 32;
         int[] distance = ToList(top, pillar);
         
-        for (int y = 0; y < 32; y++)
+        for (int Y = 0; Y < 32; Y++)
         {
-            int i = index + y * 1024;
+            int i = index + Y * 1024;
             blocks[i] = null;
 
             foreach (var sq in SequenceNodes)
             {
-                Block block = sq.GetBlock(distance[y]);
+                Block block = sq.GetBlock(distance[Y]);
                 if (block != null)
                 {
                     blocks[i] = new Block(block.blockData, block.state);

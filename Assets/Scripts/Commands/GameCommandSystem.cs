@@ -506,18 +506,17 @@ public class GameCommandSystem : MonoBehaviour
         return "The values set are not valid";
     }
 
-    public string Do_Generate_Tree()
+    public string Do_Generate_Foliage()
     {
         Console.Log("Generating tree...");
         if (IsNumericValue(2, out int x1) && 
             IsNumericValue(3, out int y1) && 
             IsNumericValue(4, out int z1))
         {
-            if (ChunkGenerationNodes.dataHandlers[0].treeNodes.TryGetValue(args[5], out var treeNode))
+            if (ChunkGenerationNodes.dataHandlers[0].foliageNodes.TryGetValue(args[5], out var foliageNode))
             {
                 Console.Log("The tree was found");
-                treeNode.sampler.Ignore();
-                treeNode.GenerateTree(x1, z1);
+                foliageNode.Generate(x1, y1, z1);
                 foreach (var chunk in WorldChunks.chunksToUpdate)
                 {
                     ChunkData chunkData = chunk.Value;
@@ -647,6 +646,6 @@ public class GameCommandSystem : MonoBehaviour
         { "distance", () => instance.Do_Generate_Distance() },
         { "clear", () => instance.Do_Generate_Clear() },
         { "line", () => instance.Do_Generate_Line() },
-        { "tree", () => instance.Do_Generate_Tree() },
+        { "foliage", () => instance.Do_Generate_Foliage() },
     };
 }

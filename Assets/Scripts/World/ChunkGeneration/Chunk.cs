@@ -131,7 +131,7 @@ public class Chunk : MonoBehaviour
                 for (int x = 0; x < 32; x++)
                 {
                     handler.Init(x + position.x, 0, z + position.z);
-                    handler.GenerateBiomePillar(position, blocks, x, z, biomeName);
+                    handler.GenerateBiomePillar(position, blocks, x, position.y, z, biomeName);
                 }
             }
 
@@ -211,7 +211,7 @@ public class Chunk : MonoBehaviour
                     for (int x = 0; x < 32; x++)
                     {
                         handler.Init(x + position.x, 0, z + position.z);
-                        handler.GenerateMapPillar(position, blocks, x, z);
+                        handler.GenerateMapPillar(position, blocks, x, position.y, z);
                     }
                 }
             }
@@ -239,7 +239,7 @@ public class Chunk : MonoBehaviour
                     for (int x = 0; x < 32; x++)
                     {
                         handler.Init(x + position.x, 0, z + position.z);
-                        handler.GenerateMapPillar(position, blocks, x, z);
+                        handler.GenerateMapPillar(position, blocks, x, position.y, z);
                     }
                 }
                 
@@ -845,13 +845,13 @@ public class Chunk : MonoBehaviour
         }
     }
     
-    public static List<Vector3Int> GenerateStretchedSphere(int sizeX, int sizeY, int sizeZ)
+    public static List<Vector3Int> GenerateStretchedSphere(int sizeX, int sizeY, int sizeZ, Vector3Int offset)
     {
         List<Vector3Int> points = new List<Vector3Int>();
         float radiusX = sizeX / 2f;
         float radiusY = sizeY / 2f;
         float radiusZ = sizeZ / 2f;
-
+        
         for (int x = -sizeX; x <= sizeX; x++)
         {
             for (int y = -sizeY; y <= sizeY; y++)
@@ -864,7 +864,7 @@ public class Chunk : MonoBehaviour
 
                     if (normalizedX * normalizedX + normalizedY * normalizedY + normalizedZ * normalizedZ <= 1)
                     {
-                        points.Add(new Vector3Int(x, y, z));
+                        points.Add(new Vector3Int(x, y, z) + offset);
                     }
                 }
             }

@@ -21,7 +21,7 @@ public static class CWorldBiomeManager
         { "{", (w) => w.Increment(1, 0) },
         { "sample", (w) => w.On_Settings(samples) },
         { "modifier", (w) => w.On_Settings(modifiers) },
-        { "tree", (w) => w.On_Settings(trees) },
+        { "foliage", (w) => w.On_Settings(Foliage) },
         { "sequence", (w) => w.On_Settings(sequences) },
         { "}", (w) => w.Increment(0, 1) },
     };
@@ -29,24 +29,28 @@ public static class CWorldBiomeManager
     public static Dictionary<string, Func<WMWriter, Task<int>>> sequences = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
-        { "id", async (w) =>
-        {
-            if (await w.GetNextInt(out int result) == -1)
-                return await w.Error("id needs to be an integer");
+        { 
+            "id", async (w) =>
+            {
+                if (await w.GetNextInt(out int result) == -1)
+                    return await w.Error("id needs to be an integer");
 
-            sequenceNode = new CWOCSequenceNode();
-            sequenceNode.block = new Block((short)result, 0);
-            return 0;
-        } },
-        { "fixed", async (w) =>
-        {
-            if (await w.GetNextInt(out int value) == -1)
-                return await w.Error("height must be an integer");
+                sequenceNode = new CWOCSequenceNode();
+                sequenceNode.block = new Block((short)result, 0);
+                return 0;
+            } 
+        },
+        { 
+            "fixed", async (w) =>
+            {
+                if (await w.GetNextInt(out int value) == -1)
+                    return await w.Error("height must be an integer");
 
-            sequenceNode.top_min = value;
-            sequenceNode.top_max = value;
-            return 0;
-        } },
+                sequenceNode.top_min = value;
+                sequenceNode.top_max = value;
+                return 0;
+            } 
+        },
         { 
             "set", async (w) =>
             {
@@ -144,14 +148,14 @@ public static class CWorldBiomeManager
         { "}", (w) => w.Increment(1, 1) }
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> trees = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<WMWriter, Task<int>>> Foliage = new Dictionary<string, Func<WMWriter, Task<int>>>()
     {
         { "{", (w) => w.Increment(1, 0) },
         {
             "use", async (w) =>
             {
                 w.GetNextValue(out var value);
-                if (!await ChunkGenerationNodes.SetBiomeTree(value))
+                if (!await ChunkGenerationNodes.SetBiomeFoliage(value))
                     return await w.Error("Can't find the tree specified in the biome");
                 w.Increment();
                 return 0;

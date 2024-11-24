@@ -20,6 +20,7 @@ public class WMWriter : MonoBehaviour
     public ConsoleTextManager consoleTextManager;
 
     public bool simpleLoad = false;
+    public bool ignoreEverything = false;
 
     [HideInInspector]
     public WriterManager writerManager;
@@ -33,15 +34,28 @@ public class WMWriter : MonoBehaviour
 
     private void Start()
     {
-        ChunkGenerationNodes.Set();
         writerManager = new WriterManager(this, false);
+        
+        if (ignoreEverything) 
+            return;
+        
+        ChunkGenerationNodes.Set();
     }
 
     private void Awake()
     {
-        if (Instance!=null) { Destroy(gameObject); return; }
+        
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         DontDestroyOnLoad(gameObject);
         Instance = this;
+
+        if (ignoreEverything) 
+            return;
         
         LoadOnEnter();
     }
@@ -117,23 +131,8 @@ public class WMWriter : MonoBehaviour
         
         Console.Log("Loading: " + currentPath + "\n>> Initializing lines...");
         
-        try {
-            await writerManager.InitLines(currentFileConent);
-        }
-        catch (NullReferenceException) {
-            Console.Log("Falz forgot to init the writerManager that fucking idiot, please tell him");
-            return -1;
-        }
-        
-        Console.Log("Done!");
-
-        try {
-            await Main();
-        }
-        catch (Exception e) {
-            Console.Log("A problem occured when running the main loop with exception:\n " + e.Message);
-            return -1;
-        }
+        if (await LoadContent(currentFileConent) == -1)
+            return Console.LogError("An error occured when loading the content");
         
         if (!simpleLoad)
         {
@@ -145,9 +144,30 @@ public class WMWriter : MonoBehaviour
                 textureGeneration?.UpdateTexture(ChunkGenerationNodes.sampleDisplayName);
             }
         }
-
+        
         currentFileConent = oldContent;
         writerManager = oldWriter;
+
+        return 0;
+    }
+    
+    public async Task<int> LoadContent(string content)
+    {
+        try {
+            await writerManager.InitLines(content);
+        }
+        catch (NullReferenceException) {
+            return Console.LogError("Falz forgot to init the writerManager that fucking idiot, please tell him");
+        }
+        
+        Console.Log("Done!");
+
+        try {
+            await Main();
+        }
+        catch (Exception e) {
+            return Console.LogError("A problem occured when running the main loop with exception:\n " + e.Message);
+        }
 
         return 1;
     }
@@ -377,20 +397,15 @@ public class WMWriter : MonoBehaviour
         return 0;
     }
     
-    public async Task<int> On_Tree()
+    public async Task<int> On_Foliage()
     {
         Increment();
         
-        if (await CommandsTest(CWorldTreeManager.labels) == -1) return await Error("Problem in the label found");
-        if (!await ChunkGenerationNodes.AddTree(CWorldTreeManager.name))
-        {
-            if (!writerManager.import)
-                return await Error("name is used twice");
-            if (writerManager.import)
-                return await SkipNode();
-        }
+        if (await CommandsTest(CWorldFoliageManager.Labels) == -1) return await Error("Problem in the foliage label found");
+        if (await CommandsTest(CWorldFoliageManager.Settings) == -1) return await Error("Problem in the foliage settings found");
+        if (!await ChunkGenerationNodes.AddFoliage(CWorldFoliageManager.name))
+            return Console.LogError("An error occured creating the foliage node");
         
-        if (await CommandsTest(CWorldTreeManager.settings) == -1) return await Error("Problem in the tree settings found");
         return 0;
     }
     
@@ -712,6 +727,6 @@ public class WMWriter : MonoBehaviour
         { "Block", async (w) => await w.On_Block() },
         { "Modifier", async (w) => await w.On_Modifier() },
         { "Map", async (w) => await w.On_Map() },
-        { "Tree", async (w) => await w.On_Tree() },
+        { "Foliage", async (w) => await w.On_Foliage() },
     };
 }

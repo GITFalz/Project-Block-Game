@@ -13,7 +13,7 @@ public static class ChunkGenerationNodes
     public static string sampleDisplayName = "";
     public static string currentModifierName = "";
     public static string currentLinkName = "";
-    public static string currentTreeName = "";
+    public static string currentFoliageName = "";
 
     public static int threadCount = 4;
     public static bool set = true;
@@ -60,9 +60,9 @@ public static class ChunkGenerationNodes
         }
     }
 
-    public static Task<bool> AddSamples(string name)
+    public static async Task<bool> AddSamples(string name)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -76,9 +76,9 @@ public static class ChunkGenerationNodes
         });
     }
     
-    public static Task<bool> AddModifier(string name)
+    public static async Task<bool> AddModifier(string name)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -91,9 +91,9 @@ public static class ChunkGenerationNodes
         });
     }
     
-    public static Task<bool> AddLink(string name)
+    public static async Task<bool> AddLink(string name)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -106,9 +106,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task<bool> AddBiomes(string name)
+    public static async Task<bool> AddBiomes(string name)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -121,24 +121,84 @@ public static class ChunkGenerationNodes
         });
     }
     
-    public static Task<bool> AddTree(string name)
+    public static async Task<bool> AddFoliage(string name)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
+            currentFoliageName = name;
+            
             for (int i = 0; i < threadCount; i++)
             {
-                if (!dataHandlers[i].treeNodes.TryAdd(name, new CWorldTreeNode(name)))
+                if (!dataHandlers[i].foliageNodes.TryAdd(name, new CWorldFoliageNode(name)))
+                {
+                    Console.Log("Failed to add foliage node");
                     return false;
-            }
+                }
+                
+                if (dataHandlers[i].sampleNodes.TryGetValue(CWorldFoliageManager.samplerName, out var sampleNode))
+                    dataHandlers[i].foliageNodes[currentFoliageName].sampler = new TreeSample { sampleNode = sampleNode };
+                else
+                    if (dataHandlers[i].modifierNodes.TryGetValue(CWorldFoliageManager.samplerName, out var modifierNode))
+                        dataHandlers[i].foliageNodes[currentFoliageName].sampler = new TreeModifier { modifierNode = modifierNode };
+                    else
+                        dataHandlers[i].foliageNodes[currentFoliageName].sampler = new TreeBasic();
 
-            currentTreeName = name;
+                
+                string trunkName = CWorldFoliageManager.trunkName;
+                if (!dataHandlers[i].linkNodes.TryGetValue(trunkName, out var linkNode))
+                {
+                    Console.Log("The link node does not exist, creating a new one");
+                    dataHandlers[i].linkNodes.Add(trunkName, new CWorldLinkNode(trunkName));
+                    
+                    if (!dataHandlers[i].linkNodes.TryGetValue(trunkName, out linkNode))
+                    {
+                        Console.Log("Failed to create link node");
+                        return false;
+                    }
+                    
+                    dataHandlers[i].foliageNodes[currentFoliageName].trunk = linkNode;
+                }
+                
+                foreach (var direction in CWorldFoliageManager.directions)
+                {
+                    switch (direction.direction)
+                    {
+                        case "forward":
+                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new ForwardRotate { angle = new AngleRange(direction.values) });
+                            break;
+                        case "backward":
+                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new BackwardsRotate { angle = new AngleRange(direction.values) });
+                            break;
+                        case "right":
+                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new RightRotate { angle = new AngleRange(direction.values) });
+                            break;
+                        case "left":
+                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new LeftRotate { angle = new AngleRange(direction.values) });
+                            break;
+                        case "up":
+                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new UpRotate { angle = new AngleRange(direction.values) });
+                            break;
+                        case "down":
+                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new DownRotate { angle = new AngleRange(direction.values) });
+                            break;
+                    }
+                }
+                
+                dataHandlers[i].foliageNodes[currentFoliageName].lengthRange = new IntRangeNode(CWorldFoliageManager.lengthRange);
+                dataHandlers[i].foliageNodes[currentFoliageName].branchAmount = new IntRangeNode(CWorldFoliageManager.branchAmount);
+                dataHandlers[i].foliageNodes[currentFoliageName].branchLengthRange = new IntRangeNode(CWorldFoliageManager.branchLengthRange);
+                dataHandlers[i].foliageNodes[currentFoliageName].angleRange = new FloatRangeNode(CWorldFoliageManager.angleRange);
+                dataHandlers[i].foliageNodes[currentFoliageName].thresholdRange = new FloatRangeNode(CWorldFoliageManager.thresholdRange);
+                dataHandlers[i].foliageNodes[currentFoliageName].verticalAngle = new FloatRangeNode(CWorldFoliageManager.verticalAngle);
+            }
+            
             return true;
         });
     }
 
-    public static Task<bool> AddMap(string nextLine)
+    public static async Task<bool> AddMap(string nextLine)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -156,9 +216,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task<bool> AddSampleOverrideAdd(string sampleToAdd)
+    public static async Task<bool> AddSampleOverrideAdd(string sampleToAdd)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -172,9 +232,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task<bool> AddSampleOverrideMultiply(string sampleToAdd)
+    public static async Task<bool> AddSampleOverrideMultiply(string sampleToAdd)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -188,9 +248,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task<bool> AddSampleOverrideSubtract(string sampleToAdd)
+    public static async Task<bool> AddSampleOverrideSubtract(string sampleToAdd)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -204,9 +264,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task<bool> AddSampleNoiseParameter(string type, Vector2 floats)
+    public static async Task<bool> AddSampleNoiseParameter(string type, Vector2 floats)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             switch (type)
             {
@@ -259,9 +319,9 @@ public static class ChunkGenerationNodes
     }
 
 
-        public static Task<bool> AddSampleOverrideParameter(string type, Vector2 floats)
+        public static async Task<bool> AddSampleOverrideParameter(string type, Vector2 floats)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             switch (type)
             {
@@ -308,9 +368,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetSampleNoiseSize(Vector2 floats)
+    public static async Task SetSampleNoiseSize(Vector2 floats)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -321,9 +381,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetSampleNoiseOffset(Vector2 floats)
+    public static async Task SetSampleNoiseOffset(Vector2 floats)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -334,9 +394,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetSampleNoiseAmplitude(float value)
+    public static async Task SetSampleNoiseAmplitude(float value)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -345,9 +405,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetSampleNoiseInvert(bool value = true)
+    public static async Task SetSampleNoiseInvert(bool value = true)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -356,9 +416,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetBiomeSampleRange(Vector2Int ints)
+    public static async Task SetBiomeSampleRange(Vector2Int ints)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -369,9 +429,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetSampleFlip(bool value = true)
+    public static async Task SetSampleFlip(bool value = true)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -380,9 +440,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetSampleOverrideInvert(bool value = true)
+    public static async Task SetSampleOverrideInvert(bool value = true)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -394,9 +454,9 @@ public static class ChunkGenerationNodes
 
 
 
-    public static Task<bool> SetModifierSample(string sampleName)
+    public static async Task<bool> SetModifierSample(string sampleName)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -410,9 +470,9 @@ public static class ChunkGenerationNodes
         });
     }
     
-    public static Task SetModifierRange(Vector2Int ints)
+    public static async Task SetModifierRange(Vector2Int ints)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -423,9 +483,9 @@ public static class ChunkGenerationNodes
         });
     }
     
-    public static Task SetModifierIgnore(Vector2 floats)
+    public static async Task SetModifierIgnore(Vector2 floats)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -437,9 +497,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetModifierInvert(bool value = false)
+    public static async Task SetModifierInvert(bool value = false)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -448,9 +508,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task AddModifierGen()
+    public static async Task AddModifierGen()
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -459,9 +519,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task<bool> SetModifierGenSample(string sampleName)
+    public static async Task<bool> SetModifierGenSample(string sampleName)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -475,9 +535,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetModifierGenRange(Vector2Int ints)
+    public static async Task SetModifierGenRange(Vector2Int ints)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -489,9 +549,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetModifierGenOffset(int value)
+    public static async Task SetModifierGenOffset(int value)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -500,9 +560,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetModifierGenFlip(bool value = false)
+    public static async Task SetModifierGenFlip(bool value = false)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -514,9 +574,9 @@ public static class ChunkGenerationNodes
     
     
 
-    public static Task SetBiomeSequence(CWOCSequenceNode sequenceNode)
+    public static async Task SetBiomeSequence(CWOCSequenceNode sequenceNode)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -525,9 +585,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task<bool> SetBiomeSample(string sampleName)
+    public static async Task<bool> SetBiomeSample(string sampleName)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -541,9 +601,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task<bool> SetBiomeModifier(string modifierName)
+    public static async Task<bool> SetBiomeModifier(string modifierName)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -557,25 +617,25 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task<bool> SetBiomeTree(string treeName)
+    public static async Task<bool> SetBiomeFoliage(string treeName)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
-                if (!dataHandlers[i].treeNodes.TryGetValue(treeName, out var treeNode))
+                if (!dataHandlers[i].foliageNodes.TryGetValue(treeName, out var foliageNode))
                     return false;
 
-                dataHandlers[i].biomeNodes[currentBiomeName].treeNode = treeNode;
+                dataHandlers[i].biomeNodes[currentBiomeName].foliageNode = foliageNode;
             }
 
             return true;
         });
     }
     
-    public static Task<bool> SetBiomeTreeSample(string sampleName)
+    public static async Task<bool> SetBiomeTreeSample(string sampleName)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -589,9 +649,9 @@ public static class ChunkGenerationNodes
         });
     }
     
-    public static Task SetBiomeTreeSampleRange(Vector2 value)
+    public static async Task SetBiomeTreeSampleRange(Vector2 value)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -600,9 +660,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetBiomeRange(Vector2Int ints)
+    public static async Task SetBiomeRange(Vector2Int ints)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -613,9 +673,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task<bool> SetMapBiomeRange(string biomeName)
+    public static async Task<bool> SetMapBiomeRange(string biomeName)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -629,9 +689,9 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task<bool> SetMapSampleRange(string value, Vector2 floats)
+    public static async Task<bool> SetMapSampleRange(string value, Vector2 floats)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -664,7 +724,7 @@ public static class ChunkGenerationNodes
     {
         for (int i = 0; i < threadCount; i++)
         {
-            dataHandlers[i].linkNodes[currentLinkName].A.x = SetLinkPointRange(ints);
+            dataHandlers[i].linkNodes[currentLinkName].A.X = SetLinkPointRange(ints);
         }
     }
     
@@ -672,7 +732,7 @@ public static class ChunkGenerationNodes
     {
         for (int i = 0; i < threadCount; i++)
         {
-            dataHandlers[i].linkNodes[currentLinkName].A.y = SetLinkPointRange(ints);
+            dataHandlers[i].linkNodes[currentLinkName].A.Y = SetLinkPointRange(ints);
         }
     }
     
@@ -680,7 +740,7 @@ public static class ChunkGenerationNodes
     {
         for (int i = 0; i < threadCount; i++)
         {
-            dataHandlers[i].linkNodes[currentLinkName].A.z = SetLinkPointRange(ints);
+            dataHandlers[i].linkNodes[currentLinkName].A.Z = SetLinkPointRange(ints);
         }
     }
     
@@ -688,7 +748,7 @@ public static class ChunkGenerationNodes
     {
         for (int i = 0; i < threadCount; i++)
         {
-            dataHandlers[i].linkNodes[currentLinkName].B.x = SetLinkPointRange(ints);
+            dataHandlers[i].linkNodes[currentLinkName].B.X = SetLinkPointRange(ints);
         }
     }
     
@@ -696,7 +756,7 @@ public static class ChunkGenerationNodes
     {
         for (int i = 0; i < threadCount; i++)
         {
-            dataHandlers[i].linkNodes[currentLinkName].B.y = SetLinkPointRange(ints);
+            dataHandlers[i].linkNodes[currentLinkName].B.Y = SetLinkPointRange(ints);
         }
     }
     
@@ -704,7 +764,7 @@ public static class ChunkGenerationNodes
     {
         for (int i = 0; i < threadCount; i++)
         {
-            dataHandlers[i].linkNodes[currentLinkName].B.z = SetLinkPointRange(ints);
+            dataHandlers[i].linkNodes[currentLinkName].B.Z = SetLinkPointRange(ints);
         }
     }
 
@@ -737,9 +797,9 @@ public static class ChunkGenerationNodes
     }
     */
     
-    public static Task<bool> SetLinkLink(string linkName)
+    public static async Task<bool> SetLinkLink(string linkName)
     {
-        return Task.Run(() =>
+        return await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
@@ -753,93 +813,14 @@ public static class ChunkGenerationNodes
         });
     }
 
-    public static Task SetLinkThreshold(float value)
+    public static async Task SetLinkThreshold(float value)
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             for (int i = 0; i < threadCount; i++)
             {
                 dataHandlers[i].linkNodes[currentLinkName].threshold = value;
             }
-        });
-    }
-
-
-
-
-    public static Task<bool> SetTreeSample(string sampleName)
-    {
-        return Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                if (!dataHandlers[i].sampleNodes.TryGetValue(sampleName, out var sampleNode))
-                    return false;
-
-                dataHandlers[i].treeNodes[currentTreeName].sampler = new TreeSample { sampleNode = sampleNode };
-            }
-
-            Console.Log("Sample was found");
-            return true;
-        });
-    }
-
-    public static Task<bool> SetTreeModifier(string sampleName)
-    {
-        return Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                if (!dataHandlers[i].modifierNodes.TryGetValue(sampleName, out var sampleNode))
-                    return false;
-
-                dataHandlers[i].treeNodes[currentTreeName].sampler = new TreeModifier { modifierNode = sampleNode };
-            }
-
-            Console.Log("Modifier was found");
-            return true;
-        });
-    }
-
-    public static Task SetTreeBasic()
-    {
-        return Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                dataHandlers[i].treeNodes[currentTreeName].sampler = new TreeBasic();
-            }
-
-            return true;
-        });
-    }
-
-    public static Task<bool> SetTreeLink(string linkName)
-    {
-        return Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                if (!dataHandlers[i].linkNodes.TryGetValue(linkName, out var linkNode))
-                    return false;
-
-                dataHandlers[i].treeNodes[currentTreeName].link = linkNode;
-            }
-            
-            return true;
-        });
-    }
-
-    public static Task SetTreeRange(Vector2Int ints)
-    {
-        return Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                dataHandlers[i].treeNodes[currentTreeName].range = new IntRangeNode(ints.x, ints.y);
-            }
-
-            return true;
         });
     }
 }

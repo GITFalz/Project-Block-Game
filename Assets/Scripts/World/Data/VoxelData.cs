@@ -51,6 +51,16 @@ public static class VoxelData
         { -16, 1, 256, -1, -256, 16 },
     };
     
+    public static readonly Func<int, int, int>[] IndexOffsetVE =
+    {
+        (X, Z) => -X,
+        (X, Z) => 1,
+        (X, Z) => X * Z,
+        (X, Z) => -1,
+        (X, Z) => -X * Z,
+        (X, Z) => X,
+    };
+    
     public static readonly byte[] ShiftPosition = { 1, 2, 4, 8, 16, 32 };
 
     public static bool InBounds(int x, int y, int z, int side, int size)
@@ -63,6 +73,20 @@ public static class VoxelData
             3 => x - 1 >= 0,
             4 => y - 1 >= 0,
             5 => z + 1 < size,
+            _ => false
+        };
+    }
+    
+    public static bool InBounds(int x, int y, int z, int side, int X, int Y, int Z)
+    {
+        return side switch
+        {
+            0 => z - 1 >= 0,
+            1 => x + 1 < X,
+            2 => y + 1 < Y,
+            3 => x - 1 >= 0,
+            4 => y - 1 >= 0,
+            5 => z + 1 < Z,
             _ => false
         };
     }
@@ -92,6 +116,16 @@ public static class VoxelData
         },
     };
     
+    public static readonly Func<int, int, int>[] FirstOffsetVe = 
+    {
+        (X, Z) => X * Z,
+        (X, Z) => X * Z,
+        (X, Z) => X,
+        (X, Z) => X * Z,
+        (X, Z) => X,
+        (X, Z) => X * Z,
+    };
+    
     public static readonly int[] SecondOffsetBase = { 1, 32, 1, 32, 1, 1 };
     
     public static readonly int[][] SecondOffset =
@@ -104,6 +138,16 @@ public static class VoxelData
         {
             1, 16, 1, 16, 1, 1
         },
+    };
+    
+    public static readonly Func<int, int>[] SecondOffsetVe = 
+    {
+        (X) => 1,
+        (X) => X,
+        (X) => 1,
+        (X) => X,
+        (X) => 1,
+        (X) => 1,
     };
     
     public static readonly Func<int, int, int>[] FirstLoopBase =
@@ -138,6 +182,36 @@ public static class VoxelData
         },
     };
     
+    public static readonly Func<int, int, int, int, int>[] FirstLoopVe =
+    {
+        (y, z, Y, Z) => Y - y,
+        (y, z, Y, Z) => Y - y,
+        (y, z, Y, Z) => Z - z,
+        (y, z, Y, Z) => Y - y,
+        (y, z, Y, Z) => Z - z,
+        (y, z, Y, Z) => Y - y,
+    };
+    
+    public static readonly Func<int, int, int, int>[] Loop1 =
+    {
+        (a, y, z) => a - y,
+        (a, y, z) => a - y,
+        (a, y, z) => a - z,
+        (a, y, z) => a - y,
+        (a, y, z) => a - z,
+        (a, y, z) => a - y,
+    };
+    
+    public static readonly Func<int, int, int, int>[] Loop2 = 
+    {
+        (a, x, z) => a - x,
+        (a, x, z) => a - z,
+        (a, x, z) => a - x,
+        (a, x, z) => a - z,
+        (a, x, z) => a - x,
+        (a, x, z) => a - x,
+    };
+    
     public static readonly Func<int, int, int>[] SecondLoopBase = 
     {
         (x, z) => 31 - x,
@@ -168,6 +242,16 @@ public static class VoxelData
             (x, z) => 15 - x,
             (x, z) => 15 - x,
         },
+    };
+    
+    public static readonly Func<int, int, int, int, int>[] SecondLoopVe =
+    {
+        (x, z, X, Z) => X - x,
+        (x, z, X, Z) => Z - z,
+        (x, z, X, Z) => X - x,
+        (x, z, X, Z) => Z - z,
+        (x, z, X, Z) => X - x,
+        (x, z, X, Z) => X - x,
     };
 
     public static readonly Func<int, int, Vector3[]>[] PositionOffset =

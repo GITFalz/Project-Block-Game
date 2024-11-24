@@ -3,20 +3,17 @@ using UnityEngine;
 
 public class CWorldMapNode : CWAPoolingNode
 {
-    public CWorldSampleHandler sampleHandler;
     public List<BiomePool> biomePool;
 
     public CWorldMapNode()
     {
-        sampleHandler = new CWorldSampleHandler();
         biomePool = new List<BiomePool>();
     }
     
-    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, CWorldDataHandler handler)
+    public uint GetBlockPillar(Vector3Int chunkPosition, Block[] blocks, int x, int y, int z, CWorldDataHandler handler)
     {
-        int i = 0;
-        float noise = 0;
-
+        int priority = -1;
+        CWorldBiomeNode biomeNode = null;
         List<BiomePool> biomes = new List<BiomePool>();
         
         foreach (var biome in biomePool)
@@ -24,43 +21,55 @@ public class CWorldMapNode : CWAPoolingNode
             if (biome.InRange())
             {
                 biomes.Add(biome);
-            }
-        }
-
-        if (biomes.Count == 1)
-        {
-            return biomes[0].GetBiomePillar(chunkPosition, blocks, x, z);
-        }
-        
-        if (biomes.Count == 2)
-        {
-            foreach (var sample in biomePool[1].samples)
-            {
-                if (biomePool[0].samples.TryGetValue(sample.Key, out var s))
+                if (biome.priority > priority)
                 {
-                    noise = NoiseLerpSample(sample.Value, s, biomePool[0].biome.sample.noiseValue, biomePool[1].biome.sample.noiseValue, s.sample.noiseValue);
-                    return biomes[0].GetBiomePillar(chunkPosition, blocks, x, z, noise);
+                    priority = biome.priority;
+                    biomeNode = biome.biome;
                 }
             }
         }
+        
+        if (biomeNode == null)
+            return 0;
+        
+        switch (biomes.Count)
+        {
+            case 0:
+                return 0;
+            case 1:
+                return biomeNode.GetBlockPillar(chunkPosition, blocks, x, y, z);
+        }
 
-        return 0;
+        int count = 0;
+        float total = 0;
+
+        for (int i = 0; i < biomes.Count - 1; i++)
+        {
+            for (int j = i + 1; j < biomes.Count; j++)
+            {
+                int index = 0;
+                float avg = 0;
+                
+                foreach (var sample in biomes[i].samples)
+                {
+                    if (biomes[j].samples.TryGetValue(sample.Key, out var s))
+                    {
+                        index++;
+                        avg += NoiseLerpSample(sample.Value, s, biomes[i].biome.sample.noiseValue, biomes[j].biome.sample.noiseValue, s.sample.noiseValue);
+                    }
+                }
+                
+                count++;
+                total += index == 0 ? 0 : avg / index;
+            }
+        }
+        
+        return biomeNode.GetBlockPillar(chunkPosition, blocks, x, y, z, total / count);
     }
     
     public float NoiseLerpSample(BiomePoolSample a, BiomePoolSample b, float noiseA, float noiseB, float t)
     {
-        if (a.max > b.min)
-        {
-            float noise = Mathp.NoiseLerp(noiseA, noiseB, a.min, b.max, t);
-            //Debug.Log("noiseA: " + noiseA + " noiseB: " + noiseB + " minB: " + b.min + " maxA: " + a.max + " t: " + t + " gave noise: " + noise);
-            return noise;
-        }
-        else
-        {
-            float noise = Mathp.NoiseLerp(noiseB, noiseA, b.min, a.max, t);
-            //Debug.Log("noiseA: " + noiseB + " noiseB: " + noiseA + " minB: " + a.min + " maxA: " + b.max + " t: " + t + " gave noise: " + noise);
-            return noise;
-        }
+        return a.max > b.min ? Mathp.NoiseLerp(noiseA, noiseB, a.min, b.max, t) : Mathp.NoiseLerp(noiseB, noiseA, b.min, a.max, t);
     }
 }
 
@@ -68,11 +77,18 @@ public class BiomePool
 {
     public CWorldBiomeNode biome;
     public Dictionary<string, BiomePoolSample> samples;
+    public int priority;
 
     public BiomePool(CWorldBiomeNode newBiome)
     {
         biome = newBiome;
         samples = new Dictionary<string, BiomePoolSample>();
+        priority = 0;
+    }
+    
+    public void SetPriority(int p)
+    {
+        priority = p < 0 ? 0 : p;
     }
 
     public bool InRange()
@@ -86,14 +102,14 @@ public class BiomePool
         return true;
     }
 
-    public uint GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z)
+    public uint GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int y, int z)
     {
-        return biome.GetBlockPillar(chunkPosition, blocks, x, z);
+        return biome.GetBlockPillar(chunkPosition, blocks, x, y, z);
     }
     
-    public uint GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int z, float noise)
+    public uint GetBiomePillar(Vector3Int chunkPosition, Block[] blocks, int x, int y, int z, float noise)
     {
-        return biome.GetBlockPillar(chunkPosition, blocks, x, z, noise);
+        return biome.GetBlockPillar(chunkPosition, blocks, x, y, z, noise);
     }
 }
 
@@ -114,15 +130,5 @@ public class BiomePoolSample
     {
         float noise = sample.noiseValue;
         return min <= noise && noise <= max;
-    }
-
-    public BiomePoolSample Copy(CWorldDataHandler handler)
-    {
-        BiomePoolSample biomePoolSample = new BiomePoolSample(sample.Copy(handler))
-        {
-            min = min,
-            max = max,
-        };
-        return biomePoolSample;
     }
 }
