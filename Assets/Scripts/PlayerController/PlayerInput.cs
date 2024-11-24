@@ -50,6 +50,31 @@ public class PlayerInput : MonoBehaviour
     {
         return inputActions.Controls.Control.ReadValue<float>() > .5f;
     }
+    
+    public bool EInput()
+    {
+        return inputActions.Controls.E.ReadValue<float>() > .5f;
+    }
+    
+    public bool CInput()
+    {
+        return inputActions.Controls.C.ReadValue<float>() > .5f;
+    }
+    
+    public bool DInput()
+    {
+        return inputActions.Controls.D.ReadValue<float>() > .5f;
+    }
+    
+    public bool PInput()
+    {
+        return inputActions.Controls.P.ReadValue<float>() > .5f;
+    }
+
+    public bool AInput()
+    {
+        return inputActions.Controls.A.ReadValue<float>() > .5f;
+    }
 
     public bool RightClickInput()
     {

@@ -6,9 +6,7 @@ public class CWOSOverrideNode
     public float amplitude;
     public bool invert;
 
-    public List<CWorldSampleNode> add;
-    public List<CWorldSampleNode> multiply;
-    public List<CWorldSampleNode> subtract;
+    public List<IModifier> modifiers;
     
     public List<CWAParameterNode> parameters;
     
@@ -17,23 +15,15 @@ public class CWOSOverrideNode
         amplitude = 1;
         invert = false;
         
-        add = new List<CWorldSampleNode>();
-        multiply = new List<CWorldSampleNode>();
-        subtract = new List<CWorldSampleNode>();
+        modifiers = new List<IModifier>();
         
         parameters = new List<CWAParameterNode>();
     }
 
     public float Apply(float height)
     {
-        foreach (CWorldSampleNode sample in add)
-            height += sample.noiseValue;
-        
-        foreach (CWorldSampleNode sample in multiply)
-            height *= sample.noiseValue;
-        
-        foreach (CWorldSampleNode sample in subtract)
-            height -= sample.noiseValue;
+        foreach (IModifier sample in modifiers)
+            height = sample.GetModifier(height);
         
         foreach (CWAParameterNode parameter in parameters)
             height = parameter.GetValue(height);
@@ -43,58 +33,64 @@ public class CWOSOverrideNode
         
         return height * amplitude;
     }
+}
 
-    public CWOSOverrideNode Copy(CWorldDataHandler handler)
+public interface IModifier
+{
+    float GetModifier(float height);
+    CWorldSampleNode GetSample();
+}
+
+public class AddModifier : IModifier
+{
+    public CWorldSampleNode sample;
+
+    public float GetModifier(float height)
     {
-        CWOSOverrideNode overrideNode = new CWOSOverrideNode
-        {
-            amplitude = amplitude,
-            invert = invert,
-            parameters = parameters
-        };
-
-        foreach (var sample in add)
-        {
-            if (handler.sampleNodes.TryGetValue(sample.name, out var s))
-            {
-                overrideNode.add.Add(s);
-            }
-            else
-            {
-                CWorldSampleNode newSample = sample.Copy(handler);
-                overrideNode.add.Add(newSample);
-                handler.sampleNodes.Add(newSample.name, newSample);
-            }
-        }
+        if (sample == null)
+            return -1;
         
-        foreach (var sample in multiply)
-        {
-            if (handler.sampleNodes.TryGetValue(sample.name, out var s))
-            {
-                overrideNode.multiply.Add(s);
-            }
-            else
-            {
-                CWorldSampleNode newSample = sample.Copy(handler);
-                overrideNode.multiply.Add(newSample);
-                handler.sampleNodes.Add(newSample.name, newSample);
-            }
-        }
-        
-        foreach (var sample in subtract)
-        {
-            if (handler.sampleNodes.TryGetValue(sample.name, out var s))
-            {
-                overrideNode.subtract.Add(s);
-            }
-            else
-            {
-                CWorldSampleNode newSample = sample.Copy(handler);
-                overrideNode.subtract.Add(newSample);
-                handler.sampleNodes.Add(newSample.name, newSample);
-            }
-        }
+        return height + sample.noiseValue;
+    }
+    
+    public CWorldSampleNode GetSample()
+    {
+        return sample;
+    }
+}
 
-        return overrideNode;
+public class MultiplyModifier : IModifier
+{
+    public CWorldSampleNode sample;
+
+    public float GetModifier(float height)
+    {
+        if (sample == null)
+            return -1;
+        
+        return height * sample.noiseValue;
+    }
+    
+    public CWorldSampleNode GetSample()
+    {
+        return sample;
+    }
+}
+
+public class SubtractModifier : IModifier
+{
+    public CWorldSampleNode sample;
+
+    public float GetModifier(float height)
+    {
+        if (sample == null)
+            return -1;
+        
+        return height - sample.noiseValue;
+    }
+    
+    public CWorldSampleNode GetSample()
+    {
+        return sample;
     }
 }

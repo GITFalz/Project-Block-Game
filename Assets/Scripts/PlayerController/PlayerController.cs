@@ -107,6 +107,51 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""C"",
+                    ""type"": ""Button"",
+                    ""id"": ""7531907e-3c3c-43dc-a43d-73fafc0175d0"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""E"",
+                    ""type"": ""Button"",
+                    ""id"": ""9fb62bb8-73ad-4c90-aa2f-bc822d775623"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""D"",
+                    ""type"": ""Button"",
+                    ""id"": ""6484e3fb-b6d4-471a-9926-b26f2aa62920"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""P"",
+                    ""type"": ""Button"",
+                    ""id"": ""b8159e6f-f9de-476c-8586-4e8799168018"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""A"",
+                    ""type"": ""Button"",
+                    ""id"": ""fec1bfcd-2ccd-464a-8791-cfc300a24eb3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -252,6 +297,61 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
                     ""action"": ""Shift"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c4b59ab4-19b3-4ebd-919e-8027541a7148"",
+                    ""path"": ""<Keyboard>/c"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""C"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""040b36b8-9dce-49c5-82c3-e7f9857868ce"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""E"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""284cb756-9219-4309-abd0-c07e60e2ed38"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""D"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""cee22ff2-0fe5-483d-bccf-718ebee9d37e"",
+                    ""path"": ""<Keyboard>/p"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""P"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2d7395b2-855c-4bf1-8a52-05e183cfbbcf"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""A"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -286,6 +386,11 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
         m_Controls_SwitchCam = m_Controls.FindAction("SwitchCam", throwIfNotFound: true);
         m_Controls_Inventory = m_Controls.FindAction("Inventory", throwIfNotFound: true);
         m_Controls_Shift = m_Controls.FindAction("Shift", throwIfNotFound: true);
+        m_Controls_C = m_Controls.FindAction("C", throwIfNotFound: true);
+        m_Controls_E = m_Controls.FindAction("E", throwIfNotFound: true);
+        m_Controls_D = m_Controls.FindAction("D", throwIfNotFound: true);
+        m_Controls_P = m_Controls.FindAction("P", throwIfNotFound: true);
+        m_Controls_A = m_Controls.FindAction("A", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -356,6 +461,11 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
     private readonly InputAction m_Controls_SwitchCam;
     private readonly InputAction m_Controls_Inventory;
     private readonly InputAction m_Controls_Shift;
+    private readonly InputAction m_Controls_C;
+    private readonly InputAction m_Controls_E;
+    private readonly InputAction m_Controls_D;
+    private readonly InputAction m_Controls_P;
+    private readonly InputAction m_Controls_A;
     public struct ControlsActions
     {
         private @PlayerController m_Wrapper;
@@ -369,6 +479,11 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
         public InputAction @SwitchCam => m_Wrapper.m_Controls_SwitchCam;
         public InputAction @Inventory => m_Wrapper.m_Controls_Inventory;
         public InputAction @Shift => m_Wrapper.m_Controls_Shift;
+        public InputAction @C => m_Wrapper.m_Controls_C;
+        public InputAction @E => m_Wrapper.m_Controls_E;
+        public InputAction @D => m_Wrapper.m_Controls_D;
+        public InputAction @P => m_Wrapper.m_Controls_P;
+        public InputAction @A => m_Wrapper.m_Controls_A;
         public InputActionMap Get() { return m_Wrapper.m_Controls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -405,6 +520,21 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
             @Shift.started += instance.OnShift;
             @Shift.performed += instance.OnShift;
             @Shift.canceled += instance.OnShift;
+            @C.started += instance.OnC;
+            @C.performed += instance.OnC;
+            @C.canceled += instance.OnC;
+            @E.started += instance.OnE;
+            @E.performed += instance.OnE;
+            @E.canceled += instance.OnE;
+            @D.started += instance.OnD;
+            @D.performed += instance.OnD;
+            @D.canceled += instance.OnD;
+            @P.started += instance.OnP;
+            @P.performed += instance.OnP;
+            @P.canceled += instance.OnP;
+            @A.started += instance.OnA;
+            @A.performed += instance.OnA;
+            @A.canceled += instance.OnA;
         }
 
         private void UnregisterCallbacks(IControlsActions instance)
@@ -436,6 +566,21 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
             @Shift.started -= instance.OnShift;
             @Shift.performed -= instance.OnShift;
             @Shift.canceled -= instance.OnShift;
+            @C.started -= instance.OnC;
+            @C.performed -= instance.OnC;
+            @C.canceled -= instance.OnC;
+            @E.started -= instance.OnE;
+            @E.performed -= instance.OnE;
+            @E.canceled -= instance.OnE;
+            @D.started -= instance.OnD;
+            @D.performed -= instance.OnD;
+            @D.canceled -= instance.OnD;
+            @P.started -= instance.OnP;
+            @P.performed -= instance.OnP;
+            @P.canceled -= instance.OnP;
+            @A.started -= instance.OnA;
+            @A.performed -= instance.OnA;
+            @A.canceled -= instance.OnA;
         }
 
         public void RemoveCallbacks(IControlsActions instance)
@@ -473,5 +618,10 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
         void OnSwitchCam(InputAction.CallbackContext context);
         void OnInventory(InputAction.CallbackContext context);
         void OnShift(InputAction.CallbackContext context);
+        void OnC(InputAction.CallbackContext context);
+        void OnE(InputAction.CallbackContext context);
+        void OnD(InputAction.CallbackContext context);
+        void OnP(InputAction.CallbackContext context);
+        void OnA(InputAction.CallbackContext context);
     }
 }

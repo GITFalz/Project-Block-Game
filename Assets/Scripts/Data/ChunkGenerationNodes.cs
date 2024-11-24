@@ -15,7 +15,7 @@ public static class ChunkGenerationNodes
     public static string currentLinkName = "";
     public static string currentFoliageName = "";
 
-    public static int threadCount = 4;
+    public static int threadCount = 6;
     public static bool set = true;
     
     
@@ -43,12 +43,18 @@ public static class ChunkGenerationNodes
             {
                 dataHandlers[i].sampleNodes.Clear();
                 dataHandlers[i].biomeNodes.Clear();
+                dataHandlers[i].modifierNodes.Clear();
+                dataHandlers[i].linkNodes.Clear();
+                dataHandlers[i].foliageNodes.Clear();
+                dataHandlers[i].MapNode = null;
             }
 
             currentSampleName = "";
             currentBiomeName = "";
             sampleDisplayName = "";
             currentModifierName = "";
+            currentLinkName = "";
+            currentFoliageName = "";
         });
     }
 
@@ -225,7 +231,7 @@ public static class ChunkGenerationNodes
                 if (!dataHandlers[i].sampleNodes.TryGetValue(sampleToAdd, out var sampleNode))
                     return false;
 
-                dataHandlers[i].sampleNodes[currentSampleName].overrideNode.add.Add(sampleNode);
+                dataHandlers[i].sampleNodes[currentSampleName].overrideNode.modifiers.Add(new AddModifier { sample = sampleNode });
             }
 
             return true;
@@ -241,7 +247,7 @@ public static class ChunkGenerationNodes
                 if (!dataHandlers[i].sampleNodes.TryGetValue(sampleToAdd, out var sampleNode))
                     return false;
 
-                dataHandlers[i].sampleNodes[currentSampleName].overrideNode.multiply.Add(sampleNode);
+                dataHandlers[i].sampleNodes[currentSampleName].overrideNode.modifiers.Add(new MultiplyModifier { sample = sampleNode });
             }
 
             return true;
@@ -257,7 +263,7 @@ public static class ChunkGenerationNodes
                 if (!dataHandlers[i].sampleNodes.TryGetValue(sampleToAdd, out var sampleNode))
                     return false;
 
-                dataHandlers[i].sampleNodes[currentSampleName].overrideNode.subtract.Add(sampleNode);
+                dataHandlers[i].sampleNodes[currentSampleName].overrideNode.modifiers.Add(new SubtractModifier { sample = sampleNode });
             }
 
             return true;

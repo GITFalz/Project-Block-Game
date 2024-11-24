@@ -20,7 +20,7 @@ public class CWorldBiomeNode : CWAExecuteNode
     public CWorldBiomeNode(string name)
     {
         SequenceNodes = new List<CWOCSequenceNode>();
-        sampleRange = new IntRangeNode(0, 256);
+        sampleRange = new IntRangeNode(0, 400);
         modifier = null;
         
         this.name = name;
@@ -69,7 +69,7 @@ public class CWorldBiomeNode : CWAExecuteNode
                     int maxHeight = modifier.GetMaxHeight();
                     
                     if (height != -1)
-                        GetPillar(gen.range + maxHeight, false, ref pillar, ref top,
+                        GetPillar(gen.range + maxHeight, gen.flip, ref pillar, ref top,
                             height + maxHeight, chunkPosition.y);
                 }
             }

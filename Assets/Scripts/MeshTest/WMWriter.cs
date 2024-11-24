@@ -35,10 +35,6 @@ public class WMWriter : MonoBehaviour
     private void Start()
     {
         writerManager = new WriterManager(this, false);
-        
-        if (ignoreEverything) 
-            return;
-        
         ChunkGenerationNodes.Set();
     }
 
@@ -58,6 +54,11 @@ public class WMWriter : MonoBehaviour
             return;
         
         LoadOnEnter();
+    }
+
+    public void ClearAll()
+    {
+        ChunkGenerationNodes.Clear();
     }
 
     public async void ExecuteCode()

@@ -103,6 +103,7 @@ public static class CWorldModifierManager
             "flip", async (w) =>
             {
                 await ChunkGenerationNodes.SetModifierGenFlip(true);
+                w.Increment();
                 return 0;
             }
         },

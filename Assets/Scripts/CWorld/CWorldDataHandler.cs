@@ -49,12 +49,8 @@ public class CWorldDataHandler
     {
         sampleHandler.sampleNodes.TryAdd(sample.name, sample);
         
-        foreach (var s in sample.overrideNode.add)
-            AddSample(s, sampleHandler);
-        foreach (var s in sample.overrideNode.multiply)
-            AddSample(s, sampleHandler);
-        foreach (var s in sample.overrideNode.subtract)
-            AddSample(s, sampleHandler);
+        foreach (var s in sample.overrideNode.modifiers)
+            AddSample(s.GetSample(), sampleHandler);
     }
     
     public float SampleNoise(int x, int y, int z, CWorldSampleNode sample)

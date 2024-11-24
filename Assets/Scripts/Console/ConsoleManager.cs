@@ -12,6 +12,9 @@ public class ConsoleManager : MonoBehaviour
 
     public WMWriter writer;
     public GameCommandSystem commandSystem;
+    
+    public StateMachine stateMachine;
+    public GameObject points;
 
     private char[] prefixes = { '!' };
 
@@ -94,6 +97,36 @@ public class ConsoleManager : MonoBehaviour
         Console.Log("Cleared nodes!");
         return Task.FromResult("");
     }
+    
+    public async Task<string> Do_Cinematic()
+    {
+        return await CommandTest(1, SystemCommands.cinematicCommands);
+    }
+    
+    public Task<string> Do_CinematicEnable()
+    {
+        stateMachine.doCinematic = true;
+        return Task.FromResult("");
+    }
+    
+    public Task<string> Do_CinematicDisable()
+    {
+        stateMachine.doCinematic = false;
+        return Task.FromResult("");
+    }
+    
+    public async Task<string> Do_CinematicPosition()
+    {
+        if (stateMachine == null)
+            return "";
+
+        Vector3 position = stateMachine.player.GetComponent<Rigidbody>().position;
+        GameObject instance = Instantiate(points, position, Quaternion.identity);
+        stateMachine.points.Add(instance.transform);
+        stateMachine.times.Add(5);
+
+        return await Task.FromResult("");
+    }
 }
 
 public static class SystemCommands
@@ -102,10 +135,18 @@ public static class SystemCommands
     {
         { "load", (c) => c.Do_Load() },
         { "clear", (c) => c.Do_Clear() },
+        { "cinematic", (c) => c.Do_Cinematic() },
     };
     
     public static Dictionary<string, Func<ConsoleManager, Task<string>>> loadCommands = new Dictionary<string, Func<ConsoleManager, Task<string>>>
     {
         { "clear", (c) => c.Do_LoadClear() },
+    };
+    
+    public static Dictionary<string, Func<ConsoleManager, Task<string>>> cinematicCommands = new Dictionary<string, Func<ConsoleManager, Task<string>>>
+    {
+        { "enable", (c) => c.Do_CinematicEnable() },
+        { "disable", (c) => c.Do_CinematicDisable() },
+        { "position", (c) => c.Do_CinematicPosition() },
     };
 }

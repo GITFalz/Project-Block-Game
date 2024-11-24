@@ -31,6 +31,14 @@ public class StateMachine : MonoBehaviour
 
     //Switches
     public Switch escapeSwitch;
+    
+    public List<Transform> points; 
+    public List<float> times;
+    public List<Vector3> angles;
+    
+    public bool doCinematic = false;
+    
+    public GameObject pointPrefab;
 
     private void Start()
     {
@@ -46,8 +54,6 @@ public class StateMachine : MonoBehaviour
         
         currentState = menuState;
         currentState.EnterState(this);
-        
-        
     }
     
     private void Update()
@@ -65,5 +71,18 @@ public class StateMachine : MonoBehaviour
         currentState.ExitState(this);
         currentState = state;
         currentState.EnterState(this);
+    }
+
+    public void CreatePoint()
+    {
+        Vector3 position = player.GetComponent<Rigidbody>().position;
+        GameObject instance = Instantiate(pointPrefab, position, Quaternion.identity);
+        points.Add(instance.transform);
+        times.Add(5);
+    }
+    
+    public void CreateAngle()
+    {
+        angles.Add(player.eulerAngles);
     }
 }

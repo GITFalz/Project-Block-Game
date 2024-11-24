@@ -952,6 +952,11 @@ MonoBehaviour:
   playerY: {fileID: 2146839843}
   player: {fileID: 1025230351}
   worldScript: {fileID: 369882861}
+  points: []
+  times: []
+  angles: []
+  doCinematic: 0
+  pointPrefab: {fileID: 911403763667124255, guid: d9790d62a775a7c48b88890ec8f3de3d, type: 3}
 --- !u!1 &252321738
 GameObject:
   m_ObjectHideFlags: 0
@@ -2013,6 +2018,8 @@ MonoBehaviour:
   inputField: {fileID: 1110273601}
   writer: {fileID: 1487717792}
   commandSystem: {fileID: 474247752}
+  stateMachine: {fileID: 214510703}
+  points: {fileID: 0}
 --- !u!114 &610523701
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4520,6 +4527,7 @@ MonoBehaviour:
   menu: {fileID: 0}
   consoleTextManager: {fileID: 610523701}
   simpleLoad: 1
+  ignoreEverything: 0
 --- !u!1 &1514411051
 GameObject:
   m_ObjectHideFlags: 0
