@@ -32,6 +32,8 @@ public class CameraMovementManager : MonoBehaviour
     public LayerMask layer;
 
     private Func<bool> cameraSwitchInput;
+    private Func<bool> controlInput;
+    private Func<bool> c;
 
     private StateSwitch<PerspectiveBaseState> cameraSwitch;
 
@@ -44,6 +46,8 @@ public class CameraMovementManager : MonoBehaviour
         grounded.Init(this);
 
         cameraSwitchInput = PlayerInput.Instance.CameraSwitchInput;
+        controlInput = PlayerInput.Instance.ControlInput;
+        c = PlayerInput.Instance.CInput;
         cameraSwitch = new StateSwitch<PerspectiveBaseState>(cameraSwitchInput, thirdPerson, firstPerson);
 
         currentState = grounded;
@@ -51,6 +55,9 @@ public class CameraMovementManager : MonoBehaviour
 
     void Update()
     {
+        if (controlInput() && c())
+            return;
+        
         cameraSwitch.CanSwitch();
         cameraSwitch.currentState.UpdateState(this);
     } 

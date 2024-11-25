@@ -34,7 +34,8 @@ public class StateMachine : MonoBehaviour
     
     public List<Transform> points; 
     public List<float> times;
-    public List<Vector3> angles;
+    public List<Quaternion> angles;
+    public List<float> angleTimes;
     
     public bool doCinematic = false;
     
@@ -83,6 +84,7 @@ public class StateMachine : MonoBehaviour
     
     public void CreateAngle()
     {
-        angles.Add(player.eulerAngles);
+        angles.Add(playerRotationManager.transform.rotation);
+        angleTimes.Add(5);
     }
 }
