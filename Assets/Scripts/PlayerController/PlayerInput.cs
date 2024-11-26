@@ -80,6 +80,16 @@ public class PlayerInput : MonoBehaviour
     {
         return inputActions.Controls.R.ReadValue<float>() > .5f;
     }
+    
+    public bool OInput()
+    {
+        return inputActions.Controls.O.ReadValue<float>() > .5f;
+    }
+    
+    public bool QInput()
+    {
+        return inputActions.Controls.Q.ReadValue<float>() > .5f;
+    }
 
     public bool RightClickInput()
     {

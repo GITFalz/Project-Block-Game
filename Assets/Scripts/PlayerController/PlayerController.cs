@@ -161,6 +161,24 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""O"",
+                    ""type"": ""Button"",
+                    ""id"": ""c96aa6fe-d252-4026-8901-bc69d24b058b"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Q"",
+                    ""type"": ""Button"",
+                    ""id"": ""947ff5ba-4ffc-4108-8b83-f7cf5f8db064"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -372,6 +390,28 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
                     ""action"": ""R"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""57dde0c4-1fbc-4087-bfda-b4c2f03b9044"",
+                    ""path"": ""<Keyboard>/o"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""O"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c86226f8-5c79-49ff-83ec-2aaee560fa53"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Q"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -412,6 +452,8 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
         m_Controls_P = m_Controls.FindAction("P", throwIfNotFound: true);
         m_Controls_A = m_Controls.FindAction("A", throwIfNotFound: true);
         m_Controls_R = m_Controls.FindAction("R", throwIfNotFound: true);
+        m_Controls_O = m_Controls.FindAction("O", throwIfNotFound: true);
+        m_Controls_Q = m_Controls.FindAction("Q", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -488,6 +530,8 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
     private readonly InputAction m_Controls_P;
     private readonly InputAction m_Controls_A;
     private readonly InputAction m_Controls_R;
+    private readonly InputAction m_Controls_O;
+    private readonly InputAction m_Controls_Q;
     public struct ControlsActions
     {
         private @PlayerController m_Wrapper;
@@ -507,6 +551,8 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
         public InputAction @P => m_Wrapper.m_Controls_P;
         public InputAction @A => m_Wrapper.m_Controls_A;
         public InputAction @R => m_Wrapper.m_Controls_R;
+        public InputAction @O => m_Wrapper.m_Controls_O;
+        public InputAction @Q => m_Wrapper.m_Controls_Q;
         public InputActionMap Get() { return m_Wrapper.m_Controls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -561,6 +607,12 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
             @R.started += instance.OnR;
             @R.performed += instance.OnR;
             @R.canceled += instance.OnR;
+            @O.started += instance.OnO;
+            @O.performed += instance.OnO;
+            @O.canceled += instance.OnO;
+            @Q.started += instance.OnQ;
+            @Q.performed += instance.OnQ;
+            @Q.canceled += instance.OnQ;
         }
 
         private void UnregisterCallbacks(IControlsActions instance)
@@ -610,6 +662,12 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
             @R.started -= instance.OnR;
             @R.performed -= instance.OnR;
             @R.canceled -= instance.OnR;
+            @O.started -= instance.OnO;
+            @O.performed -= instance.OnO;
+            @O.canceled -= instance.OnO;
+            @Q.started -= instance.OnQ;
+            @Q.performed -= instance.OnQ;
+            @Q.canceled -= instance.OnQ;
         }
 
         public void RemoveCallbacks(IControlsActions instance)
@@ -653,5 +711,7 @@ public partial class @PlayerController: IInputActionCollection2, IDisposable
         void OnP(InputAction.CallbackContext context);
         void OnA(InputAction.CallbackContext context);
         void OnR(InputAction.CallbackContext context);
+        void OnO(InputAction.CallbackContext context);
+        void OnQ(InputAction.CallbackContext context);
     }
 }

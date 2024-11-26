@@ -10,14 +10,22 @@ public class StateMachine : MonoBehaviour
 
     public PlayerStateMachine playerState = new();
     public MenuStateMachine menuState = new();
+    public CinematicStateMachine cinematicState = new();
     
     public UtilityManager manager;
     
     public RigidbodyManager rigidbodyManager;
     public PlayerRotationManager playerRotationManager;
 
+    [Header("Menu")]
     public GameObject menu;
     public MainMenu mainMenu;
+    
+    [Header("Cinematic")]
+    public GameObject cinematic;
+    public UIHover cinematicUIHover;
+    public CinematicTimelineManager cinematicTimelineManager;
+    public CinematicMovementManager cinematicMovementManager;
 
     //Player Data
     public PlayerData playerData;
@@ -41,6 +49,10 @@ public class StateMachine : MonoBehaviour
     
     public GameObject pointPrefab;
 
+    public Func<bool> o;
+    public Switch oSwitch;
+    public StateSwitch<bool> cinematicSwitch;
+
     private void Start()
     {
         manager = UtilityManager.Instance;
@@ -55,6 +67,10 @@ public class StateMachine : MonoBehaviour
         
         currentState = menuState;
         currentState.EnterState(this);
+        
+        o = PlayerInput.Instance.OInput;
+        oSwitch = new Switch(o);
+        cinematicSwitch = new StateSwitch<bool>(o, false, true);
     }
     
     private void Update()

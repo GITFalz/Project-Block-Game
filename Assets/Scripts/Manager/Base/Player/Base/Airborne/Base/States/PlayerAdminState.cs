@@ -37,7 +37,7 @@ public class PlayerAdminState : PlayerBaseState
             direction += Vector3.down;
         }
         
-        state.Move(direction, 100);
+        state.Move(direction, 50);
     }
 
     public override void ExitState(PlayerStateMachine state)

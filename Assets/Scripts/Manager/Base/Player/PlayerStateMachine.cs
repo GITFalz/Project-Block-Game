@@ -79,12 +79,6 @@ public class PlayerStateMachine : BaseState
     public List<Quaternion> angles;
     public List<float> angleTimes;
     
-    public float smoothing = 0.5f;
-    private float currentTime = 0f;
-    private int currentSegment = 0;  
-    private float currentAngleTime = 0f;
-    private int currentAngleSegment = 0;  
-    
     private Vector3 playerPosition;
     
     public override void InitState(StateMachine state)
@@ -156,33 +150,50 @@ public class PlayerStateMachine : BaseState
 
     public override void UpdateState(StateMachine state)
     {
-        if (controlInput() && c() && eSwitch.CanSwitch())
-            state.doCinematic = true;
-        if (controlInput() && c() && dSwitch.CanSwitch())
-            state.doCinematic = false;
-        
-        if (controlInput() && c() && rSwitch.CanSwitch())
-        {
-            currentSegment = 0;
-            currentTime = 0;
-            currentAngleSegment = 0;
-            currentAngleTime = 0;
-        }
-        
-        if (controlInput() && c() && pSwitch.CanSwitch())
-            state.CreatePoint();
-        if (controlInput() && c() && aSwitch.CanSwitch())
-            state.CreateAngle();
-        
         if (state.escapeSwitch.CanSwitch())
         {
             state.SwitchState(state.menuState);
             return;
         }
+        
+        if (controlInput() && c() && state.oSwitch.CanSwitch())
+        {
+            state.SwitchState(state.cinematicState);
+            return;
+        }
+        
+        if (controlInput() && c() && eSwitch.CanSwitch())
+        {
+            state.cinematicMovementManager.Hide();
+            state.cinematicMovementManager.isPlaying = true;
+        }
+        
+        if (controlInput() && c() && dSwitch.CanSwitch())
+        {
+            state.cinematicMovementManager.Show();
+            state.cinematicMovementManager.isPlaying = false;
+        }
+        
+        if (controlInput() && c() && rSwitch.CanSwitch())
+        {
+            state.cinematicMovementManager.Reset();
+        }
 
         state.playerRotationManager.UpdateRotation();
         currentState.UpdateState(this);
         
+        HandleVelocity();
+    }
+    
+    public void PartialUpdate(StateMachine state)
+    {
+        if (controlInput() && c() && eSwitch.CanSwitch())
+        {
+            state.cinematicTimelineManager.Action();
+        }
+        
+        state.playerRotationManager.UpdateRotation();
+        currentState.UpdateState(this);
         HandleVelocity();
     }
 
@@ -192,67 +203,7 @@ public class PlayerStateMachine : BaseState
 
         if (state.doCinematic)
         {
-            if (currentSegment < times.Count)
-            {
-                currentTime += Time.fixedDeltaTime;
-                float segmentTime = times[currentSegment];
-                
-                if (currentTime < segmentTime)
-                {
-                    float t = currentTime / segmentTime;
-
-                    Vector3 position = CinematicUtils.CatmullRomInterpolation(
-                        GetPoint(currentSegment - 1),
-                        GetPoint(currentSegment),
-                        GetPoint(currentSegment + 1),
-                        GetPoint(currentSegment + 2),
-                        t,
-                        smoothing
-                    );
-                    
-                    playerRigidbody.MovePosition(position);
-                }
-                else
-                {
-                    currentSegment++;
-                    currentTime = 0f;
-                }
-            }
             
-            if (currentAngleSegment < angleTimes.Count)
-            {
-                currentAngleTime += Time.fixedDeltaTime;
-                float segmentTime = angleTimes[currentAngleSegment];
-                
-                if (currentAngleTime < segmentTime)
-                {
-                    float t = currentAngleTime / segmentTime;
-                    
-                    Quaternion lastRotation = GetRotation(currentAngleSegment - 1);
-                    Quaternion currentRotation = GetRotation(currentAngleSegment);
-                    Quaternion nextRotation = GetRotation(currentAngleSegment + 1);
-
-                    Quaternion q1 = Quaternion.Slerp(   
-                        lastRotation,
-                        currentRotation,
-                        t);
-                    
-                    Quaternion q2 = Quaternion.Slerp(
-                        currentRotation,
-                        nextRotation,
-                        t);
-
-                    Quaternion rotation = Quaternion.Slerp(q1, q2, 1f);
-                    
-                    state.playerRotationManager.transform.rotation = rotation;
-                }
-                else
-                {
-                    // Move to the next segment
-                    currentAngleSegment++;
-                    currentAngleTime = 0f;
-                }
-            }
         }
     }
 
@@ -315,25 +266,4 @@ public class PlayerStateMachine : BaseState
         new Vector3( 0.4f,-0.9f, 0.4f),
         new Vector3(-0.4f,-0.9f, 0.4f),
     };
-    
-    
-    
-    private Vector3 GetPoint(int index)
-    {
-        if (index < 0) return points[0].position;
-        if (index >= points.Count) return points[points.Count - 1].position;
-        return points[index].position;
-    }
-    
-    // Get the rotation for a given index
-    private Quaternion GetRotation(int index)
-    {
-        if (index < 0) return angles[0];
-        if (index >= angles.Count) return angles[angles.Count - 1];
-        return angles[index];
-    }
-    
-    
-    
-    
 }

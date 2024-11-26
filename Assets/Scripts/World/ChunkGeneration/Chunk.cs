@@ -498,7 +498,16 @@ public class Chunk : MonoBehaviour
                     
                     if (block != null)
                     {
-                        int[] ids = BlockManager.GetBlock(block.blockData).GetUVs();
+                        int[] ids;
+                        try
+                        {
+                            ids = BlockManager.GetBlock(block.blockData).GetUVs();
+                        }
+                        catch (NullReferenceException e)
+                        {
+                            Console.Log("You might have not loaded the blocks");
+                            return;
+                        }
                         
                         for (int side = 0; side < 6; side++)
                         {
