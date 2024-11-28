@@ -20,4 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/VisualEditor.unity
     guid: f84088462c6379746a3e9d825cd96dbc
+  - enabled: 1
+    path: Assets/Scenes/TerrainEditor.unity
+    guid: f93f492222e6c70f09f5cd5ac4457a2a
   m_configObjects: {}
