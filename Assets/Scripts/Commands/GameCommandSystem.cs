@@ -82,7 +82,12 @@ public class GameCommandSystem : MonoBehaviour
         {
             if (chunks.TryDequeue(out var result))
             {
+                /*
                 if (!WorldChunks.activeChunkData.ContainsKey(result.position)) 
+                    return;
+                    */
+
+                if (result.isEmpty())
                     return;
                 
                 Debug.Log("Rendering: " + result.position);
@@ -92,6 +97,9 @@ public class GameCommandSystem : MonoBehaviour
                 chunkRenderer.RenderChunk(result);
                 
                 WorldChunks.activeChunks.TryAdd(result.position, chunkRenderer);
+                
+                result.Clear();
+                result = null;
             }
         }
     }
@@ -137,13 +145,14 @@ public class GameCommandSystem : MonoBehaviour
             {
                 if (_mapChunks.TryDequeue(out var result))
                 {
-                    WorldChunks.activeChunkData.TryAdd(result, new ChunkData(result));
+                    ChunkData chunkData = new ChunkData(result);
+                    //WorldChunks.activeChunkData.TryAdd(result, );
                     
                     if (Vector3Int.Distance(center, result) > distance)
-                        ChunkGenerationNodes.tasks[i] = Chunk.CreateMapChunk(WorldChunks.activeChunkData[result], result, ChunkGenerationNodes.dataHandlers[i], this, 1);
+                        ChunkGenerationNodes.tasks[i] = Chunk.CreateMapChunk(chunkData, result, ChunkGenerationNodes.dataHandlers[i], this, 1);
                     else
-                        ChunkGenerationNodes.tasks[i] = Chunk.CreateMapChunk(WorldChunks.activeChunkData[result], result, ChunkGenerationNodes.dataHandlers[i], this, 0);
-                
+                        ChunkGenerationNodes.tasks[i] = Chunk.CreateMapChunk(chunkData, result, ChunkGenerationNodes.dataHandlers[i], this, 0);
+                    
                     await ChunkGenerationNodes.tasks[i];
                     ChunkGenerationNodes.tasks[i] = null;
                 }

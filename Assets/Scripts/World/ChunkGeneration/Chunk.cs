@@ -158,7 +158,7 @@ public class Chunk : MonoBehaviour
     public static async Task CreateMapChunk(ChunkData newChunkData, Vector3Int position, CWorldDataHandler handler, int lod)
     {
         await GenerateMapData(newChunkData, position, handler, lod);
-        WorldGeneration.chunksToRender.Enqueue(newChunkData);
+        //WorldGeneration.chunksToRender.Enqueue(newChunkData);
     }
 
     public static async Task GenerateMapData(ChunkData newChunkData, Vector3Int position, CWorldDataHandler handler, int lod)

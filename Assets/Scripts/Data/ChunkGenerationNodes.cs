@@ -141,13 +141,15 @@ public static class ChunkGenerationNodes
                     return false;
                 }
                 
+                CWorldFoliageNode foliageNode = dataHandlers[i].foliageNodes[name];
+                
                 if (dataHandlers[i].sampleNodes.TryGetValue(CWorldFoliageManager.samplerName, out var sampleNode))
-                    dataHandlers[i].foliageNodes[currentFoliageName].sampler = new TreeSample { sampleNode = sampleNode };
+                    foliageNode.sampler = new TreeSample { sampleNode = sampleNode };
                 else
                     if (dataHandlers[i].modifierNodes.TryGetValue(CWorldFoliageManager.samplerName, out var modifierNode))
-                        dataHandlers[i].foliageNodes[currentFoliageName].sampler = new TreeModifier { modifierNode = modifierNode };
+                        foliageNode.sampler = new TreeModifier { modifierNode = modifierNode };
                     else
-                        dataHandlers[i].foliageNodes[currentFoliageName].sampler = new TreeBasic();
+                        foliageNode.sampler = new TreeBasic();
 
                 
                 string trunkName = CWorldFoliageManager.trunkName;
@@ -162,40 +164,46 @@ public static class ChunkGenerationNodes
                         return false;
                     }
                     
-                    dataHandlers[i].foliageNodes[currentFoliageName].trunk = linkNode;
+                    foliageNode.trunk = linkNode;
                 }
                 
                 foreach (var direction in CWorldFoliageManager.directions)
                 {
+                    IDirection dir;
+                    
                     switch (direction.direction)
                     {
                         case "forward":
-                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new ForwardRotate { angle = new AngleRange(direction.values) });
+                            dir = new ForwardRotate { angle = new AngleRange(direction.values) };
                             break;
                         case "backward":
-                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new BackwardsRotate { angle = new AngleRange(direction.values) });
+                            dir = new BackwardsRotate { angle = new AngleRange(direction.values) };
                             break;
                         case "right":
-                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new RightRotate { angle = new AngleRange(direction.values) });
+                            dir = new RightRotate { angle = new AngleRange(direction.values) };
                             break;
                         case "left":
-                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new LeftRotate { angle = new AngleRange(direction.values) });
+                            dir = new LeftRotate { angle = new AngleRange(direction.values) };
                             break;
                         case "up":
-                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new UpRotate { angle = new AngleRange(direction.values) });
+                            dir = new UpRotate { angle = new AngleRange(direction.values) };
                             break;
                         case "down":
-                            dataHandlers[i].foliageNodes[currentFoliageName].directions.Add(new DownRotate { angle = new AngleRange(direction.values) });
+                            dir = new DownRotate { angle = new AngleRange(direction.values) };
                             break;
+                        default:
+                            continue;
                     }
+
+                    foliageNode.directions.Add(dir);
                 }
                 
-                dataHandlers[i].foliageNodes[currentFoliageName].lengthRange = new IntRangeNode(CWorldFoliageManager.lengthRange);
-                dataHandlers[i].foliageNodes[currentFoliageName].branchAmount = new IntRangeNode(CWorldFoliageManager.branchAmount);
-                dataHandlers[i].foliageNodes[currentFoliageName].branchLengthRange = new IntRangeNode(CWorldFoliageManager.branchLengthRange);
-                dataHandlers[i].foliageNodes[currentFoliageName].angleRange = new FloatRangeNode(CWorldFoliageManager.angleRange);
-                dataHandlers[i].foliageNodes[currentFoliageName].thresholdRange = new FloatRangeNode(CWorldFoliageManager.thresholdRange);
-                dataHandlers[i].foliageNodes[currentFoliageName].verticalAngle = new FloatRangeNode(CWorldFoliageManager.verticalAngle);
+                foliageNode.lengthRange = new IntRangeNode(CWorldFoliageManager.lengthRange);
+                foliageNode.branchAmount = new IntRangeNode(CWorldFoliageManager.branchAmount);
+                foliageNode.branchLengthRange = new IntRangeNode(CWorldFoliageManager.branchLengthRange);
+                foliageNode.angleRange = new FloatRangeNode(CWorldFoliageManager.angleRange);
+                foliageNode.thresholdRange = new FloatRangeNode(CWorldFoliageManager.thresholdRange);
+                foliageNode.verticalAngle = new FloatRangeNode(CWorldFoliageManager.verticalAngle);
             }
             
             return true;

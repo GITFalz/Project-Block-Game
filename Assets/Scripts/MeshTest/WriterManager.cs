@@ -14,7 +14,7 @@ public class WriterManager
 
     public bool import;
     
-    public WriterManager(WMWriter writer, bool import)
+    public WriterManager(bool import)
     {
         this.import = import;
     }

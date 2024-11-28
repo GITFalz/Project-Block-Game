@@ -23,8 +23,8 @@ public class WMWriter : MonoBehaviour
     public bool ignoreEverything = false;
 
     [HideInInspector]
+    
     public WriterManager writerManager;
-
     private string currentPath;
     private string currentFileConent;
 
@@ -34,26 +34,24 @@ public class WMWriter : MonoBehaviour
 
     private void Start()
     {
-        writerManager = new WriterManager(this, false);
+        writerManager = new WriterManager( false);
         ChunkGenerationNodes.Set();
+        
+        if (ignoreEverything) 
+            return;
+        
+        LoadOnEnter();
     }
 
     private void Awake()
     {
         
-        if (Instance != null)
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
-
-        DontDestroyOnLoad(gameObject);
         Instance = this;
-
-        if (ignoreEverything) 
-            return;
-        
-        LoadOnEnter();
     }
 
     public void ClearAll()
@@ -120,7 +118,7 @@ public class WMWriter : MonoBehaviour
         WriterManager oldWriter = writerManager;
         string oldContent = currentFileConent;
         
-        writerManager = new WriterManager(this, true);
+        writerManager = new WriterManager(true);
         
         try {
             currentFileConent = await File.ReadAllTextAsync(currentPath);
@@ -213,7 +211,7 @@ public class WMWriter : MonoBehaviour
     public async void SaveFile()
     {
         currentFileConent = inputField.text;
-        writerManager = new WriterManager(this, true);
+        writerManager = new WriterManager(true);
         writerManager.args = await writerManager.InitLines(currentFileConent);
         await SaveFileAsync();
     }

@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class VisualEditorManager : MonoBehaviour
 {
+    public Vector3Int modelSize;
+    
     public CWorldFoliageNode foliageNode;
     public VisualEditorDisplay visualEditorDisplay;
     public WMWriter writer;
@@ -85,25 +87,24 @@ public class VisualEditorManager : MonoBehaviour
                 maxZ = point.point.z;
         }
 
-        x = maxX - minX; 
-        y = maxY - minY;
-        z = maxZ - minZ;
+        x = (maxX - minX) + 1; 
+        y = (maxY - minY) + 1;
+        z = (maxZ - minZ) + 1;
         
         Block[] blocks = new Block[x * z * y];
-        
-        Debug.Log(x * z * y);
 
         foreach (var point in points)
         {
-            int index = (point.point.x - minX) + (point.point.z - minZ) * (x - 1) + (point.point.y - minY) * (x - 1) * (z - 1);
-            Debug.Log(index);
+            int index = (point.point.x - minX) + x * ((point.point.z - minZ) + z * (point.point.y - minY));
             blocks[index] = new Block((short)point.id, 0);
-            
         }
         
         MeshData meshData = new MeshData();
         VisualEditorGenerator.GenerateOcclusion(blocks, x, y, z);
         VisualEditorGenerator.GenerateMesh(meshData, blocks, x, y, z);
         visualEditorDisplay.RenderMesh(meshData);
+        visualEditorDisplay.CenterModel(new Vector3Int(x, y, z));
+        
+        modelSize = new Vector3Int(x, y, z);
     }
 }

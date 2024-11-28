@@ -19,7 +19,12 @@ public class ConsoleManager : MonoBehaviour
     private char[] prefixes = { '!' };
 
     private string[] args;
-    
+
+    private void Start()
+    {
+        writer = GetComponent<WMWriter>();
+    }
+
     public void CloseConsole()
     {
         console.SetActive(false);
@@ -81,7 +86,7 @@ public class ConsoleManager : MonoBehaviour
         if (!File.Exists(mainPath))
             return Console.Log("The file doesn't exist");
 
-        await writer.Load(mainPath);
+        await WMWriter.Instance.Load(mainPath);
         return "";
     }
     

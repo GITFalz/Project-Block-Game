@@ -196,13 +196,6 @@ public class CWorldFoliageNode
             d.Rotate(this, ref posA, ref posB, x, y, z);
         }
         
-        trunk.SetPositions(posA, posB);
-        
-        foreach (var p in trunk.GenerateLinkVE(1.2f))
-        {
-            totalPoints.Add(new PointData { point = p, id = 4 });
-        }
-        
         Vector3Int trunkOrigin = Vector3Int.RoundToInt(Vector3.Lerp(posA, posB, 1));
             
         var points = Chunk.GenerateStretchedSphere(17, 12, 17, trunkOrigin);
@@ -213,6 +206,14 @@ public class CWorldFoliageNode
                 continue;
             
             totalPoints.Add(new PointData { point = point, id = 5 });
+        }
+        
+        trunk.SetPositions(posA, posB);
+        
+        foreach (var p in trunk.GenerateLinkVE(1.2f))
+        {
+            Debug.Log(p);
+            totalPoints.Add(new PointData { point = p, id = 4 });
         }
         
         
@@ -240,14 +241,6 @@ public class CWorldFoliageNode
             end = FoliageUtils.RotateBAroundAxis(Vector3.up, ref origin, ref end, angle);
         
             branchOffset += 13.853f;
-
-            CWorldLinkNode branch = new CWorldLinkNode("branch");
-            branch.SetPositions(origin, end);
-            
-            foreach (var p in branch.GenerateLinkVE(1f))
-            {
-                totalPoints.Add(new PointData { point = p, id = 5 });
-            }
             
             Vector3Int branchOrigin = Vector3Int.RoundToInt(Vector3.Lerp(origin, end, 0.75f));
             branchOrigin.y += 2;
@@ -261,8 +254,16 @@ public class CWorldFoliageNode
                 
                 totalPoints.Add(new PointData { point = point, id = 5 });
             }
+
+            CWorldLinkNode branch = new CWorldLinkNode("branch");
+            branch.SetPositions(origin, end);
+            
+            foreach (var p in branch.GenerateLinkVE(1f))
+            {
+                totalPoints.Add(new PointData { point = p, id = 4 });
+            }
         }
-        
+                
         return totalPoints;
     }
 }

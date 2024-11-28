@@ -35,6 +35,17 @@ public class ChunkData
         meshData.Clear();
         sideChunks = null;
     }
+    
+    public bool isEmpty()
+    {
+        foreach (var t in blocks)
+        {
+            if (t != null)
+                return false;
+        }
+
+        return true;
+    }
 
     public override string ToString()
     {
