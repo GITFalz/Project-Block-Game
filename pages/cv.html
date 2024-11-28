@@ -40,6 +40,12 @@
                     </li>
                 </ul>
             </div>
+            <div class="language-switch" id="language-switch-fr" onclick="switchLanguage()">
+                <img src="../ressources/images/french-english.png" alt="E/F" class="eng-fr-icon">
+            </div>
+            <div class="language-switch" id="language-switch-eng" onclick="switchLanguage()">
+                <img src="../ressources/images/english-french.png" alt="F/E" class="fr-eng-icon">
+            </div>
             <div id="hamburger-menu" onclick="toggle()" class="hamburger-menu">
                 <div class="bar"></div>
                 <div class="bar"></div>
@@ -86,6 +92,27 @@
 </html>
 
 <script>
+    //switch language
+    const languageSwitchFr = document.getElementById('language-switch-fr');
+    const languageSwitchEng = document.getElementById('language-switch-eng');
+
+    languageSwitchFr.style.display = 'none';
+
+    //top
+    const plansFr = document.getElementById('plans-fr');
+    const plansEng = document.getElementById('plans-eng');
+
+    plansFr.style.display = 'none';
+
+    //presentation
+    const aboutFr = document.getElementById('about-fr');
+    const aboutEng = document.getElementById('about-eng');
+    const educationFr = document.getElementById('education-fr');
+    const educationEng = document.getElementById('education-eng');
+
+    aboutFr.style.display = 'none';
+    educationFr.style.display = 'none';
+
     function toggle() {
         const menu = document.querySelector('.mobile-menu');
         menu.classList.toggle('active');
@@ -100,4 +127,27 @@
     }
 
     window.addEventListener('resize', handleResize);
+
+    function switchLanguage() {
+        if (languageSwitchEng.style.display === 'none') {
+            languageSwitchEng.style.display = 'flex';
+            languageSwitchFr.style.display = 'none';
+            plansFr.style.display = 'none';
+            plansEng.style.display = 'block';
+            aboutFr.style.display = 'none';
+            aboutEng.style.display = 'block';
+            educationFr.style.display = 'none';
+            educationEng.style.display = 'block';
+        } else {
+            languageSwitchEng.style.display = 'none';
+            languageSwitchFr.style.display = 'flex';
+            plansFr.style.display = 'block';
+            plansEng.style.display = 'none';
+            aboutFr.style.display = 'block';
+            aboutEng.style.display = 'none';
+            educationFr.style.display = 'block';
+            educationEng.style.display = 'none';
+        }
+
+    }
 </script>
