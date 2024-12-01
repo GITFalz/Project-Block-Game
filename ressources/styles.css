@@ -268,19 +268,19 @@ nav .nav-box:hover {
 }
 
 .video-box:hover {
-    background-color: #dddddd;
     transform: scale(1.03);
-}
-
-.video-box video {
-    background-color: #cccccc;
-    width: 100%;
-    height: 100%;
 }
 
 .video-box p {
     padding-top: 10px;
     padding-bottom: 10px;
+}
+
+.video-title {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    align-items: center;
 }
 
 .contact {
