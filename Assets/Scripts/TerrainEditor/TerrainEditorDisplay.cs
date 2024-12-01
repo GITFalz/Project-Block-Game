@@ -1,73 +1,139 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TerrainEditorDisplay : MonoBehaviour
 {
     [Header("Buttons")] 
     public SingleButtonHoldManager scaleButton;
-    public TripleButtonHoldManager rotateButton;
+    public SingleButtonHoldManager rotateButton;
+    
+    [Header("Parameter Managers")]
+    public SingleFloatParameterManager scaleParameter;
+    public SingleFloatParameterManager rotationParameter;
 
     [Header("Parameters")] 
     public int mapSize = 10;
     public int mapDensity = 10;
     
     public float scaleSpeed = 5;
+    public float rotationSpeed = 200;
     
-    MeshFilter meshFilter;
+    [Header("Texture")]
+    public Texture2D texture;
 
+    [Header("Utility")] 
+    public Transform center;
+    
+    private MeshFilter _meshFilter;
     private int _mapLength;
+    private Vector3 _minScale = new Vector3(0.1f, 0.1f, 0.1f);
+
+    private float _angle;
     
     public void Awake()
     {
-        meshFilter = GetComponent<MeshFilter>();
+        _meshFilter = GetComponent<MeshFilter>();
 
         UpdateValues();
         GenerateTerrain();
+        CenterTerrain();
     }
 
     private void Update()
     {
+        HandleScale();
+        HandleRotation();
+    }
+    
+    private void UpdateValues()
+    {
+        _mapLength = mapDensity * mapSize + 1;
+        scaleParameter.ChangeValue(transform.localScale.x);
+        rotationParameter.ChangeValue(0);
+    }
+
+    private void HandleScale()
+    {
         if (scaleButton.IsHolding())
         {
             ScaleTerrain();
+            CenterTerrain();
         }
-        
-        if (rotateButton.IsHoldingInt(out int i))
+        if (scaleButton.IsClicking())
         {
-            RotateTerrain(i);
+            ResetScale();
+            CenterTerrain();
+        }
+        if (scaleParameter.ValueChanged(out float value))
+        {
+            transform.localScale = Vector3.Max(_minScale, new Vector3(value, value, value));
+            CenterTerrain();
         }
     }
     
-    public void UpdateValues()
+    private void HandleRotation()
     {
-        _mapLength = mapDensity * mapSize + 1;
+        if (rotateButton.IsHolding())
+        {
+            RotateTerrain();
+        }
+        
+        if (rotateButton.IsClicking())
+        {
+            ResetAxis();
+        }
+        
+        if (rotationParameter.ValueChanged(out float value))
+        {
+            transform.RotateAround(center.position, Vector3.up, value - _angle);
+            _angle = value;
+        }
     }
 
-    public void ScaleTerrain()
+    private void ScaleTerrain()
     {
         float x = Input.GetAxis("Mouse X");
+        Vector3 scale = transform.localScale + (Time.deltaTime * scaleSpeed * new Vector3(x, x, x));
+        transform.localScale = Vector3.Max(_minScale, scale);
         
-        transform.localScale += Time.deltaTime * scaleSpeed * new Vector3(x, x, x);
+        scaleParameter.ChangeValue(transform.localScale.x);
     }
     
-    public void RotateTerrain(int i)
+    public void ResetScale()
     {
-        Vector3 rotation = transform.eulerAngles;
-        rotation[i] += Input.GetAxis("Mouse X") * Time.deltaTime * 100;
-        transform.eulerAngles = rotation;
+        transform.localScale = Vector3.one;
     }
-
-    public void CenterTerrain()
+    
+    private void RotateTerrain()
     {
+        float speed = Input.GetAxis("Mouse X") * Time.deltaTime * rotationSpeed;
+        transform.RotateAround(center.position, Vector3.up, speed);
         
+        _angle += speed;
+        rotationParameter.ChangeValue(_angle);
+    }
+    
+    private void ResetAxis()
+    {
+        transform.RotateAround(center.position, Vector3.up, -_angle);
     }
 
-    public void GenerateTerrain()
+    private void CenterTerrain()
+    {
+        Vector3 direction = (center.position - transform.position).normalized;
+        float size = ((mapSize + 1) * transform.localScale.x) / 2;
+        
+        Vector3 newPosition = center.position - (MathUtils.Sqrt2 * size * direction);
+        transform.position = newPosition;
+    }
+
+    private void GenerateTerrain()
     {
         MeshData meshData = new MeshData();
         
         float[] map = TerrainEditorGenerator.GetHeight(mapSize, mapDensity);
-
+        
         int verts = 0;
         
         for (int z = 0; z < _mapLength - 1; z++)
@@ -89,16 +155,21 @@ public class TerrainEditorDisplay : MonoBehaviour
         {
             for (int x = 0; x < _mapLength; x++)
             {
-                meshData.verts.Add(new Vector3(x, map[x + z * (_mapLength)], z));
+                meshData.verts.Add(new Vector3((float)x / mapDensity, map[x + z * (_mapLength)], (float)z / mapDensity));
             }
         }
         
         RenderMesh(meshData);
     }
-
-    public void RenderMesh(MeshData meshData)
+    
+    private Color ColorLerp(Color a, Color b, float t)
     {
-        if (meshFilter == null)
+        return new Color(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t);
+    }
+
+    private void RenderMesh(MeshData meshData)
+    {
+        if (_meshFilter == null)
         {
             Awake();
             return;
@@ -114,6 +185,6 @@ public class TerrainEditorDisplay : MonoBehaviour
         mesh.RecalculateBounds();
         mesh.RecalculateTangents();
 
-        meshFilter.mesh = mesh;
+        _meshFilter.mesh = mesh;
     }
 }

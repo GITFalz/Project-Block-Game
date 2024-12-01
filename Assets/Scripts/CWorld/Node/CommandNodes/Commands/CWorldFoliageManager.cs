@@ -23,87 +23,87 @@ public static class CWorldFoliageManager
     
     public static IRadius radius = new RadiusBase(1);
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> Labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> Labels = new Dictionary<string, Func<Task<int>>>()
     {
-        { "(", (w) => w.Increment(1, 0) },
-        { "name", (w) => w.On_Name(ref name) },
-        { ")", (w) => w.Increment(1, 1) },
+        { "(", () => Increment(1, 0) },
+        { "name", () => CWorldNodesManager.On_Name(ref name) },
+        { ")", () => Increment(1, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> Settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> Settings = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
-        { "trunk", async (w) => await w.On_Settings(TrunkSettings) },
-        { "branch", async (w) => await w.On_Settings(BranchSettings) },
-        { "}", (w) => w.Increment(0, 1) },
+        { "{", () => Increment(1, 0) },
+        { "trunk", async () => await CWorldNodesManager.On_Settings(TrunkSettings) },
+        { "branch", async () => await CWorldNodesManager.On_Settings(BranchSettings) },
+        { "}", () => Increment(0, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> TrunkSettings = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> TrunkSettings = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", () => Increment(1, 0) },
         {
-            "sample", async (w) =>
+            "sample", () =>
             {
-                w.GetNextValue(out string value);
-                w.Increment();
+                CWorldCommandManager.GetNextValue(out string value);
+                Increment();
                 samplerName = value;
-                return 0;
+                return Task.FromResult(0);
             }
         },
         {
-            "link", async (w) =>
+            "link", () =>
             {
-                w.GetNextValue(out string value);
-                w.Increment();
+                CWorldCommandManager.GetNextValue(out string value);
+                Increment();
                 trunkName = value;
-                return 0;
+                return Task.FromResult(0);
             }
         },
         { 
-            "radius-single", async (w) =>
+            "radius-single", async () =>
             {
-                if (await w.GetNextFloat(out float value) == -1)
-                    return await w.Error("radius must be a float");
+                if (await CWorldCommandManager.GetNextFloat(out float value) == -1)
+                    return await Error("radius must be a float");
 
                 
                 return 0;
             }
         },
         { 
-            "radius-range", async (w) =>
+            "radius-range", async () =>
             {
-                if (await w.GetNextFloat(out float value) == -1)
-                    return await w.Error("radius must be a float");
+                if (await CWorldCommandManager.GetNextFloat(out float value) == -1)
+                    return await Error("radius must be a float");
 
                 
                 return 0;
             }
         },
         { 
-            "length", async (w) =>
+            "length", async () =>
             {
-                if (await w.GetNext2Ints(out var ints) == -1)
-                    return await w.Error("length must be two ints");
+                if (await CWorldCommandManager.GetNext2Ints(out var ints) == -1)
+                    return await Error("length must be two ints");
                 lengthRange = new Vector2Int(ints.x, ints.y);
                 return 0;
             }
         },
-        { "direction", async (w) => await w.On_Settings(TrunkDirectionSettings) },
-        { "}", (w) => w.Increment(1, 1) },
+        { "direction", async () => await CWorldNodesManager.On_Settings(TrunkDirectionSettings) },
+        { "}", () => Increment(1, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> TrunkDirectionSettings = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> TrunkDirectionSettings = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", () => Increment(1, 0) },
         { 
-            "angle", async (w) =>
+            "angle", async () =>
             {
-                w.GetNextValue(out var vector);
+                CWorldCommandManager.GetNextValue(out var vector);
                 
-                if (await w.GetNext2Floats(out var floats) == -1)
+                if (await CWorldCommandManager.GetNext2Floats(out var floats) == -1)
                 {
-                    w.Increment(-4);
-                    if (await w.GetNextFloat(out var value) == -1)
+                    Increment(-4);
+                    if (await CWorldCommandManager.GetNextFloat(out var value) == -1)
                     {
                         return -1;
                     }
@@ -140,59 +140,74 @@ public static class CWorldFoliageManager
                 return 0;
             }
         },
-        { "}", (w) => w.Increment(1, 1) },
+        { "}", () => Increment(1, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> BranchSettings = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> BranchSettings = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", () => Increment(1, 0) },
         { 
-            "range", async (w) =>
+            "range", async () =>
             {
-                if (await w.GetNext2Ints(out var ints) == -1)
-                    return await w.Error("length must be two ints");
+                if (await CWorldCommandManager.GetNext2Ints(out var ints) == -1)
+                    return await Error("length must be two ints");
                 branchAmount = new Vector2Int(ints.x, ints.y);
                 return 0;
             }
         },
         { 
-            "length", async (w) =>
+            "length", async () =>
             {
-                if (await w.GetNext2Ints(out var ints) == -1)
-                    return await w.Error("length must be two ints");
+                if (await CWorldCommandManager.GetNext2Ints(out var ints) == -1)
+                    return await Error("length must be two ints");
                 branchLengthRange = new Vector2Int(ints.x, ints.y);
                 return 0;
             }
         },
         { 
-            "angle", async (w) =>
+            "angle", async () =>
             {
-                if (await w.GetNext2Floats(out var floats) == -1)
-                    return await w.Error("length must be two ints");
+                if (await CWorldCommandManager.GetNext2Floats(out var floats) == -1)
+                    return await Error("length must be two ints");
                 angleRange = new Vector2(floats.x, floats.y);
                 return 0;
             }
         },
         { 
-            "threshold", async (w) =>
+            "threshold", async () =>
             {
-                if (await w.GetNext2Floats(out var floats) == -1)
-                    return await w.Error("length must be two ints");
+                if (await CWorldCommandManager.GetNext2Floats(out var floats) == -1)
+                    return await Error("length must be two ints");
                 thresholdRange = new Vector2(floats.x, floats.y);
                 return 0;
             }
         },
         { 
-            "z", async (w) =>
+            "z", async () =>
             {
-                if (await w.GetNext2Floats(out var floats) == -1)
-                    return await w.Error("length must be two ints");
+                if (await CWorldCommandManager.GetNext2Floats(out var floats) == -1)
+                    return await Error("length must be two ints");
                 verticalAngle = new Vector2(floats.x, floats.y);
                 return 0;
             }
         },
-        { "}", (w) => w.Increment(1, 1) },
+        { "}", () => Increment(1, 1) },
     };
+    
+    private static void Increment(int i = 1)
+    {
+        CWorldCommandManager.Increment(i);
+    }
+
+    private static async Task<int> Increment(int i, int result)
+    {
+        return await CWorldCommandManager.Increment(i, result);
+    }
+    
+    private static async Task<int> Error(string message)
+    {
+        return await Console.LogErrorAsync(message);
+    }
 }
 
 public struct FoliageDirectionData

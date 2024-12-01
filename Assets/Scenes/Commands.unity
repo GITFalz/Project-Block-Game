@@ -1039,9 +1039,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1323361481}
-        m_TargetAssemblyTypeName: CWorldMenu, Assembly-CSharp
-        m_MethodName: ClearInputField
+      - m_Target: {fileID: 1092998976}
+        m_TargetAssemblyTypeName: CWorldEditorManager, Assembly-CSharp
+        m_MethodName: Clear
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1142,8 +1142,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   console: {fileID: 1036779160}
   inputField: {fileID: 794089693}
-  writer: {fileID: 1092998976}
+  writer: {fileID: 0}
   commandSystem: {fileID: 0}
+  stateMachine: {fileID: 0}
+  points: {fileID: 0}
 --- !u!114 &350768134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3766,7 +3768,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1092998976}
-        m_TargetAssemblyTypeName: WMWriter, Assembly-CSharp
+        m_TargetAssemblyTypeName: CWorldEditorManager, Assembly-CSharp
         m_MethodName: SaveFile
         m_Mode: 1
         m_Arguments:
@@ -4716,9 +4718,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1092998973}
-  - component: {fileID: 1092998976}
   - component: {fileID: 1092998975}
   - component: {fileID: 1092998974}
+  - component: {fileID: 1092998976}
   m_Layer: 0
   m_Name: CWorld
   m_TagString: Untagged
@@ -4781,18 +4783,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1092998972}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a559ea03967d27c6eacaa5ff6274fe95, type: 3}
+  m_Script: {fileID: 11500000, guid: ae3858ebea8b4678a483e3b7893b680b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   inputField: {fileID: 1730001612}
   textureGeneration: {fileID: 1092998975}
-  handler: {fileID: 1092998974}
-  blockManager: {fileID: 171679804}
-  fileManager: {fileID: 1972336694}
   menu: {fileID: 1323361481}
-  consoleTextManager: {fileID: 350768134}
-  simpleLoad: 0
-  ignoreEverything: 0
 --- !u!1 &1120686397
 GameObject:
   m_ObjectHideFlags: 0
@@ -7030,7 +7026,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1092998976}
-        m_TargetAssemblyTypeName: WMWriter, Assembly-CSharp
+        m_TargetAssemblyTypeName: CWorldEditorManager, Assembly-CSharp
         m_MethodName: ExecuteCode
         m_Mode: 1
         m_Arguments:

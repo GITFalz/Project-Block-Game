@@ -13,7 +13,7 @@ public static class TerrainEditorGenerator
         {
             for (int z = 0; z < lenght; z++)
             {
-                map[x + z * lenght] = Mathf.PerlinNoise((float)(x + 0.001f) / (float)mapDensity, (float)(z + 0.001f) / (float)mapDensity);
+                map[x + z * lenght] = Mathf.PerlinNoise((float)((float)(x + 0.001f) / (float)mapDensity) + 0.001f, (float)((float)(z + 0.001f) / (float)mapDensity) + 0.001f);
             }
         }
 

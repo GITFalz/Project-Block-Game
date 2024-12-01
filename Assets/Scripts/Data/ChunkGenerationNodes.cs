@@ -37,25 +37,25 @@ public static class ChunkGenerationNodes
 
     public static void Clear()
     {
-        Task.Run(() =>
+        if (dataHandlers == null || dataHandlers.Count == 0) 
+            return;
+        
+        for (int i = 0; i < threadCount; i++)
         {
-            for (int i = 0; i < threadCount; i++)
-            {
-                dataHandlers[i].sampleNodes.Clear();
-                dataHandlers[i].biomeNodes.Clear();
-                dataHandlers[i].modifierNodes.Clear();
-                dataHandlers[i].linkNodes.Clear();
-                dataHandlers[i].foliageNodes.Clear();
-                dataHandlers[i].MapNode = null;
-            }
+            dataHandlers[i].sampleNodes.Clear();
+            dataHandlers[i].biomeNodes.Clear();
+            dataHandlers[i].modifierNodes.Clear();
+            dataHandlers[i].linkNodes.Clear();
+            dataHandlers[i].foliageNodes.Clear();
+            dataHandlers[i].MapNode = null;
+        }
 
-            currentSampleName = "";
-            currentBiomeName = "";
-            sampleDisplayName = "";
-            currentModifierName = "";
-            currentLinkName = "";
-            currentFoliageName = "";
-        });
+        currentSampleName = "";
+        currentBiomeName = "";
+        sampleDisplayName = "";
+        currentModifierName = "";
+        currentLinkName = "";
+        currentFoliageName = "";
     }
 
     public static void SetupSamplePool(string sampleName)
@@ -70,14 +70,104 @@ public static class ChunkGenerationNodes
     {
         return await Task.Run(() =>
         {
+            currentSampleName = name;
+            
             for (int i = 0; i < threadCount; i++)
             {
                 if (!dataHandlers[i].sampleNodes.TryAdd(name, new CWorldSampleNode(name)))
+                {
+                    Console.Log("Failed to add sample node");
                     return false;
+                }
+
+            
+                CWorldSampleNode sampleNode = dataHandlers[i].sampleNodes[name];
+                sampleNode.overrideNode = new CWOSOverrideNode();
+                sampleNode.noiseNode = new CWorldNoiseNode();
+
+                sampleNode.flip = CWorldSampleManager.flip;
+                sampleNode.min_height = CWorldSampleManager.min_height;
+                sampleNode.max_height = CWorldSampleManager.max_height;
+            
+                    
+                foreach (var data in CWorldSampleManager.noiseSampleData)
+                {
+                    switch (data.type)
+                    {
+                        case "clamp":
+                            sampleNode.noiseNode.parameters.Add(new CWOPClampNode(data.floats.x, data.floats.y));
+                            break;
+                        case "lerp":
+                            sampleNode.noiseNode.parameters.Add(new CWOPLerpNode(data.floats.x, data.floats.y));
+                            break;
+                        case "slide":
+                            sampleNode.noiseNode.parameters.Add(new CWOPSlideNode(data.floats.x, data.floats.y));
+                            break;
+                        case "smooth":
+                            sampleNode.noiseNode.parameters.Add(new CWOPSmoothNode(data.floats.x, data.floats.y));
+                            break;
+                        case "ignore":
+                            sampleNode.noiseNode.parameters.Add(new CWOPIgnoreNode(data.floats.x, data.floats.y));
+                            break;
+                        default:
+                            continue;
+                    }
+                }
+
+                sampleNode.noiseNode.sizeX = CWorldSampleManager.noiseSize.x;
+                sampleNode.noiseNode.sizeY = CWorldSampleManager.noiseSize.y;
+
+                sampleNode.noiseNode.offsetX = CWorldSampleManager.noiseOffset.x;
+                sampleNode.noiseNode.offsetY = CWorldSampleManager.noiseOffset.y;
+
+                sampleNode.noiseNode.amplitude = CWorldSampleManager.noiseAmplitude;
+                sampleNode.noiseNode.invert = CWorldSampleManager.noiseInvert;
+
+                foreach (var data in CWorldSampleManager.sampleOverrideData)
+                {
+                    switch (data.type)
+                    {
+                        case OverrideType.Add:
+                            sampleNode.overrideNode.modifiers.Add(new AddModifier { sample = dataHandlers[i].sampleNodes[data.name] });
+                            break;
+                        case OverrideType.Mul:
+                            sampleNode.overrideNode.modifiers.Add(new MultiplyModifier { sample = dataHandlers[i].sampleNodes[data.name] });
+                            break;
+                        case OverrideType.Sub:
+                            sampleNode.overrideNode.modifiers.Add(new SubtractModifier { sample = dataHandlers[i].sampleNodes[data.name] });
+                            break;
+                        default:
+                            continue;
+                    }
+                }
+
+                foreach (var data in CWorldSampleManager.overrideSampleData)
+                {
+                    switch (data.type)
+                    {
+                        case "clamp":
+                            sampleNode.overrideNode.parameters.Add(new CWOPClampNode(data.floats.x, data.floats.y));
+                            break;
+                        case "lerp":
+                            sampleNode.overrideNode.parameters.Add(new CWOPLerpNode(data.floats.x, data.floats.y));
+                            break;
+                        case "slide":
+                            sampleNode.overrideNode.parameters.Add(new CWOPSlideNode(data.floats.x, data.floats.y));
+                            break;
+                        case "smooth":
+                            sampleNode.overrideNode.parameters.Add(new CWOPSmoothNode(data.floats.x, data.floats.y));
+                            break;
+                        case "ignore":
+                            sampleNode.overrideNode.parameters.Add(new CWOPIgnoreNode(data.floats.x, data.floats.y));
+                            break;
+                        default:
+                            continue;
+                    }
+                }
+
+                sampleNode.overrideNode.invert = CWorldSampleManager.overrideInvert;
             }
-
-            currentSampleName = name;
-
+            
             return true;
         });
     }
@@ -229,243 +319,6 @@ public static class ChunkGenerationNodes
             return true;
         });
     }
-
-    public static async Task<bool> AddSampleOverrideAdd(string sampleToAdd)
-    {
-        return await Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                if (!dataHandlers[i].sampleNodes.TryGetValue(sampleToAdd, out var sampleNode))
-                    return false;
-
-                dataHandlers[i].sampleNodes[currentSampleName].overrideNode.modifiers.Add(new AddModifier { sample = sampleNode });
-            }
-
-            return true;
-        });
-    }
-
-    public static async Task<bool> AddSampleOverrideMultiply(string sampleToAdd)
-    {
-        return await Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                if (!dataHandlers[i].sampleNodes.TryGetValue(sampleToAdd, out var sampleNode))
-                    return false;
-
-                dataHandlers[i].sampleNodes[currentSampleName].overrideNode.modifiers.Add(new MultiplyModifier { sample = sampleNode });
-            }
-
-            return true;
-        });
-    }
-
-    public static async Task<bool> AddSampleOverrideSubtract(string sampleToAdd)
-    {
-        return await Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                if (!dataHandlers[i].sampleNodes.TryGetValue(sampleToAdd, out var sampleNode))
-                    return false;
-
-                dataHandlers[i].sampleNodes[currentSampleName].overrideNode.modifiers.Add(new SubtractModifier { sample = sampleNode });
-            }
-
-            return true;
-        });
-    }
-
-    public static async Task<bool> AddSampleNoiseParameter(string type, Vector2 floats)
-    {
-        return await Task.Run(() =>
-        {
-            switch (type)
-            {
-                case "clamp":
-                    for (int i = 0; i < threadCount; i++)
-                    {
-                        dataHandlers[i].sampleNodes[currentSampleName].noiseNode.parameters
-                            .Add(new CWOPClampNode(floats.x, floats.y));
-                    }
-                    break;
-
-                case "lerp":
-                    for (int i = 0; i < threadCount; i++)
-                    {
-                        dataHandlers[i].sampleNodes[currentSampleName].noiseNode.parameters
-                            .Add(new CWOPLerpNode(floats.x, floats.y));
-                    }
-                    break;
-
-                case "slide":
-                    for (int i = 0; i < threadCount; i++)
-                    {
-                        dataHandlers[i].sampleNodes[currentSampleName].noiseNode.parameters
-                            .Add(new CWOPSlideNode(floats.x, floats.y));
-                    }
-                    break;
-
-                case "smooth":
-                    for (int i = 0; i < threadCount; i++)
-                    {
-                        dataHandlers[i].sampleNodes[currentSampleName].noiseNode.parameters
-                            .Add(new CWOPSmoothNode(floats.x, floats.y));
-                    }
-                    break;
-
-                case "ignore":
-                    for (int i = 0; i < threadCount; i++)
-                    {
-                        dataHandlers[i].sampleNodes[currentSampleName].noiseNode.parameters
-                            .Add(new CWOPIgnoreNode(floats.x, floats.y));
-                    }
-                    break;
-
-                default:
-                    return false;
-            }
-
-            return true;
-        });
-    }
-
-
-        public static async Task<bool> AddSampleOverrideParameter(string type, Vector2 floats)
-    {
-        return await Task.Run(() =>
-        {
-            switch (type)
-            {
-                case "clamp":
-                    for (int i = 0; i < threadCount; i++)
-                    {
-                        dataHandlers[i].sampleNodes[currentSampleName].overrideNode.parameters
-                            .Add(new CWOPClampNode(floats.x, floats.y));
-                    }
-                    break;
-                case "lerp":
-                    for (int i = 0; i < threadCount; i++)
-                    {
-                        dataHandlers[i].sampleNodes[currentSampleName].overrideNode.parameters
-                            .Add(new CWOPLerpNode(floats.x, floats.y));
-                    }
-                    break;
-                case "slide":
-                    for (int i = 0; i < threadCount; i++)
-                    {
-                        dataHandlers[i].sampleNodes[currentSampleName].overrideNode.parameters
-                            .Add(new CWOPSlideNode(floats.x, floats.y));
-                    }
-                    break;
-                case "smooth":
-                    for (int i = 0; i < threadCount; i++)
-                    {
-                        dataHandlers[i].sampleNodes[currentSampleName].overrideNode.parameters
-                            .Add(new CWOPSmoothNode(floats.x, floats.y));
-                    }
-                    break;
-                case "ignore":
-                    for (int i = 0; i < threadCount; i++)
-                    {
-                        dataHandlers[i].sampleNodes[currentSampleName].overrideNode.parameters
-                            .Add(new CWOPIgnoreNode(floats.x, floats.y));
-                    }
-                    break;
-                default:
-                    return false;
-            }
-
-            return true;
-        });
-    }
-
-    public static async Task SetSampleNoiseSize(Vector2 floats)
-    {
-        await Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                CWorldNoiseNode noiseNode = dataHandlers[i].sampleNodes[currentSampleName].noiseNode;
-                noiseNode.sizeX = floats.x;
-                noiseNode.sizeY = floats.y;
-            }
-        });
-    }
-
-    public static async Task SetSampleNoiseOffset(Vector2 floats)
-    {
-        await Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                CWorldNoiseNode noiseNode = dataHandlers[i].sampleNodes[currentSampleName].noiseNode;
-                noiseNode.offsetX = floats.x;
-                noiseNode.offsetY = floats.y;
-            }
-        });
-    }
-
-    public static async Task SetSampleNoiseAmplitude(float value)
-    {
-        await Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                dataHandlers[i].sampleNodes[currentSampleName].noiseNode.amplitude = value;
-            }
-        });
-    }
-
-    public static async Task SetSampleNoiseInvert(bool value = true)
-    {
-        await Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                dataHandlers[i].sampleNodes[currentSampleName].noiseNode.invert = value;
-            }
-        });
-    }
-
-    public static async Task SetBiomeSampleRange(Vector2Int ints)
-    {
-        await Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                CWorldSampleNode sampleNode = dataHandlers[i].sampleNodes[currentSampleName];
-                sampleNode.min_height = ints.x;
-                sampleNode.max_height = ints.y;
-            }
-        });
-    }
-
-    public static async Task SetSampleFlip(bool value = true)
-    {
-        await Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                dataHandlers[i].sampleNodes[currentSampleName].flip = value;
-            }
-        });
-    }
-
-    public static async Task SetSampleOverrideInvert(bool value = true)
-    {
-        await Task.Run(() =>
-        {
-            for (int i = 0; i < threadCount; i++)
-            {
-                dataHandlers[i].sampleNodes[currentSampleName].overrideNode.invert = value;
-            }
-        });
-    }
-
-
 
 
     public static async Task<bool> SetModifierSample(string sampleName)
@@ -711,11 +564,8 @@ public static class ChunkGenerationNodes
             {
                 if (!dataHandlers[i].sampleNodes.TryGetValue(value, out var sampleNode) || dataHandlers[i].MapNode == null)
                     return false;
-
-                dataHandlers[i].MapNode.biomePool[^1].samples.Add(sampleNode.name, new BiomePoolSample(sampleNode));
-
-                dataHandlers[i].MapNode.biomePool[^1].samples[sampleNode.name].min = floats.x;
-                dataHandlers[i].MapNode.biomePool[^1].samples[sampleNode.name].max = floats.y;
+                
+                dataHandlers[i].MapNode.AddBiomeSample(sampleNode, new FloatRangeNode(floats));
             }
 
             return true;

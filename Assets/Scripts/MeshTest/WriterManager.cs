@@ -11,13 +11,6 @@ public class WriterManager
     
     public int index;
     public char[] charactersToReplace = { '(', ')', '=', '{', '}', ',', ':', '/'};
-
-    public bool import;
-    
-    public WriterManager(bool import)
-    {
-        this.import = import;
-    }
     
     public Task<string[]> InitLines(string content)
     {

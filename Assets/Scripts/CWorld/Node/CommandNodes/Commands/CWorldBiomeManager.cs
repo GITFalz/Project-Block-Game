@@ -9,31 +9,31 @@ public static class CWorldBiomeManager
     public static string name;
     public static CWOCSequenceNode sequenceNode;
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> labels = new Dictionary<string, Func<Task<int>>>()
     {
-        { "(", (w) => w.Increment(1, 0) },
-        { "name", (w) => w.On_Name(ref name) },
-        { ")", (w) => w.Increment(1, 1) },
+        { "(", async () => await Increment(1, 0) },
+        { "name", async () => await CWorldNodesManager.On_Name(ref name) },
+        { ")", async () => await Increment(1, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> settings = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
-        { "sample", (w) => w.On_Settings(samples) },
-        { "modifier", (w) => w.On_Settings(modifiers) },
-        { "foliage", (w) => w.On_Settings(Foliage) },
-        { "sequence", (w) => w.On_Settings(sequences) },
-        { "}", (w) => w.Increment(0, 1) },
+        { "{", async () => await Increment(1, 0) },
+        { "sample", async () => await CWorldNodesManager.On_Settings(samples) },
+        { "modifier", async () => await CWorldNodesManager.On_Settings(modifiers) },
+        { "foliage", async () => await CWorldNodesManager.On_Settings(Foliage) },
+        { "sequence", async () => await CWorldNodesManager.On_Settings(sequences) },
+        { "}", async () => await Increment(0, 1) },
     };
 
-    public static Dictionary<string, Func<WMWriter, Task<int>>> sequences = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> sequences = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", async () => await Increment(1, 0) },
         { 
-            "id", async (w) =>
+            "id", async () =>
             {
-                if (await w.GetNextInt(out int result) == -1)
-                    return await w.Error("id needs to be an integer");
+                if (await CWorldCommandManager.GetNextInt(out int result) == -1)
+                    return await Console.LogErrorAsync("id needs to be an integer");
 
                 sequenceNode = new CWOCSequenceNode();
                 sequenceNode.block = new Block((short)result, 0);
@@ -41,10 +41,10 @@ public static class CWorldBiomeManager
             } 
         },
         { 
-            "fixed", async (w) =>
+            "fixed", async () =>
             {
-                if (await w.GetNextInt(out int value) == -1)
-                    return await w.Error("height must be an integer");
+                if (await CWorldCommandManager.GetNextInt(out int value) == -1)
+                    return await Console.LogErrorAsync("height must be an integer");
 
                 sequenceNode.top_min = value;
                 sequenceNode.top_max = value;
@@ -52,12 +52,12 @@ public static class CWorldBiomeManager
             } 
         },
         { 
-            "set", async (w) =>
+            "set", async () =>
             {
-                if (await w.GetNext2Ints(out Vector2Int ints) == -1)
+                if (await CWorldCommandManager.GetNext2Ints(out Vector2Int ints) == -1)
                 {
-                    if (await w.GetNext2Values(out string[] values) == -1)
-                        return await w.Error("missing ','");
+                    if (await CWorldCommandManager.GetNext2Values(out string[] values) == -1)
+                        return await Console.LogErrorAsync("missing ','");
 
                     int result;
 
@@ -70,7 +70,7 @@ public static class CWorldBiomeManager
                             return 0;
                         }
                         
-                        return await w.Error("the second value needs to be superior or equal to max (max = 1)");
+                        return await Console.LogErrorAsync("the second value needs to be superior or equal to max (max = 1)");
                     }
                     
                     if (int.TryParse(values[0], out var result1) && int.TryParse(values[1], out var result2))
@@ -82,7 +82,7 @@ public static class CWorldBiomeManager
                             return 0;
                         }
                         
-                        return await w.Error("the first value needs to be smaller or equal to the second");
+                        return await Console.LogErrorAsync("the first value needs to be smaller or equal to the second");
                     }
                     
                     if (int.TryParse(values[0], out result) && values[1].Equals("min"))
@@ -92,7 +92,7 @@ public static class CWorldBiomeManager
                         return 0;
                     }
                     
-                    return await w.Error("uhm... error");
+                    return await Console.LogErrorAsync("uhm... error");
                 }
                 
                 sequenceNode.top_min = ints.x;
@@ -100,86 +100,96 @@ public static class CWorldBiomeManager
                 return 0;
             } 
         },
-        { "}", (w) =>
+        { "}", async () =>
         {
             ChunkGenerationNodes.SetBiomeSequence(sequenceNode);
-            return w.Increment(1, 1);
+            return await Increment(1, 1);
         } }
     };
 
-    public static Dictionary<string, Func<WMWriter, Task<int>>> samples = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> samples = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", async () => await Increment(1, 0) },
         {
-            "set", async (w) =>
+            "set", async () =>
             {
-                w.GetNextValue(out var value);
+                CWorldCommandManager.GetNextValue(out var value);
                 if (!await ChunkGenerationNodes.SetBiomeSample(value))
-                    return await w.Error("Can't find the sample specified in the biome");
-                w.Increment();
+                    return await Console.LogErrorAsync("Can't find the sample specified in the biome");
+                Increment();
                 return 0;
             }
         },
         { 
-            "range", async (w) =>
+            "range", async () =>
             {
-                if (await w.GetNext2Ints(out Vector2Int ints) == -1)
-                    return await w.Error("no suitable ints found");
+                if (await CWorldCommandManager.GetNext2Ints(out Vector2Int ints) == -1)
+                    return await Console.LogErrorAsync("no suitable ints found");
                 await ChunkGenerationNodes.SetBiomeRange(ints);
                 return 0;
             } 
         },
-        { "}", (w) => w.Increment(1, 1) }
+        { "}", async () => await Increment(1, 1) }
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> modifiers = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> modifiers = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", async () => await Increment(1, 0) },
         {
-            "use", async (w) =>
+            "use", async () =>
             {
-                w.GetNextValue(out var value);
+                CWorldCommandManager.GetNextValue(out var value);
                 if (!await ChunkGenerationNodes.SetBiomeModifier(value))
-                    return await w.Error("Can't find the modifier specified in the biome");
-                w.Increment();
+                    return await Console.LogErrorAsync("Can't find the modifier specified in the biome");
+                Increment();
                 return 0;
             }
         },
-        { "}", (w) => w.Increment(1, 1) }
+        { "}", async () => await Increment(1, 1) }
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> Foliage = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> Foliage = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", async () => await Increment(1, 0) },
         {
-            "use", async (w) =>
+            "use", async () =>
             {
-                w.GetNextValue(out var value);
+                CWorldCommandManager.GetNextValue(out var value);
                 if (!await ChunkGenerationNodes.SetBiomeFoliage(value))
-                    return await w.Error("Can't find the tree specified in the biome");
-                w.Increment();
+                    return await Console.LogErrorAsync("Can't find the tree specified in the biome"); 
+                Increment();
                 return 0;
             }
         },
         {
-            "sample", async (w) =>
+            "sample", async () =>
             {
-                w.GetNextValue(out var value);
+                CWorldCommandManager.GetNextValue(out var value);
                 if (!await ChunkGenerationNodes.SetBiomeTreeSample(value))
-                    return await w.Error("Can't find the sample specified in the biome");
-                w.Increment();
+                    return await Console.LogErrorAsync("Can't find the sample specified in the biome");
+                Increment();
                 return 0;
             }
         },
         {
-            "range", async (w) =>
+            "range", async () =>
             {
-                if (await w.GetNext2Floats(out var values) == -1)
-                    return await w.Error("no suitable floats found");
+                if (await CWorldCommandManager.GetNext2Floats(out var values) == -1)
+                    return await Console.LogErrorAsync("no suitable floats found");
                 await ChunkGenerationNodes.SetBiomeTreeSampleRange(values);
                 return 0;
             }
         },
-        { "}", (w) => w.Increment(1, 1) }
+        { "}", async () => await Increment(1, 1) }
     };
+    
+    private static void Increment(int i = 1)
+    {
+        CWorldCommandManager.Increment(i);
+    }
+    
+    private static async Task<int> Increment(int i, int result)
+    {
+        return await CWorldCommandManager.Increment(i, result);
+    }
 }

@@ -11,7 +11,7 @@ public class VisualEditorManager : MonoBehaviour
     
     public async void GenerateFoliage(string content)
     {
-        await writer.LoadContent(content);
+        await CWorldCommandManager.LoadContent(content);
             
         foliageNode = new CWorldFoliageNode(CWorldFoliageManager.name);
         

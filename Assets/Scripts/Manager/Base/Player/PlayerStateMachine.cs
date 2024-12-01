@@ -230,7 +230,7 @@ public class PlayerStateMachine : BaseState
         {
             Vector3 futurePosition = player.position + velocity + playerHitBox[i];
         
-            Vector3Int chunkPosition = Mathp.ChunkPos(futurePosition);
+            Vector3Int chunkPosition = MathUtils.ChunkPos(futurePosition);
             
             Debug.Log($"{i} {chunkPosition} {futurePosition}");
             
@@ -238,9 +238,9 @@ public class PlayerStateMachine : BaseState
             {
                 blocks = worldSript.worldData.activeChunkData[chunkPosition].blocks;
 
-                if (blocks[Mathp.PosIndex(futurePosition)] != null)
+                if (blocks[MathUtils.PosIndex(futurePosition)] != null)
                 {
-                    Debug.Log($"{i} {Mathp.PosIndex(futurePosition)}");
+                    Debug.Log($"{i} {MathUtils.PosIndex(futurePosition)}");
                     velocity.y = 0;
                 }
             } 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
@@ -64,6 +65,12 @@ public static class Console
     {
         Log(message);
         return -1;
+    }
+    
+    public static Task<int> LogErrorAsync(string message)
+    {
+        Log(message);
+        return Task.FromResult(-1);
     }
 
     public static int LineCount()

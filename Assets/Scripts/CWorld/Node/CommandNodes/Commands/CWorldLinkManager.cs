@@ -9,37 +9,37 @@ public static class CWorldLinkManager
     public static string name;
     public static Action<Vector2Int> LinkPointRange;
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> labels = new Dictionary<string, Func<Task<int>>>()
     {
-        { "(", (w) => w.Increment(1, 0) },
-        { "name", (w) => w.On_Name(ref name) },
-        { ")", (w) => w.Increment(1, 1) },
+        { "(", () => Increment(1, 0) },
+        { "name", () => CWorldNodesManager.On_Name(ref name) },
+        { ")", () => Increment(1, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> settings = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", () => Increment(1, 0) },
         {
-            "A", async (w) => await w.On_Settings(A)
+            "A", async () => await CWorldNodesManager.On_Settings(A)
         },
         { 
-            "B", async (w) => await w.On_Settings(B)
+            "B", async () => await CWorldNodesManager.On_Settings(B)
         },
         {
-            "base", async (w) => await w.On_Settings(Base)
+            "base", async () => await CWorldNodesManager.On_Settings(Base)
         },
-        { "}", (w) => w.Increment(0, 1) },
+        { "}", () => Increment(0, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> A = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> A = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", () => CWorldCommandManager.Increment(1, 0) },
         {
-            "xyz", async (w) =>
+            "xyz", async () =>
             {
                 
-                if (await w.GetNextNInts(3, out var ints) == -1)
-                    return await w.Error("Error setting A xyz");
+                if (await CWorldCommandManager.GetNextNInts(3, out var ints) == -1)
+                    return await Error("Error setting A xyz");
 
                 Vector3Int position = new Vector3Int(ints[0], ints[1], ints[2]);
                 ChunkGenerationNodes.SetLinkAPosition(position);
@@ -48,41 +48,41 @@ public static class CWorldLinkManager
             
         },
         { 
-            "link", async (w) => await w.On_Settings(Alink)
+            "link", async () => await CWorldNodesManager.On_Settings(Alink)
         },
         { 
-            "x", async (w) =>
+            "x", async () =>
             {
                 LinkPointRange = ChunkGenerationNodes.SetLinkAxRange;
-                return await w.On_Settings(Point);
+                return await CWorldNodesManager.On_Settings(Point);
             }
         },
         { 
-            "y", async (w) =>
+            "y", async () =>
             {
                 LinkPointRange = ChunkGenerationNodes.SetLinkAyRange;
-                return await w.On_Settings(Point);
+                return await CWorldNodesManager.On_Settings(Point);
             }
         },
         { 
-            "z", async (w) =>
+            "z", async () =>
             {
                 LinkPointRange = ChunkGenerationNodes.SetLinkAzRange;
-                return await w.On_Settings(Point);
+                return await CWorldNodesManager.On_Settings(Point);
             }
         },
-        { "}", (w) => w.Increment(1, 1) },
+        { "}", () => Increment(1, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> B = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> B = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", () => Increment(1, 0) },
         { 
-            "xyz", async (w) =>
+            "xyz", async () =>
             {
                     
-                if (await w.GetNextNInts(3, out var ints) == -1)
-                    return await w.Error("Error setting B xyz");
+                if (await CWorldCommandManager.GetNextNInts(3, out var ints) == -1)
+                    return await Error("Error setting B xyz");
 
                 Vector3Int position = new Vector3Int(ints[0], ints[1], ints[2]);
                 ChunkGenerationNodes.SetLinkBPosition(position);
@@ -90,59 +90,59 @@ public static class CWorldLinkManager
             } 
         },
         { 
-            "x", async (w) =>
+            "x", async () =>
             {
                 LinkPointRange = ChunkGenerationNodes.SetLinkBxRange;
-                return await w.On_Settings(Point);
+                return await CWorldNodesManager.On_Settings(Point);
             }
         },
         { 
-            "y", async (w) =>
+            "y", async () =>
             {
                 LinkPointRange = ChunkGenerationNodes.SetLinkByRange;
-                return await w.On_Settings(Point);
+                return await CWorldNodesManager.On_Settings(Point);
             }
         },
         { 
-            "z", async (w) =>
+            "z", async () =>
             {
                 LinkPointRange = ChunkGenerationNodes.SetLinkBzRange;
-                return await w.On_Settings(Point);
+                return await CWorldNodesManager.On_Settings(Point);
             }
         },
-        { "}", (w) => w.Increment(1, 1) },
+        { "}", () => Increment(1, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> Base = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> Base = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", () => Increment(1, 0) },
         { 
-            "x", async (w) => await w.On_Settings(Point)
+            "x", async () => await CWorldNodesManager.On_Settings(Point)
         },
-        { "}", (w) => w.Increment(1, 1) },
+        { "}", () => Increment(1, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> Point = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> Point = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", () => Increment(1, 0) },
         { 
-            "range", async (w) =>
+            "range", async () =>
             {
-                w.GetNextValue(out string value);
+                CWorldCommandManager.GetNextValue(out string value);
 
                 Vector2Int ints;
 
                 if (value.Equals("internal"))
                 {
-                    if (await w.GetNext2Ints(out ints) == -1)
+                    if (await CWorldCommandManager.GetNext2Ints(out ints) == -1)
                         return Console.LogError("Error setting Base x, values must be intergers");
                 }
                 else
                 {
-                    w.Increment(-1);
+                    Increment(-1);
                 }
                 
-                if (await w.GetNext2Ints(out ints) == -1)
+                if (await CWorldCommandManager.GetNext2Ints(out ints) == -1)
                     return Console.LogError("Error setting Base x, values must be intergers");
 
                 LinkPointRange(ints);
@@ -150,33 +150,48 @@ public static class CWorldLinkManager
                 return 0;
             }
         },
-        { "}", (w) => w.Increment(1, 1) },
+        { "}", () => Increment(1, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> Alink = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> Alink = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", () => Increment(1, 0) },
         { 
-            "set", async (w) =>
+            "set", async () =>
             {
-                w.GetNextValue(out var value);
+                CWorldCommandManager.GetNextValue(out var value);
                 if (!await ChunkGenerationNodes.SetLinkLink(value))
                 {
                     return Console.LogError("Link not found");
                 }
                 
-                w.Increment();
+                Increment();
                 return 0;
             }
         },
         { 
-            "threshold", async (w) =>
+            "threshold", async () =>
             {
-                await w.GetNextFloat(out var value);
+                await CWorldCommandManager.GetNextFloat(out var value);
                 await ChunkGenerationNodes.SetLinkThreshold(value);
                 return 0;
             }
         },
-        { "}", (w) => w.Increment(1, 1) },
+        { "}", () => Increment(1, 1) },
     };
+    
+    private static void Increment(int i = 1)
+    {
+        CWorldCommandManager.Increment(i);
+    }
+
+    private static async Task<int> Increment(int i, int result)
+    {
+        return await CWorldCommandManager.Increment(i, result);
+    }
+    
+    private static async Task<int> Error(string message)
+    {
+        return await Console.LogErrorAsync(message);
+    }
 }

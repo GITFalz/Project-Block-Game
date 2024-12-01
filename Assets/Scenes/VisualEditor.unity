@@ -5976,11 +5976,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputField: {fileID: 0}
   textureGeneration: {fileID: 0}
-  handler: {fileID: 0}
-  blockManager: {fileID: 1628431664}
-  fileManager: {fileID: 1628431665}
   menu: {fileID: 0}
-  consoleTextManager: {fileID: 0}
   simpleLoad: 0
   ignoreEverything: 1
 --- !u!4 &1628431661

@@ -13,100 +13,115 @@ public static class CWorldModifierManager
         MapNode = map;
     }
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> labels = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> labels = new Dictionary<string, Func<Task<int>>>()
     {
-        { "(", (w) => w.Increment(1, 0) },
-        { "name", (w) => w.On_Name(ref name) },
-        { ")", (w) => w.Increment(1, 1) },
+        { "(", () => Increment(1, 0) },
+        { "name", () => CWorldNodesManager.On_Name(ref name) },
+        { ")", () => Increment(1, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> settings = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> settings = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", () => Increment(1, 0) },
         {
-            "sample", async (w) =>
+            "sample", async () =>
             {
-                w.GetNextValue(out var value);
+                CWorldCommandManager.GetNextValue(out var value);
                 if (!await ChunkGenerationNodes.SetModifierSample(value))
-                    return await w.Error("Can't find the sample specified in the modifier");
-                w.Increment();
+                    return await Error("Can't find the sample specified in the modifier");
+                CWorldCommandManager.Increment();
                 return 0;
             }
         },
         {
-            "range", async (w) =>
+            "range", async () =>
             {
-                if (await w.GetNext2Ints(out Vector2Int ints) == -1)
-                    return await w.Error("no suitable ints found");
+                if (await CWorldCommandManager.GetNext2Ints(out Vector2Int ints) == -1)
+                    return await Error("no suitable ints found");
                 await ChunkGenerationNodes.SetModifierRange(ints);
                 return 0;
             }
         },
         {
-            "ignore", async (w) =>
+            "ignore", async () =>
             {
-                if (await w.GetNext2Floats(out Vector2 floats) == -1)
-                    return await w.Error("no suitable floats found");
+                if (await CWorldCommandManager.GetNext2Floats(out Vector2 floats) == -1)
+                    return await Error("no suitable floats found");
                 await ChunkGenerationNodes.SetModifierIgnore(floats);
                 return 0;
             }
         },
         {
-            "invert", async (w) =>
+            "invert", async () =>
             {
                 await ChunkGenerationNodes.SetModifierInvert(true);
                 return 0;
             }
         },
         { 
-            "gen", async (w) =>
+            "gen", async () =>
             {
                 await ChunkGenerationNodes.AddModifierGen();
-                return await w.On_Settings(biomeRanges);
+                return await CWorldNodesManager.On_Settings(biomeRanges);
             } 
         },
-        { "}", (w) => w.Increment(0, 1) },
+        { "}", () => Increment(0, 1) },
     };
     
-    public static Dictionary<string, Func<WMWriter, Task<int>>> biomeRanges = new Dictionary<string, Func<WMWriter, Task<int>>>()
+    public static Dictionary<string, Func<Task<int>>> biomeRanges = new Dictionary<string, Func<Task<int>>>()
     {
-        { "{", (w) => w.Increment(1, 0) },
+        { "{", () => Increment(1, 0) },
         {
-            "sample", async (w) =>
+            "sample", async () =>
             {
-                w.GetNextValue(out var value);
+                CWorldCommandManager.GetNextValue(out var value);
                 if (!await ChunkGenerationNodes.SetModifierGenSample(value))
-                    return await w.Error("Can't find the sample specified in the modifier gen");
-                w.Increment();
+                    return await Error("Can't find the sample specified in the modifier gen");
+                Increment();
                 return 0;
             }
         },
         {
-            "range", async (w) =>
+            "range", async () =>
             {
-                if (await w.GetNext2Ints(out Vector2Int ints) == -1)
-                    return await w.Error("no suitable ints found");
+                if (await CWorldCommandManager.GetNext2Ints(out Vector2Int ints) == -1)
+                    return await Error("no suitable ints found");
                 await ChunkGenerationNodes.SetModifierGenRange(ints);
                 return 0;
             }
         },
         {
-            "offset", async (w) =>
+            "offset", async () =>
             {
-                if (await w.GetNextInt(out int value) == -1)
-                    return await w.Error("No good int found");
+                if (await CWorldCommandManager.GetNextInt(out int value) == -1)
+                    return await Error("No good int found");
                 await ChunkGenerationNodes.SetModifierGenOffset(value);
                 return 0;
             }
         },
         {
-            "flip", async (w) =>
+            "flip", async () =>
             {
                 await ChunkGenerationNodes.SetModifierGenFlip(true);
-                w.Increment();
+                Increment();
                 return 0;
             }
         },
-        { "}", (w) => w.Increment(1, 1) },
+        { "}", () => Increment(1, 1) },
     };
+    
+    private static void Increment(int i = 1)
+    {
+        CWorldCommandManager.Increment(i);
+    }
+
+    private static async Task<int> Increment(int i, int result)
+    {
+        return await CWorldCommandManager.Increment(i, result);
+    }
+    
+    private static async Task<int> Error(string message)
+    {
+        return await Console.LogErrorAsync(message);
+    }
 }

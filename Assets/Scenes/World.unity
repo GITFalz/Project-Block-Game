@@ -3463,7 +3463,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   console: {fileID: 1457313347}
   inputField: {fileID: 1110273601}
-  writer: {fileID: 1487717792}
+  writer: {fileID: 0}
   commandSystem: {fileID: 474247752}
   stateMachine: {fileID: 214510703}
   points: {fileID: 0}
@@ -6318,7 +6318,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1027218707}
   - component: {fileID: 1027218706}
-  - component: {fileID: 1027218708}
   m_Layer: 0
   m_Name: Menu
   m_TagString: Untagged
@@ -6355,27 +6354,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 599885550}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1027218708
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1027218705}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da679a0ac7aa48cdae5bb9fafa3de0bd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fileManager: {fileID: 294665023}
-  writer: {fileID: 1487717792}
-  buttonPrefab: {fileID: 0}
-  deleteButtonPrefab: {fileID: 0}
-  folderContent: {fileID: 0}
-  fileContent: {fileID: 0}
-  inputField: {fileID: 0}
-  currentFolderPath: 
-  currentFilePath: 
 --- !u!1 &1050355225
 GameObject:
   m_ObjectHideFlags: 0
@@ -8769,7 +8747,6 @@ GameObject:
   - component: {fileID: 1487717788}
   - component: {fileID: 1487717789}
   - component: {fileID: 1487717791}
-  - component: {fileID: 1487717792}
   m_Layer: 0
   m_Name: CWorld
   m_TagString: Untagged
@@ -8823,27 +8800,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb362a228c42407ba80f52ff5adf8776, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1487717792
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1487717787}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a559ea03967d27c6eacaa5ff6274fe95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  inputField: {fileID: 0}
-  textureGeneration: {fileID: 0}
-  handler: {fileID: 1487717791}
-  blockManager: {fileID: 1823474012}
-  fileManager: {fileID: 294665023}
-  menu: {fileID: 0}
-  consoleTextManager: {fileID: 610523701}
-  simpleLoad: 1
-  ignoreEverything: 0
 --- !u!1 &1514411051
 GameObject:
   m_ObjectHideFlags: 0

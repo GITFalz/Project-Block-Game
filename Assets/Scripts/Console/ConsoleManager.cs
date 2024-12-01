@@ -39,18 +39,24 @@ public class ConsoleManager : MonoBehaviour
     {
         string input = inputField.text;
         input = input.Replace("\u200B", "").Trim();
-        args = input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-        if (args.Length >= 1 && args[0].StartsWith('!'))
+        
+        string[] commands = input.Split(new[] { '\n', ';' }, StringSplitOptions.RemoveEmptyEntries);
+        
+        foreach (string command in commands)
         {
-            Console.Log("Accessing game commands...");
-            args[0] = args[0].Trim('!');
-            commandSystem.ExecuteCommand(args);
-        }
-        else
-        {
-            await CommandTest(0, SystemCommands.baseCommands);
-            inputField.text = "";
-            args = null;
+            args = command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (args.Length >= 1 && args[0].StartsWith('!'))
+            {
+                Console.Log("Accessing game commands...");
+                args[0] = args[0].Trim('!');
+                commandSystem.ExecuteCommand(args);
+            }
+            else
+            {
+                await CommandTest(0, SystemCommands.baseCommands);
+                inputField.text = "";
+                args = null;
+            }
         }
     }
     
@@ -86,7 +92,10 @@ public class ConsoleManager : MonoBehaviour
         if (!File.Exists(mainPath))
             return Console.Log("The file doesn't exist");
 
-        await WMWriter.Instance.Load(mainPath);
+        Debug.Log("hello");
+        ChunkGenerationNodes.Clear();
+        ChunkGenerationNodes.Set();
+        await CWorldCommandManager.Load(mainPath);
         return "";
     }
     

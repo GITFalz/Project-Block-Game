@@ -10,7 +10,7 @@ using UnityEngine.UI;
 public class CWorldMenu : MonoBehaviour
 {
     public FileManager fileManager;
-    public WMWriter writer;
+    public CWorldEditorManager writer;
 
     public GameObject buttonPrefab;
     public GameObject deleteButtonPrefab;

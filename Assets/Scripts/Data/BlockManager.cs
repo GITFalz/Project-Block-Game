@@ -3,8 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 public class BlockManager : MonoBehaviour
 {
+    public static BlockManager Instance;
+    
     public static Dictionary<int, CWorldBlock> Blocks = new Dictionary<int, CWorldBlock>();
     public List<CWorldBlock> inspectorBlocks;
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
 
     public static CWorldBlock GetBlock(int index)
     {
@@ -25,7 +35,8 @@ public class BlockManager : MonoBehaviour
     {
         if (Exists(block))
             Blocks.Remove(block.index);
-            
+        
+        Console.Log("Adding block: " + block.index);
         return Blocks.TryAdd(block.index, block);
     }
     
