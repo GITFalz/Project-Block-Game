@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CustomGroupManager : MonoBehaviour, I_CustomUi
+public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
 {
     [Header("Parameters")] 
     public TypeOrText name;
@@ -17,6 +16,7 @@ public class CustomGroupManager : MonoBehaviour, I_CustomUi
     
     private bool _open = true;
     public Button _button;
+    public TMP_InputField _inputField;
     public TMP_Text _text;
     
     private Transform _content;
@@ -34,6 +34,8 @@ public class CustomGroupManager : MonoBehaviour, I_CustomUi
         
         _text = transform.Find("Panel").Find("Under").Find("Text").GetComponent<TMP_Text>();
         _text.text = name.type;
+        
+        _inputField = transform.Find("Panel").Find("Under").Find("Input").GetComponent<TMP_InputField>();
         
         _content = transform.Find("Content");
         _rectTransform = transform.Find("Panel").Find("Under").GetComponent<RectTransform>();
@@ -73,7 +75,7 @@ public class CustomGroupManager : MonoBehaviour, I_CustomUi
 
     public float Align(Vector3 pos)
     {
-        Debug.Log("Group: " + pos);
+        Debug.Log("Node Group: " + pos);
         
         float height = _height;
         
@@ -101,7 +103,7 @@ public class CustomGroupManager : MonoBehaviour, I_CustomUi
     
     public string ToCWorld()
     {
-        string text = $"{name.text}\n{{\n";
+        string text = $"{name.text} ( name = {_inputField.text} )\n{{\n";
         foreach (var parameter in parameters)
         {
             if (parameter.activeSelf == false)
