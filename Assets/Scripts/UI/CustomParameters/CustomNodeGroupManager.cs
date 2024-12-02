@@ -12,7 +12,7 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
     public List<GameObject> parameters = new List<GameObject>();
     
     [Header("Misc")]
-    public CustomCollectionsManager collectionsManager;
+    public I_GroupedUi collectionsManager;
     
     private bool _open = true;
     public Button _button;
@@ -25,7 +25,7 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
     private float _height;
     private RectTransform _rectTransform;
 
-    public void Init(CustomCollectionsManager collectionManager)
+    public void Init(I_GroupedUi collectionManager)
     {
         collectionsManager = collectionManager;
         
@@ -81,7 +81,9 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
         
         transform.position = pos;
         Vector3 position = pos - new Vector3(0, _height, 0);
-        position.x += 20;
+        
+        if (collectionsManager.DoHorizontalSpacing())
+            position.x += 20;
         
         foreach (var parameter in parameters)
         {

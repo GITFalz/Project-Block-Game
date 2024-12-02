@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class TerrainEditorDisplay : MonoBehaviour
 {
+    [Header("Node Manager")]
+    public CustomCollectionsManager nodeManager;
+    
     [Header("Buttons")] 
     public SingleButtonHoldManager scaleButton;
     public SingleButtonHoldManager rotateButton;
@@ -31,9 +34,12 @@ public class TerrainEditorDisplay : MonoBehaviour
 
     private float _angle;
     
+    private CWorldDataHandler _worldDataHandler;
+    
     public void Awake()
     {
         _meshFilter = GetComponent<MeshFilter>();
+        _worldDataHandler = new CWorldDataHandler();
 
         UpdateValues();
         GenerateTerrain();
@@ -126,6 +132,32 @@ public class TerrainEditorDisplay : MonoBehaviour
         
         Vector3 newPosition = center.position - (MathUtils.Sqrt2 * size * direction);
         transform.position = newPosition;
+    }
+
+    public void GenerateNoiseTerrain()
+    {
+        Compiler();
+    }
+
+    public void Compiler()
+    {
+        _worldDataHandler = new CWorldDataHandler();
+        
+        ChunkGenerationNodes.localLoad = true;
+        ChunkGenerationNodes.localDataHandler = _worldDataHandler;
+        
+        string content = nodeManager.Show();
+
+        int result = CWorldCommandManager.LoadContent(content).GetAwaiter().GetResult();
+        
+        if (result == -1)
+        {
+            Debug.LogError("Error in the compilation");
+            return;
+        }
+        
+        Debug.Log("Compilation successful");
+        Debug.Log(_worldDataHandler.sampleNodes.Count);
     }
 
     private void GenerateTerrain()

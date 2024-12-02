@@ -42,7 +42,6 @@ public class CWorldCommandManager
         Console.Log(">--------------------<");
     }
     
-    
     public static async Task<int> CommandTest(int index, Dictionary<string, Func<Task<int>>> commands)
     {
         string command = Args[index];

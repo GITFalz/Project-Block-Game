@@ -97,14 +97,36 @@ public class CWorldNodesManager
     private static async Task<int> On_Sample()
     {
         Increment();
-        
-        if (await CommandsTest(CWorldSampleManager.labels) == -1) return await Error("Problem in the label found");
-        if (await CommandsTest(CWorldSampleManager.settings) == -1) return await Error("Problem in the sample settings found");
-        if (!await ChunkGenerationNodes.AddSamples(CWorldSampleManager.name)) 
-            return await Error($"An error occured creating the {CWorldSampleManager.name} sample node");
+
+        if (await GenerateSampleAsync() == -1) return -1;
+        if (!ChunkGenerationNodes.localLoad)
+        {
+            if (!await ChunkGenerationNodes.AddSamples(CWorldSampleManager.name))
+                return await Error($"An error occured creating the {CWorldSampleManager.name} sample node");
+        }
+        else 
+        {
+            CWorldDataHandler dataHandler = ChunkGenerationNodes.localDataHandler;
+            if (dataHandler == null)
+                return await Console.LogErrorAsync("Can't load locally without a data handler");
+            
+            string name = CWorldSampleManager.name;
+            
+            CWorldSampleNode sampleNode = new CWorldSampleNode(name);
+            ChunkGenerationNodes.GenerateSampleNode(sampleNode, dataHandler);
+            
+            dataHandler.sampleNodes.Add(name, sampleNode);
+        }
         
         CWorldSampleManager.Reset();
         
+        return 0;
+    }
+
+    private static async Task<int> GenerateSampleAsync()
+    {
+        if (await CommandsTest(CWorldSampleManager.labels) == -1) return await Error("Problem in the label found");
+        if (await CommandsTest(CWorldSampleManager.settings) == -1) return await Error("Problem in the sample settings found");
         return 0;
     }
 

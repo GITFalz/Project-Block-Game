@@ -8,6 +8,9 @@ public static class ChunkGenerationNodes
     public static List<Task> tasks;
     public static List<CWorldDataHandler> dataHandlers;
 
+    public static bool localLoad = false;
+    public static CWorldDataHandler localDataHandler;
+
     public static string currentSampleName = "";
     public static string currentBiomeName = "";
     public static string sampleDisplayName = "";
@@ -80,96 +83,101 @@ public static class ChunkGenerationNodes
                     return false;
                 }
 
-            
-                CWorldSampleNode sampleNode = dataHandlers[i].sampleNodes[name];
-                sampleNode.overrideNode = new CWOSOverrideNode();
-                sampleNode.noiseNode = new CWorldNoiseNode();
-
-                sampleNode.flip = CWorldSampleManager.flip;
-                sampleNode.min_height = CWorldSampleManager.min_height;
-                sampleNode.max_height = CWorldSampleManager.max_height;
-            
-                    
-                foreach (var data in CWorldSampleManager.noiseSampleData)
-                {
-                    switch (data.type)
-                    {
-                        case "clamp":
-                            sampleNode.noiseNode.parameters.Add(new CWOPClampNode(data.floats.x, data.floats.y));
-                            break;
-                        case "lerp":
-                            sampleNode.noiseNode.parameters.Add(new CWOPLerpNode(data.floats.x, data.floats.y));
-                            break;
-                        case "slide":
-                            sampleNode.noiseNode.parameters.Add(new CWOPSlideNode(data.floats.x, data.floats.y));
-                            break;
-                        case "smooth":
-                            sampleNode.noiseNode.parameters.Add(new CWOPSmoothNode(data.floats.x, data.floats.y));
-                            break;
-                        case "ignore":
-                            sampleNode.noiseNode.parameters.Add(new CWOPIgnoreNode(data.floats.x, data.floats.y));
-                            break;
-                        default:
-                            continue;
-                    }
-                }
-
-                sampleNode.noiseNode.sizeX = CWorldSampleManager.noiseSize.x;
-                sampleNode.noiseNode.sizeY = CWorldSampleManager.noiseSize.y;
-
-                sampleNode.noiseNode.offsetX = CWorldSampleManager.noiseOffset.x;
-                sampleNode.noiseNode.offsetY = CWorldSampleManager.noiseOffset.y;
-
-                sampleNode.noiseNode.amplitude = CWorldSampleManager.noiseAmplitude;
-                sampleNode.noiseNode.invert = CWorldSampleManager.noiseInvert;
-
-                foreach (var data in CWorldSampleManager.sampleOverrideData)
-                {
-                    switch (data.type)
-                    {
-                        case OverrideType.Add:
-                            sampleNode.overrideNode.modifiers.Add(new AddModifier { sample = dataHandlers[i].sampleNodes[data.name] });
-                            break;
-                        case OverrideType.Mul:
-                            sampleNode.overrideNode.modifiers.Add(new MultiplyModifier { sample = dataHandlers[i].sampleNodes[data.name] });
-                            break;
-                        case OverrideType.Sub:
-                            sampleNode.overrideNode.modifiers.Add(new SubtractModifier { sample = dataHandlers[i].sampleNodes[data.name] });
-                            break;
-                        default:
-                            continue;
-                    }
-                }
-
-                foreach (var data in CWorldSampleManager.overrideSampleData)
-                {
-                    switch (data.type)
-                    {
-                        case "clamp":
-                            sampleNode.overrideNode.parameters.Add(new CWOPClampNode(data.floats.x, data.floats.y));
-                            break;
-                        case "lerp":
-                            sampleNode.overrideNode.parameters.Add(new CWOPLerpNode(data.floats.x, data.floats.y));
-                            break;
-                        case "slide":
-                            sampleNode.overrideNode.parameters.Add(new CWOPSlideNode(data.floats.x, data.floats.y));
-                            break;
-                        case "smooth":
-                            sampleNode.overrideNode.parameters.Add(new CWOPSmoothNode(data.floats.x, data.floats.y));
-                            break;
-                        case "ignore":
-                            sampleNode.overrideNode.parameters.Add(new CWOPIgnoreNode(data.floats.x, data.floats.y));
-                            break;
-                        default:
-                            continue;
-                    }
-                }
-
-                sampleNode.overrideNode.invert = CWorldSampleManager.overrideInvert;
+                GenerateSampleNode(dataHandlers[i].sampleNodes[name], dataHandlers[i]);
             }
             
             return true;
         });
+    }
+
+    public static CWorldSampleNode GenerateSampleNode(CWorldSampleNode sampleNode, CWorldDataHandler dataHandler)
+    {
+        sampleNode.overrideNode = new CWOSOverrideNode();
+        sampleNode.noiseNode = new CWorldNoiseNode();
+
+        sampleNode.flip = CWorldSampleManager.flip;
+        sampleNode.min_height = CWorldSampleManager.min_height;
+        sampleNode.max_height = CWorldSampleManager.max_height;
+    
+            
+        foreach (var data in CWorldSampleManager.noiseSampleData)
+        {
+            switch (data.type)
+            {
+                case "clamp":
+                    sampleNode.noiseNode.parameters.Add(new CWOPClampNode(data.floats.x, data.floats.y));
+                    break;
+                case "lerp":
+                    sampleNode.noiseNode.parameters.Add(new CWOPLerpNode(data.floats.x, data.floats.y));
+                    break;
+                case "slide":
+                    sampleNode.noiseNode.parameters.Add(new CWOPSlideNode(data.floats.x, data.floats.y));
+                    break;
+                case "smooth":
+                    sampleNode.noiseNode.parameters.Add(new CWOPSmoothNode(data.floats.x, data.floats.y));
+                    break;
+                case "ignore":
+                    sampleNode.noiseNode.parameters.Add(new CWOPIgnoreNode(data.floats.x, data.floats.y));
+                    break;
+                default:
+                    continue;
+            }
+        }
+
+        sampleNode.noiseNode.sizeX = CWorldSampleManager.noiseSize.x;
+        sampleNode.noiseNode.sizeY = CWorldSampleManager.noiseSize.y;
+
+        sampleNode.noiseNode.offsetX = CWorldSampleManager.noiseOffset.x;
+        sampleNode.noiseNode.offsetY = CWorldSampleManager.noiseOffset.y;
+
+        sampleNode.noiseNode.amplitude = CWorldSampleManager.noiseAmplitude;
+        sampleNode.noiseNode.invert = CWorldSampleManager.noiseInvert;
+
+        foreach (var data in CWorldSampleManager.sampleOverrideData)
+        {
+            switch (data.type)
+            {
+                case OverrideType.Add:
+                    sampleNode.overrideNode.modifiers.Add(new AddModifier { sample = dataHandler.sampleNodes[data.name] });
+                    break;
+                case OverrideType.Mul:
+                    sampleNode.overrideNode.modifiers.Add(new MultiplyModifier { sample = dataHandler.sampleNodes[data.name] });
+                    break;
+                case OverrideType.Sub:
+                    sampleNode.overrideNode.modifiers.Add(new SubtractModifier { sample = dataHandler.sampleNodes[data.name] });
+                    break;
+                default:
+                    continue;
+            }
+        }
+
+        foreach (var data in CWorldSampleManager.overrideSampleData)
+        {
+            switch (data.type)
+            {
+                case "clamp":
+                    sampleNode.overrideNode.parameters.Add(new CWOPClampNode(data.floats.x, data.floats.y));
+                    break;
+                case "lerp":
+                    sampleNode.overrideNode.parameters.Add(new CWOPLerpNode(data.floats.x, data.floats.y));
+                    break;
+                case "slide":
+                    sampleNode.overrideNode.parameters.Add(new CWOPSlideNode(data.floats.x, data.floats.y));
+                    break;
+                case "smooth":
+                    sampleNode.overrideNode.parameters.Add(new CWOPSmoothNode(data.floats.x, data.floats.y));
+                    break;
+                case "ignore":
+                    sampleNode.overrideNode.parameters.Add(new CWOPIgnoreNode(data.floats.x, data.floats.y));
+                    break;
+                default:
+                    continue;
+            }
+        }
+
+        sampleNode.overrideNode.invert = CWorldSampleManager.overrideInvert;
+
+        return sampleNode;
     }
     
     public static async Task<bool> AddModifier(string name)

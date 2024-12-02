@@ -3,7 +3,7 @@ using System.Globalization;
 using TMPro;
 using UnityEngine;
 
-public class SingleFloatParameterManager : MonoBehaviour
+public class SingleFloatParameterManager : MonoBehaviour, I_CustomUi
 {
     [Header("Text")]
     public TMP_Text text;
@@ -14,20 +14,6 @@ public class SingleFloatParameterManager : MonoBehaviour
     
     private float _value;
     private bool _valueChanged;
-
-    private void Start()
-    {
-        text.text = name;
-        
-        inputField.onValueChanged.AddListener((value) =>
-        {
-            if (float.TryParse(value, out var result))
-            {
-                _value = result;
-                _valueChanged = true;
-            }
-        });
-    }
 
     public bool ValueChanged(out float value)
     {
@@ -46,5 +32,30 @@ public class SingleFloatParameterManager : MonoBehaviour
     {
         _value = value;
         inputField.text = value.ToString(CultureInfo.InvariantCulture);
+    }
+
+    public void Init(I_GroupedUi collectionManager)
+    {
+        text.text = name;
+        
+        inputField.onValueChanged.AddListener((value) =>
+        {
+            if (float.TryParse(value, out var result))
+            {
+                _value = result;
+                _valueChanged = true;
+            }
+        });
+    }
+
+    public float Align(Vector3 position)
+    {
+        transform.position = position;
+        return transform.GetComponent<RectTransform>().rect.height;
+    }
+
+    public string ToCWorld()
+    {
+        return "";
     }
 }

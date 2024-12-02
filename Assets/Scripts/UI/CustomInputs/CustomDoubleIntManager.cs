@@ -14,7 +14,7 @@ public class CustomDoubleIntManager : MonoBehaviour, I_CustomUi
     private RectTransform _rectTransform;
     private float _height;
 
-    public void Init(CustomCollectionsManager collectionManager)
+    public void Init(I_GroupedUi collectionManager)
     {
         _text = transform.Find("Text").GetComponent<TMP_Text>();
         _text.text = name.type;

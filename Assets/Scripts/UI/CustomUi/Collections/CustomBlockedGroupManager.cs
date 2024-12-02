@@ -1,14 +1,11 @@
-using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class CustomCollectionsManager : MonoBehaviour, I_GroupedUi
+public class CustomBlockedGroupManager : MonoBehaviour, I_GroupedUi
 {
     [Header("Collection Parameters")] 
     public TypeOrText collectionName;
-    public GameObject collectionPrefab;
     
     public List<GameObject> collectionObjects = new List<GameObject>();
 
@@ -28,8 +25,6 @@ public class CustomCollectionsManager : MonoBehaviour, I_GroupedUi
         
         
         transform.Find("Panel").Find("Text").GetComponent<TMP_Text>().text = collectionName.type;
-        transform.Find("Panel").Find("Button").GetComponent<Button>().onClick.AddListener(AddCollection);
-        transform.Find("Panel").Find("Show").GetComponent<Button>().onClick.AddListener(() => Show());
         
         _height = _rectTransform.rect.height;
         _position = _rectTransform.position;
@@ -46,39 +41,6 @@ public class CustomCollectionsManager : MonoBehaviour, I_GroupedUi
         }
         
         AlignCollections();
-    }
-    
-    public void AddCollection()
-    {
-        GameObject collection = Instantiate(collectionPrefab, _content);
-        I_CustomUi cI = collection.GetComponent<I_CustomUi>();
-        
-        if (cI == null || cI.Equals(null))
-            return;
-        
-        cI.Init(this);
-        collectionObjects.Add(collection);
-        AlignCollections();
-    }
-
-    public string Show()
-    {
-        string text = "";
-        
-        foreach (var c in collectionObjects)
-        {
-            if (c.activeSelf == false)
-                continue;
-            
-            I_CustomUi cI = c.GetComponent<I_CustomUi>();
-            
-            if (cI == null || cI.Equals(null))
-                continue;
-            
-            text += cI.ToCWorld();
-        }
-
-        return text;
     }
     
     public void AlignCollections()
@@ -100,16 +62,9 @@ public class CustomCollectionsManager : MonoBehaviour, I_GroupedUi
             newPosition.y -= cI.Align(newPosition);
         }
     }
-    
+
     public bool DoHorizontalSpacing()
     {
-        return true;
+        return false;
     }
-}
-
-[System.Serializable]
-public class TypeOrText
-{
-    public string type;
-    public string text;
 }
