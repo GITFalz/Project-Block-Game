@@ -62,17 +62,19 @@ public class CustomGroupManager : MonoBehaviour, I_CustomUi
 
     public float Align(Vector3 pos)
     {
+        transform.position = pos;
         Vector3 position = _rectTransform.position - pos;
-        _content.GetComponent<RectTransform>().position = position;
         
         foreach (var parameter in parameters)
         {
-            if (parameter.activeSelf == false)
+            Vector3 newPosition = pos;
+            newPosition.y -= _height;
+            I_CustomUi cI = parameter.GetComponent<I_CustomUi>();
+            
+            if (cI == null || cI.Equals(null))
                 continue;
             
-            I_CustomUi ui = parameter.GetComponent<I_CustomUi>();
-            if (ui != null)
-                position.y += ui.Align(position);
+            cI.Align(newPosition);
         }
 
         return position.y;
