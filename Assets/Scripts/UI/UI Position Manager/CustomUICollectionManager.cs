@@ -24,16 +24,44 @@ public class CustomUICollectionManager: MonoBehaviour
 
     private void Awake()
     {
+        Transform panel = transform.Find("Panel");
+
+        if (panel == null)
+        {
+            Debug.LogError("Collection Manager: Panel not found");
+            return;
+        }
+        
         content = transform.Find("Content");
-        _rectTransform = transform.Find("Panel").GetComponent<RectTransform>();
+        _rectTransform = panel.GetComponent<RectTransform>();
         
         if (content == null || _rectTransform == null)
             return;
-        
-        
-        transform.Find("Panel").Find("Text").GetComponent<TMP_Text>().text = collectionName.type;
-        transform.Find("Panel").Find("Button").GetComponent<Button>().onClick.AddListener(AddCollection);
-        transform.Find("Panel").Find("Show").GetComponent<Button>().onClick.AddListener(() => Show());
+
+        Transform text = panel.Find("Text");
+        Transform button = panel.Find("Button");
+        Transform show = panel.Find("Show");
+            
+        if (text != null)
+        {
+            TMP_Text textText = text.GetComponent<TMP_Text>();
+            if (textText != null)
+                textText.text = collectionName.type;
+        }
+            
+        if (button != null)
+        {
+            Button buttonButton = button.GetComponent<Button>();
+            if (buttonButton != null)
+                buttonButton.onClick.AddListener(AddCollection);
+        }
+            
+        if (show != null)
+        {
+            Button showButton = show.GetComponent<Button>();
+            if (showButton != null)
+                showButton.onClick.AddListener(() => Show());
+        }
         
         _height = _rectTransform.rect.height;
         _position = _rectTransform.position;

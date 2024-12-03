@@ -13,6 +13,7 @@ public class CustomGroupManager : MonoBehaviour, I_CustomUi
     public List<GameObject> parameters = new List<GameObject>();
     
     [Header("Misc")]
+    public bool doAwake = true;
     public CustomUICollectionManager collectionsManager;
     
     private bool _open = true;

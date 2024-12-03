@@ -506,9 +506,9 @@ GameObject:
   - component: {fileID: 839727202384866173}
   - component: {fileID: 695411481206653518}
   - component: {fileID: 8601876634721793707}
-  - component: {fileID: 4828068287263923162}
+  - component: {fileID: -8292625365800930146}
   m_Layer: 5
-  m_Name: SingleInput
+  m_Name: SingleFloat
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -599,7 +599,7 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &4828068287263923162
+--- !u!114 &-8292625365800930146
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -608,7 +608,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8955309072417017478}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 27b004478bfe438782c5294ea10d7b31, type: 3}
+  m_Script: {fileID: 11500000, guid: fccb5db996534596b41882a5e790acd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   name:

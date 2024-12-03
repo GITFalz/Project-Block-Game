@@ -1,23 +1,18 @@
 using TMPro;
 using UnityEngine;
 
-public class CustomSingleIntManager : MonoBehaviour, I_CustomUi
+public abstract class CustomDoubleAbstractManager : CustomInputAbstractManager
 {
-    [Header("Properties")] 
-    public TypeOrText name;
-    
-    private TMP_Text _text;
-    private TMP_InputField _fieldA;
-    
-    private RectTransform _rectTransform;
-    private float _height;
-    
-    public void Init(CustomUICollectionManager collectionManager)
+    protected TMP_InputField _fieldA;
+    protected TMP_InputField _fieldB;
+
+    public override void Init(CustomUICollectionManager collectionManager)
     {
         _text = transform.Find("Text").GetComponent<TMP_Text>();
         _text.text = name.type;
         
         _fieldA = transform.Find("Input1").GetComponent<TMP_InputField>();
+        _fieldB = transform.Find("Input2").GetComponent<TMP_InputField>();
         
         _rectTransform = transform.GetComponent<RectTransform>();
         _height = _rectTransform.rect.height;
@@ -31,10 +26,5 @@ public class CustomSingleIntManager : MonoBehaviour, I_CustomUi
         return _height;
     }
 
-    public string ToCWorld()
-    {
-        int a = int.Parse(_fieldA.text);
-
-        return $"{name.text} {a}\n";
-    }
+    public abstract override string ToCWorld();
 }
