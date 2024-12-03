@@ -29,19 +29,19 @@ public abstract class CustomDoubleAbstractManager : CustomInputAbstractManager
 
     public void SetBoth()
     {
-        SetHoldBoth(MouseData.GetMouseX());
+        SetHoldBoth(MouseData.GetMouseX() * GetSlideSpeed());
         InitValues();
     }
     
     public void SetA()
     {
-        SetHoldA(MouseData.GetMouseX());
+        SetHoldA(MouseData.GetMouseX() * GetSlideSpeed());
         InitValues();
     }
     
     public void SetB()
     {
-        SetHoldB(MouseData.GetMouseX());
+        SetHoldB(MouseData.GetMouseX() * GetSlideSpeed());
         InitValues();
     }
 

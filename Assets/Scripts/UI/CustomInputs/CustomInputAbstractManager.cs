@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,7 +9,7 @@ public abstract class CustomInputAbstractManager : MonoBehaviour, I_CustomUi
     public TypeOrText name;
     public bool doName = true;
     public float height = 30;
-    public bool sliderSpeed = false;
+    public SliderSpeed sliderSpeed = SliderSpeed.Normal;
     
     [Header("Check")]
     public Button checkButton;
@@ -44,11 +45,23 @@ public abstract class CustomInputAbstractManager : MonoBehaviour, I_CustomUi
     }
 
     public abstract string ToCWorld();
+
+    protected float GetSlideSpeed()
+    {
+        return Speed[sliderSpeed];
+    }
+
+    private static readonly Dictionary<SliderSpeed, float> Speed = new Dictionary<SliderSpeed, float>()
+    {
+        {SliderSpeed.Slow, 0.2f},
+        {SliderSpeed.Normal, 1f},
+        {SliderSpeed.Fast, 2f}
+    };
 }
 
 public enum SliderSpeed
 {
     Slow,
-    Medium,
+    Normal,
     Fast
 }

@@ -22,7 +22,7 @@ public abstract class CustomSingleAbstractManager : CustomInputAbstractManager
     
     public void SetA()
     {
-        SetHoldA(MouseData.GetMouseX());
+        SetHoldA(MouseData.GetMouseX() * GetSlideSpeed());
         InitValues();
     }
     
