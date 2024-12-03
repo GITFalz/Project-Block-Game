@@ -40,7 +40,7 @@ public class MainMenu : MonoBehaviour
 
     public void CloseAll()
     {
-        commands.SetActive(false);
-        textureGeneration.SetMove(false);
+        commands?.SetActive(false);
+        textureGeneration?.SetMove(false);
     }
 }

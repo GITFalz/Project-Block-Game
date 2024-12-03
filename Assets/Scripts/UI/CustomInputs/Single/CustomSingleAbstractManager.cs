@@ -4,25 +4,31 @@ using UnityEngine;
 public abstract class CustomSingleAbstractManager : CustomInputAbstractManager
 {
     protected TMP_InputField _fieldA;
+    
+    [Header("Buttons")]
+    public ButtonHold buttonHoldA;
 
-    public override void Init(CustomUICollectionManager collectionManager)
+    protected override void InitExtra(CustomUICollectionManager collectionManager)
     {
-        _text = transform.Find("Text").GetComponent<TMP_Text>();
+        buttonHoldA.action = SetA;
+        
+        _text = transform.Find("Panel").Find("Text").GetComponent<TMP_Text>();
         _text.text = name.type;
     
-        _fieldA = transform.Find("Input1").GetComponent<TMP_InputField>();
-    
-        _rectTransform = transform.GetComponent<RectTransform>();
-        _height = _rectTransform.rect.height;
+        _fieldA = transform.Find("Panel").Find("Input1").GetComponent<TMP_InputField>();
+        
+        InitValues();
     }
-
-    public float Align(Vector3 position)
+    
+    public void SetA()
     {
-        Debug.Log("Single: " + position);
-    
-        transform.position = position;
-        return _height;
+        SetHoldA(MouseData.GetMouseX());
+        InitValues();
     }
+    
+    protected abstract void SetHoldA(float x);
+
+    protected abstract void InitValues();
 
     public abstract override string ToCWorld();
 }

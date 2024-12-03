@@ -5,26 +5,51 @@ public abstract class CustomDoubleAbstractManager : CustomInputAbstractManager
 {
     protected TMP_InputField _fieldA;
     protected TMP_InputField _fieldB;
+    
+    [Header("Buttons")]
+    public ButtonHold buttonHoldBoth;
+    public ButtonHold buttonHoldA;
+    public ButtonHold buttonHoldB;
+    
 
-    public override void Init(CustomUICollectionManager collectionManager)
+    protected override void InitExtra(CustomUICollectionManager collectionManager)
     {
-        _text = transform.Find("Text").GetComponent<TMP_Text>();
+        buttonHoldBoth.action = SetBoth;
+        buttonHoldA.action = SetA;
+        buttonHoldB.action = SetB;
+        
+        _text = transform.Find("Panel").Find("Text").GetComponent<TMP_Text>();
         _text.text = name.type;
         
-        _fieldA = transform.Find("Input1").GetComponent<TMP_InputField>();
-        _fieldB = transform.Find("Input2").GetComponent<TMP_InputField>();
+        _fieldA = transform.Find("Panel").Find("Input1").GetComponent<TMP_InputField>();
+        _fieldB = transform.Find("Panel").Find("Input2").GetComponent<TMP_InputField>();
         
-        _rectTransform = transform.GetComponent<RectTransform>();
-        _height = _rectTransform.rect.height;
+        InitValues();
     }
 
-    public float Align(Vector3 position)
+    public void SetBoth()
     {
-        Debug.Log("Double: " + position);
-        
-        transform.position = position;
-        return _height;
+        SetHoldBoth(MouseData.GetMouseX());
+        InitValues();
     }
+    
+    public void SetA()
+    {
+        SetHoldA(MouseData.GetMouseX());
+        InitValues();
+    }
+    
+    public void SetB()
+    {
+        SetHoldB(MouseData.GetMouseX());
+        InitValues();
+    }
+
+    protected abstract void SetHoldBoth(float x);
+    protected abstract void SetHoldA(float x);
+    protected abstract void SetHoldB(float x);
+    
+    protected abstract void InitValues();
 
     public abstract override string ToCWorld();
 }

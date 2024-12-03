@@ -1256,8 +1256,10 @@ MonoBehaviour:
   manager: {fileID: 1800942182}
   rigidbodyManager: {fileID: 1025230355}
   playerRotationManager: {fileID: 351029954}
+  menuActive: 1
   menu: {fileID: 2018199514}
   mainMenu: {fileID: 1027218706}
+  cinematicActive: 1
   cinematic: {fileID: 1853258251}
   cinematicUIHover: {fileID: 1151084936}
   cinematicTimelineManager: {fileID: 1236600772}

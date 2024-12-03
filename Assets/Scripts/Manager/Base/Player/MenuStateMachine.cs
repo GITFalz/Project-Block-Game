@@ -34,7 +34,10 @@ public class MenuStateMachine : BaseState
 
     public override void ExitState(StateMachine state)
     {
-        state.menu.SetActive(false);
+        if (state.menu)
+            state.menu.SetActive(false);
+        
+        if (!state.menuActive) return;
         state.mainMenu.CloseAll();
     }
 }

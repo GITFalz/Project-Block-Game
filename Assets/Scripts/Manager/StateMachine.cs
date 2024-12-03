@@ -16,12 +16,16 @@ public class StateMachine : MonoBehaviour
     
     public RigidbodyManager rigidbodyManager;
     public PlayerRotationManager playerRotationManager;
+    
+    public State currentStateType;
 
     [Header("Menu")]
+    public bool menuActive = false;
     public GameObject menu;
     public MainMenu mainMenu;
     
     [Header("Cinematic")]
+    public bool cinematicActive = false;
     public GameObject cinematic;
     public UIHover cinematicUIHover;
     public CinematicTimelineManager cinematicTimelineManager;
@@ -65,7 +69,7 @@ public class StateMachine : MonoBehaviour
 
         menuState = new MenuStateMachine();
         
-        currentState = menuState;
+        stateDictionary[currentStateType](this);
         currentState.EnterState(this);
         
         o = PlayerInput.Instance.OInput;
@@ -103,4 +107,18 @@ public class StateMachine : MonoBehaviour
         angles.Add(playerRotationManager.transform.rotation);
         angleTimes.Add(5);
     }
+    
+    private readonly Dictionary<State, Action<StateMachine>> stateDictionary = new Dictionary<State, Action<StateMachine>>
+    {
+        {State.Menu, (state) => state.currentState = state.menuState},
+        {State.Player, (state) => state.currentState = state.playerState},
+        {State.Cinematic, (state) => state.currentState = state.cinematicState}
+    };
+}
+
+public enum State
+{
+    Menu,
+    Player,
+    Cinematic
 }

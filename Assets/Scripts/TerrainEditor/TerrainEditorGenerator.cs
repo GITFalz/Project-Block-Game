@@ -35,7 +35,7 @@ public static class TerrainEditorGenerator
             for (int z = 0; z < lenght; z++)
             {
                 dataHandler.sampleNodes["Sample0"].Init((float)((float)(x * 10 + 0.001f) / (float)mapDensity), 0, (float)((float)(z * 10 + 0.001f) / (float)mapDensity));
-                map[x + z * lenght] = dataHandler.sampleNodes["Sample0"].GetNoise();
+                map[x + z * lenght] = 1 - dataHandler.sampleNodes["Sample0"].GetNoise();
             }
         }
 

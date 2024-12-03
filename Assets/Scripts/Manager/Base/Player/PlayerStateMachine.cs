@@ -140,8 +140,6 @@ public class PlayerStateMachine : BaseState
 
     public override void EnterState(StateMachine state)
     {
-        Debug.Log("player is in playmode");
-
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
@@ -155,30 +153,33 @@ public class PlayerStateMachine : BaseState
             state.SwitchState(state.menuState);
             return;
         }
-        
-        if (controlInput() && c() && state.oSwitch.CanSwitch())
-        {
-            state.SwitchState(state.cinematicState);
-            return;
-        }
-        
-        if (controlInput() && c() && eSwitch.CanSwitch())
-        {
-            state.cinematicMovementManager.Hide();
-            state.cinematicMovementManager.isPlaying = true;
-        }
-        
-        if (controlInput() && c() && dSwitch.CanSwitch())
-        {
-            state.cinematicMovementManager.Show();
-            state.cinematicMovementManager.isPlaying = false;
-        }
-        
-        if (controlInput() && c() && rSwitch.CanSwitch())
-        {
-            state.cinematicMovementManager.Reset();
-        }
 
+        if (state.cinematicActive)
+        {
+            if (controlInput() && c() && state.oSwitch.CanSwitch())
+            {
+                state.SwitchState(state.cinematicState);
+                return;
+            }
+
+            if (controlInput() && c() && eSwitch.CanSwitch())
+            {
+                state.cinematicMovementManager.Hide();
+                state.cinematicMovementManager.isPlaying = true;
+            }
+
+            if (controlInput() && c() && dSwitch.CanSwitch())
+            {
+                state.cinematicMovementManager.Show();
+                state.cinematicMovementManager.isPlaying = false;
+            }
+
+            if (controlInput() && c() && rSwitch.CanSwitch())
+            {
+                state.cinematicMovementManager.Reset();
+            }
+        }
+        
         state.playerRotationManager.UpdateRotation();
         currentState.UpdateState(this);
         

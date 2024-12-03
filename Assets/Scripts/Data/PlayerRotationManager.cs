@@ -119,8 +119,7 @@ public class PlayerRotationManager : MonoBehaviour
         angle.y = -mouseDelta.y * mouseVerticalSensitivity * Time.deltaTime;
 
         angle.y = AngleInRange(playerAngle, angle.y, GroundedAxes.VerticalAxis.Range);
-
-
+        
         transform.Rotate(Vector3.up, angle.x, Space.World);
         transform.Rotate(Vector3.right, angle.y);
     }

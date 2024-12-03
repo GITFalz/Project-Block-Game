@@ -12,7 +12,11 @@ public class CameraMovementManager : MonoBehaviour
 
     public Airborne airborne;
     public Grounded grounded;
+    
+    [Header("Properties")]
+    public CameraType cameraType;
 
+    [Header("References")]
     public Transform player;
     public Transform playerY;
 
@@ -48,7 +52,9 @@ public class CameraMovementManager : MonoBehaviour
         cameraSwitchInput = PlayerInput.Instance.CameraSwitchInput;
         controlInput = PlayerInput.Instance.ControlInput;
         c = PlayerInput.Instance.CInput;
-        cameraSwitch = new StateSwitch<PerspectiveBaseState>(cameraSwitchInput, thirdPerson, firstPerson);
+        cameraSwitch = new StateSwitch<PerspectiveBaseState>(cameraSwitchInput, 
+            cameraType == CameraType.ThirdPerson ? thirdPerson : firstPerson, 
+            cameraType == CameraType.ThirdPerson ? firstPerson : thirdPerson);
 
         currentState = grounded;
     }
@@ -179,4 +185,10 @@ public class CameraMovementManager : MonoBehaviour
             cam.currentState.Move(cam);
         }
     }
+}
+
+public enum CameraType
+{
+    FirstPerson,
+    ThirdPerson
 }
