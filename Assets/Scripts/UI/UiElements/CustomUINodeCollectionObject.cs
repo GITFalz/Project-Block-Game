@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
+public class CustomUINodeCollectionObject : MonoBehaviour, I_CustomUi
 {
     [Header("Parameters")] 
     public TypeOrText name;
@@ -11,37 +12,31 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
     [Header("Grouped Parameters")]
     public List<GameObject> parameters = new List<GameObject>();
     
+    [Header("Print")]
+    public bool doName;
+    
     [Header("Misc")]
     public CustomUICollectionManager collectionsManager;
-    
-    private bool _open = true;
-    public Button _button;
-    public TMP_InputField _inputField;
-    public TMP_Text _text;
+    public TMP_Text text;
+    public TMP_InputField inputField;
     
     private Transform _content;
-    private CustomUiUpdater _updater;
     
     private float _height;
     private RectTransform _rectTransform;
-
-    private int _index;
 
     public void Init(CustomUICollectionManager collectionManager)
     {
         collectionsManager = collectionManager;
         
-        _button = transform.Find("Panel").Find("Button").GetComponent<Button>();
-        _button.onClick.AddListener(OnClick);
+        text = transform.Find("Panel").Find("Text").GetComponent<TMP_Text>();
+        text.text = collectionManager.collectionName.type;
         
-        _text = transform.Find("Panel").Find("Under").Find("Text").GetComponent<TMP_Text>();
-        _text.text = name.type;
-        
-        _inputField = transform.Find("Panel").Find("Under").Find("Input").GetComponent<TMP_InputField>();
-        _inputField.onValueChanged.AddListener((value) => OnChange());
+        inputField = transform.Find("Panel").Find("Input").GetComponent<TMP_InputField>();
+        inputField.text = collectionManager.collectionName.text + "" + collectionManager.collectionObjects.Count;
         
         _content = transform.Find("Content");
-        _rectTransform = transform.Find("Panel").Find("Under").GetComponent<RectTransform>();
+        _rectTransform = transform.GetComponent<RectTransform>();
         
         if (_content == null || _rectTransform == null) 
             return;
@@ -58,33 +53,10 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
             cI.Init(collectionManager);
             parameters.Add(p.gameObject);
         }
-
-        _updater = GameObject.Find("Managers").GetComponent<CustomUiUpdater>();
-    }
-
-    public void OnChange()
-    {
-        
-    }
-    
-    public void OnClick()
-    {
-        _open = !_open;
-        foreach (var parameter in parameters)
-        {
-            parameter.SetActive(_open);
-        }
-        
-        collectionsManager.AlignCollections();
-
-        _updater.go = this.gameObject;
-        _updater.count = 3;
     }
 
     public float Align(Vector3 pos)
     {
-        Debug.Log("Node Group: " + pos);
-        
         float height = _height;
         
         transform.position = pos;
@@ -113,7 +85,8 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
     
     public string ToCWorld()
     {
-        string text = $"{name.text} ( name = {_inputField.text} )\n{{\n";
+        string nodeName = doName ? $" ( name = {inputField.text} )" : "";
+        string text = $"{name.text}{nodeName}\n{{\n";
         foreach (var parameter in parameters)
         {
             if (parameter.activeSelf == false)

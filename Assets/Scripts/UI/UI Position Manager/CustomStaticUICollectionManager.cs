@@ -1,18 +1,18 @@
-using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CustomCollectionsManager : MonoBehaviour, I_GroupedUi
+public class CustomStaticUICollectionManager : MonoBehaviour
 {
     [Header("Collection Parameters")] 
-    public TypeOrText collectionName;
-    public GameObject collectionPrefab;
-    
-    public List<GameObject> collectionObjects = new List<GameObject>();
+    public bool doHorizontalSpacing;
 
-    private Transform _content;
+    [Header("Content")]
+    public Transform content;
+    
+    [Header("Misc")]
+    public List<GameObject> collectionObjects = new List<GameObject>();
     
     private RectTransform _rectTransform;
     private float _height;
@@ -20,21 +20,16 @@ public class CustomCollectionsManager : MonoBehaviour, I_GroupedUi
 
     private void Awake()
     {
-        _content = transform.Find("Content");
+        content = transform.Find("Content");
         _rectTransform = transform.Find("Panel").GetComponent<RectTransform>();
         
-        if (_content == null || _rectTransform == null)
+        if (content == null || _rectTransform == null)
             return;
-        
-        
-        transform.Find("Panel").Find("Text").GetComponent<TMP_Text>().text = collectionName.type;
-        transform.Find("Panel").Find("Button").GetComponent<Button>().onClick.AddListener(AddCollection);
-        transform.Find("Panel").Find("Show").GetComponent<Button>().onClick.AddListener(() => Show());
         
         _height = _rectTransform.rect.height;
         _position = _rectTransform.position;
 
-        foreach (Transform c in _content)
+        foreach (Transform c in content)
         {
             I_CustomUi cI = c.GetComponent<I_CustomUi>();
             
@@ -50,7 +45,7 @@ public class CustomCollectionsManager : MonoBehaviour, I_GroupedUi
     
     public void AddCollection()
     {
-        GameObject collection = Instantiate(collectionPrefab, _content);
+        GameObject collection = Instantiate(collectionPrefab, content);
         I_CustomUi cI = collection.GetComponent<I_CustomUi>();
         
         if (cI == null || cI.Equals(null))
@@ -77,6 +72,8 @@ public class CustomCollectionsManager : MonoBehaviour, I_GroupedUi
             
             text += cI.ToCWorld();
         }
+        
+        Debug.Log(text);
 
         return text;
     }
@@ -84,7 +81,7 @@ public class CustomCollectionsManager : MonoBehaviour, I_GroupedUi
     public void AlignCollections()
     {
         Vector3 position = _position - new Vector3(0, _height, 0);
-        _content.GetComponent<RectTransform>().position = position;
+        content.GetComponent<RectTransform>().position = position;
         Vector3 newPosition = transform.position - new Vector3(0, _height, 0);
         
         foreach (var c in collectionObjects)
@@ -103,13 +100,6 @@ public class CustomCollectionsManager : MonoBehaviour, I_GroupedUi
     
     public bool DoHorizontalSpacing()
     {
-        return true;
-    }
-}
-
-[System.Serializable]
-public class TypeOrText
-{
-    public string type;
-    public string text;
+        return doHorizontalSpacing;
+    } 
 }

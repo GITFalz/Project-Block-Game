@@ -27,8 +27,8 @@ public class CWorldNoiseNode
         
         parameters = new List<CWAParameterNode>();
     }
-    
-    public float GetNoiseValue(int x, int z)
+
+    public float GetNoiseValue(float x, float z)
     {
         float height = Mathf.PerlinNoise((float)((float)x / sizeX + offsetX), (float)((float)z / sizeY + offsetY));
 
@@ -42,5 +42,10 @@ public class CWorldNoiseNode
             return 0;
         
         return height * amplitude;
+    }
+    
+    public float GetNoiseValue(int x, int z)
+    {
+        return GetNoiseValue((float)x, (float)z);
     }
 }

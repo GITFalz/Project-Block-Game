@@ -36,7 +36,8 @@ public class CWorldCommandManager
             Increment();
         }
         
-        BlockManager.Instance.UpdateInspector();
+        if (!ChunkGenerationNodes.localLoad)
+            BlockManager.Instance.UpdateInspector();
         
         Console.Log("Done with: " + CurrentPath);
         Console.Log(">--------------------<");
@@ -113,10 +114,11 @@ public class CWorldCommandManager
         try {
             await _writerManager.InitLines(content);
         }
-        catch (NullReferenceException) {
+        catch (NullReferenceException)
+        {
             return await Console.LogErrorAsync("Falz forgot to init the writerManager that fucking idiot, please tell him");
         }
-        
+
         Console.Log("Done!");
 
         try {

@@ -8,7 +8,7 @@ public class SingleButtonHoldManager : MonoBehaviour, I_CustomUi
     private Button _bA;
     private bool _a;
     
-    public void Init(I_GroupedUi collectionManager)
+    public void Init(CustomUICollectionManager collectionManager)
     {
         _bA = buttonA.GetComponent<Button>();
         _bA.onClick.AddListener(() => { _a = true; });

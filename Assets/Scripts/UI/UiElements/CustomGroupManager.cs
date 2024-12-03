@@ -13,19 +13,18 @@ public class CustomGroupManager : MonoBehaviour, I_CustomUi
     public List<GameObject> parameters = new List<GameObject>();
     
     [Header("Misc")]
-    public I_GroupedUi collectionsManager;
+    public CustomUICollectionManager collectionsManager;
     
     private bool _open = true;
     public Button _button;
     public TMP_Text _text;
     
     private Transform _content;
-    private CustomUiUpdater _updater;
     
     private float _height;
     private RectTransform _rectTransform;
 
-    public void Init(I_GroupedUi collectionManager)
+    public void Init(CustomUICollectionManager collectionManager)
     {
         collectionsManager = collectionManager;
         
@@ -53,8 +52,6 @@ public class CustomGroupManager : MonoBehaviour, I_CustomUi
             cI.Init(collectionManager);
             parameters.Add(p.gameObject);
         }
-
-        _updater = GameObject.Find("Managers").GetComponent<CustomUiUpdater>();
     }
     
     public void OnClick()
@@ -66,15 +63,10 @@ public class CustomGroupManager : MonoBehaviour, I_CustomUi
         }
         
         collectionsManager.AlignCollections();
-
-        _updater.go = this.gameObject;
-        _updater.count = 3;
     }
 
     public float Align(Vector3 pos)
     {
-        Debug.Log("Group: " + pos);
-        
         float height = _height;
         
         transform.position = pos;

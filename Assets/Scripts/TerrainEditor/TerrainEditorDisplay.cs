@@ -5,7 +5,7 @@ using UnityEngine;
 public class TerrainEditorDisplay : MonoBehaviour
 {
     [Header("Node Manager")]
-    public CustomCollectionsManager nodeManager;
+    public CustomUICollectionManager nodeManager;
     
     [Header("Buttons")] 
     public SingleButtonHoldManager scaleButton;
@@ -139,7 +139,7 @@ public class TerrainEditorDisplay : MonoBehaviour
         Compiler();
     }
 
-    public void Compiler()
+    public async void Compiler()
     {
         _worldDataHandler = new CWorldDataHandler();
         
@@ -148,7 +148,7 @@ public class TerrainEditorDisplay : MonoBehaviour
         
         string content = nodeManager.Show();
 
-        int result = CWorldCommandManager.LoadContent(content).GetAwaiter().GetResult();
+        int result = await CWorldCommandManager.LoadContent(content);
         
         if (result == -1)
         {
@@ -157,14 +157,15 @@ public class TerrainEditorDisplay : MonoBehaviour
         }
         
         Debug.Log("Compilation successful");
-        Debug.Log(_worldDataHandler.sampleNodes.Count);
+        
+        GenerateTerrain();
     }
 
     private void GenerateTerrain()
     {
         MeshData meshData = new MeshData();
-        
-        float[] map = TerrainEditorGenerator.GetHeight(mapSize, mapDensity);
+
+        float[] map = TerrainEditorGenerator.GetHeight(mapSize, mapDensity, _worldDataHandler);
         
         int verts = 0;
         

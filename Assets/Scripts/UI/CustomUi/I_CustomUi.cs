@@ -2,7 +2,7 @@ using UnityEngine;
 
 public interface I_CustomUi
 {
-    void Init(I_GroupedUi collectionManager);
+    void Init(CustomUICollectionManager collectionManager);
     float Align(Vector3 position);
     string ToCWorld();
 }

@@ -34,7 +34,7 @@ public class SingleFloatParameterManager : MonoBehaviour, I_CustomUi
         inputField.text = value.ToString(CultureInfo.InvariantCulture);
     }
 
-    public void Init(I_GroupedUi collectionManager)
+    public void Init(CustomUICollectionManager collectionManager)
     {
         text.text = name;
         

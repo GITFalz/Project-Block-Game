@@ -28,6 +28,11 @@ public class CWorldSampleNode : CWAInitializerNode
     {
         noiseValue = noiseNode.GetNoiseValue(x, z);
     }
+    
+    public override void Init(float x, float y, float z)
+    {
+        noiseValue = noiseNode.GetNoiseValue(x, z);
+    }
 
     public void ApplyOverride()
     {
