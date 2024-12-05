@@ -25,7 +25,9 @@ public class CustomSingleIntManager : CustomSingleAbstractManager
     {
         if (!isChecked) return "";
         
-        int a = int.Parse(_fieldA.text);
+        string stringA = _fieldA.text.Replace(',', '.');
+        
+        int a = int.Parse(stringA);
 
         return $"{name.text} {a}\n";
     }

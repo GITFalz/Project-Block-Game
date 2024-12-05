@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class CustomInputAbstractManager : MonoBehaviour, I_CustomUi
+public abstract class CustomInputAbstractManager : CustomUI
 {
     [Header("Properties")] 
     public TypeOrText name;
@@ -24,7 +24,7 @@ public abstract class CustomInputAbstractManager : MonoBehaviour, I_CustomUi
         _buttonText.text = isChecked ? "V" : "X";
     }
 
-    public void Init(CustomUICollectionManager collectionManager)
+    public override void Init(CustomUICollectionManager collectionManager)
     {
         _buttonText = checkButton.transform.Find("Text").GetComponent<TMP_Text>();
         _buttonText.text = isChecked ? "V" : "X";
@@ -36,7 +36,7 @@ public abstract class CustomInputAbstractManager : MonoBehaviour, I_CustomUi
 
     protected abstract void InitExtra(CustomUICollectionManager collectionManager);
 
-    public float Align(Vector3 position)
+    public override float Align(Vector3 position)
     {
         Debug.Log("Double: " + position);
         
@@ -44,7 +44,7 @@ public abstract class CustomInputAbstractManager : MonoBehaviour, I_CustomUi
         return height;
     }
 
-    public abstract string ToCWorld();
+    public override abstract string ToCWorld();
 
     protected float GetSlideSpeed()
     {

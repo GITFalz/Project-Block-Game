@@ -1,14 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SingleButtonHoldManager : MonoBehaviour, I_CustomUi
+public class SingleButtonHoldManager : CustomUI
 {
     public OnButtonHold buttonA;
     
     private Button _bA;
     private bool _a;
     
-    public void Init(CustomUICollectionManager collectionManager)
+    public override void Init(CustomUICollectionManager collectionManager)
     {
         _bA = buttonA.GetComponent<Button>();
         _bA.onClick.AddListener(() => { _a = true; });
@@ -27,13 +27,13 @@ public class SingleButtonHoldManager : MonoBehaviour, I_CustomUi
         return buttonA.IsHolding();
     }
     
-    public float Align(Vector3 position)
+    public override float Align(Vector3 position)
     {
         transform.position = position;
         return transform.GetComponent<RectTransform>().rect.height;
     }
     
-    public string ToCWorld()
+    public override string ToCWorld()
     {
         return "";
     } 

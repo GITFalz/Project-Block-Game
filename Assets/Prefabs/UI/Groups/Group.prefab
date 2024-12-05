@@ -461,11 +461,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4d54cc81a9b40f39555f882c06653f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  name: Biome1
-  parameters: []
-  collectionsManager: {fileID: 0}
-  _button: {fileID: 0}
-  _text: {fileID: 0}
+  name:
+    type: 
+    text: 
+  doName: 0
+  height: 30
+  contentObjects: []
+  customUIScripts: []
+  content: {fileID: 4791905494198159506}
+  button: {fileID: 7698908250026025114}
+  text: {fileID: 8026916545907492529}
 --- !u!1 &8885156899708964691
 GameObject:
   m_ObjectHideFlags: 0

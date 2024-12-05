@@ -33,8 +33,11 @@ public class CustomDoubleFloatManager : CustomDoubleAbstractManager
     {
         if (!isChecked) return "";
         
-        float a = float.Parse(_fieldA.text, CultureInfo.InvariantCulture);
-        float b = float.Parse(_fieldB.text, CultureInfo.InvariantCulture);
+        string stringA = _fieldA.text.Replace(',', '.');
+        string stringB = _fieldB.text.Replace(',', '.');
+        
+        float a = float.Parse(stringA, CultureInfo.InvariantCulture);
+        float b = float.Parse(stringB, CultureInfo.InvariantCulture);
         
         string aStr = a.ToString(CultureInfo.InvariantCulture);
         string bStr = b.ToString(CultureInfo.InvariantCulture);

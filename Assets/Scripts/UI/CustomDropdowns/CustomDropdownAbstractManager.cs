@@ -1,16 +1,14 @@
 using UnityEngine;
 
-public abstract class CustomDropdownAbstractManager : MonoBehaviour, I_CustomUi
+public abstract class CustomDropdownAbstractManager : CustomUI
 {
+    [Header("Properties")]
     public CustomInputAbstractManager input;
-    
-    protected CustomUICollectionManager _collectionsManager;
-    protected RectTransform _rectTransform;
-    protected float _height;
-    
-    public abstract void Init(CustomUICollectionManager collectionManager);
+    public float height = 30;
 
-    public abstract float Align(Vector3 position);
+    public abstract override void Init(CustomUICollectionManager collectionManager);
+
+    public abstract override float Align(Vector3 position);
     
-    public abstract string ToCWorld();
+    public abstract override string ToCWorld();
 }

@@ -5,77 +5,51 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-public class CustomUICollectionManager: MonoBehaviour
+public class CustomUICollectionManager: CustomUIGroup
 {
     [Header("Collection Parameters")] 
     public TypeOrText collectionName;
     public GameObject collectionPrefab;
     public bool doHorizontalSpacing;
 
-    [Header("Content")]
-    public Transform content;
-    
-    [Header("Misc")]
-    public List<GameObject> collectionObjects = new List<GameObject>();
-    
-    private RectTransform _rectTransform;
-    private float _height;
-    private Vector3 _position;
+    [Header("Panel")]
+    public TMP_Text text;
+    public Button button;
+    public Button show;
 
-    private void Awake()
+    public float scrollHeight = 0;
+    public string currentNewCollectionName;
+
+    public void Init()
     {
-        Transform panel = transform.Find("Panel");
-
-        if (panel == null)
+        if (content == null)
         {
-            Debug.LogError("Collection Manager: Panel not found");
+            Console.Log("Collection Content is null");
             return;
         }
         
-        content = transform.Find("Content");
-        _rectTransform = panel.GetComponent<RectTransform>();
-        
-        if (content == null || _rectTransform == null)
+        if (text == null)
+        {
+            Console.Log("Collection Text is null");
             return;
-
-        Transform text = panel.Find("Text");
-        Transform button = panel.Find("Button");
-        Transform show = panel.Find("Show");
-            
-        if (text != null)
-        {
-            TMP_Text textText = text.GetComponent<TMP_Text>();
-            if (textText != null)
-                textText.text = collectionName.type;
-        }
-            
-        if (button != null)
-        {
-            Button buttonButton = button.GetComponent<Button>();
-            if (buttonButton != null)
-                buttonButton.onClick.AddListener(AddCollection);
-        }
-            
-        if (show != null)
-        {
-            Button showButton = show.GetComponent<Button>();
-            if (showButton != null)
-                showButton.onClick.AddListener(() => Show());
         }
         
-        _height = _rectTransform.rect.height;
-        _position = _rectTransform.position;
-
-        foreach (Transform c in content)
+        if (button == null)
         {
-            I_CustomUi cI = c.GetComponent<I_CustomUi>();
-            
-            if (cI == null || cI.Equals(null))
-                continue;
-            
-            cI.Init(this);
-            collectionObjects.Add(c.gameObject);
+            Console.Log("Collection Button is null");
+            return;
         }
+        
+        if (show == null)
+        {
+            Console.Log("Collection Show is null");
+            return;
+        }
+        
+        button.onClick.AddListener(AddCollection);
+        show.onClick.AddListener(() => Console.Log(Show()));
+        
+        base.Init(this);
         
         AlignCollections();
     }
@@ -83,56 +57,29 @@ public class CustomUICollectionManager: MonoBehaviour
     public void AddCollection()
     {
         GameObject collection = Instantiate(collectionPrefab, content);
-        I_CustomUi cI = collection.GetComponent<I_CustomUi>();
+        CustomUI cI = collection.GetComponent<CustomUI>();
         
         if (cI == null || cI.Equals(null))
+        {
+            Destroy(collection);
             return;
+        }
         
         cI.Init(this);
-        collectionObjects.Add(collection);
+        contentObjects.Add(collection);
         AlignCollections();
     }
 
     public string Show()
     {
-        string text = "";
-        
-        foreach (var c in collectionObjects)
-        {
-            if (c.activeSelf == false)
-                continue;
-            
-            I_CustomUi cI = c.GetComponent<I_CustomUi>();
-            
-            if (cI == null || cI.Equals(null))
-                continue;
-            
-            text += cI.ToCWorld();
-        }
-        
-        Debug.Log(text);
-
-        return text;
+        return base.ToCWorld();
     }
     
     public void AlignCollections()
     {
-        Vector3 position = _position - new Vector3(0, _height, 0);
-        content.GetComponent<RectTransform>().position = position;
-        Vector3 newPosition = transform.position - new Vector3(0, _height, 0);
-        
-        foreach (var c in collectionObjects)
-        {
-            if (c.activeSelf == false)
-                continue;
-            
-            I_CustomUi cI = c.GetComponent<I_CustomUi>();
-            
-            if (cI == null || cI.Equals(null))
-                continue;
-            
-            newPosition.y -= cI.Align(newPosition);
-        }
+        Vector3 position = transform.position - new Vector3(0, height - scrollHeight, 0);
+        content.position = position;
+        Align(position);
     }
     
     public bool DoHorizontalSpacing()

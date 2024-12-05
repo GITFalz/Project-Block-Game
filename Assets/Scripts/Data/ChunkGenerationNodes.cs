@@ -98,8 +98,7 @@ public static class ChunkGenerationNodes
         sampleNode.flip = CWorldSampleManager.flip;
         sampleNode.min_height = CWorldSampleManager.min_height;
         sampleNode.max_height = CWorldSampleManager.max_height;
-    
-            
+        
         foreach (var data in CWorldSampleManager.noiseSampleData)
         {
             switch (data.type)
@@ -150,7 +149,7 @@ public static class ChunkGenerationNodes
                     continue;
             }
         }
-
+        
         foreach (var data in CWorldSampleManager.overrideSampleData)
         {
             switch (data.type)

@@ -3,7 +3,7 @@ using System.Globalization;
 using TMPro;
 using UnityEngine;
 
-public class SingleFloatParameterManager : MonoBehaviour, I_CustomUi
+public class SingleFloatParameterManager : CustomUI
 {
     [Header("Text")]
     public TMP_Text text;
@@ -34,7 +34,7 @@ public class SingleFloatParameterManager : MonoBehaviour, I_CustomUi
         inputField.text = value.ToString(CultureInfo.InvariantCulture);
     }
 
-    public void Init(CustomUICollectionManager collectionManager)
+    public override void Init(CustomUICollectionManager collectionManager)
     {
         text.text = name;
         
@@ -48,13 +48,13 @@ public class SingleFloatParameterManager : MonoBehaviour, I_CustomUi
         });
     }
 
-    public float Align(Vector3 position)
+    public override float Align(Vector3 position)
     {
         transform.position = position;
         return transform.GetComponent<RectTransform>().rect.height;
     }
 
-    public string ToCWorld()
+    public override string ToCWorld()
     {
         return "";
     }

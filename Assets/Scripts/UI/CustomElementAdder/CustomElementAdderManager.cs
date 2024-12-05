@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CustomElementAdderManager : MonoBehaviour, I_CustomUi
+public class CustomElementAdderManager : CustomUI
 {
     [Header("Properties")]
     public TypeOrText name;
@@ -20,7 +20,7 @@ public class CustomElementAdderManager : MonoBehaviour, I_CustomUi
     private RectTransform _rectTransform;
     private float _height;
     
-    public void Init(CustomUICollectionManager collectionManager)
+    public override void Init(CustomUICollectionManager collectionManager)
     {
         text.text = name.type;
         add.onClick.AddListener(AddElement);
@@ -31,7 +31,7 @@ public class CustomElementAdderManager : MonoBehaviour, I_CustomUi
         _height = _rectTransform.rect.height;
     }
 
-    public float Align(Vector3 pos)
+    public override float Align(Vector3 pos)
     {
         float height = _height;
         
@@ -46,7 +46,7 @@ public class CustomElementAdderManager : MonoBehaviour, I_CustomUi
             if (parameter.activeSelf == false)
                 continue;
             
-            I_CustomUi cI = parameter.GetComponent<I_CustomUi>();
+            CustomUI cI = parameter.GetComponent<CustomUI>();
             
             if (cI == null || cI.Equals(null))
                 continue;
@@ -59,13 +59,13 @@ public class CustomElementAdderManager : MonoBehaviour, I_CustomUi
         return height;
     }
 
-    public string ToCWorld()
+    public override string ToCWorld()
     {
         string result = "";
         
         foreach (var element in elements)
         {
-            I_CustomUi cI = element.GetComponent<I_CustomUi>();
+            CustomUI cI = element.GetComponent<CustomUI>();
             
             if (cI == null || cI.Equals(null))
                 continue;
@@ -82,7 +82,7 @@ public class CustomElementAdderManager : MonoBehaviour, I_CustomUi
         GameObject element = Instantiate(elementPrefab, content);
         elements.Add(element);
         
-        I_CustomUi cI = element.GetComponent<I_CustomUi>();
+        CustomUI cI = element.GetComponent<CustomUI>();
         cI.Init(_collectionManager);
         
         _collectionManager.AlignCollections();

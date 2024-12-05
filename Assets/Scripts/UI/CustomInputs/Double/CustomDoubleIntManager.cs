@@ -43,8 +43,11 @@ public class CustomDoubleIntManager : CustomDoubleAbstractManager
     {
         if (!isChecked) return "";
         
-        int a = int.Parse(_fieldA.text);
-        int b = int.Parse(_fieldB.text);
+        string stringA = _fieldA.text.Replace(',', '.');
+        string stringB = _fieldB.text.Replace(',', '.');
+        
+        int a = int.Parse(stringA);
+        int b = int.Parse(stringB);
         
         string nameStr = doName ? name.text : "";
 

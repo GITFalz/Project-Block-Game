@@ -9,8 +9,6 @@ public class CustomDropdownNoiseParameterManager : CustomSingleDropdownAbstractM
     
     public override void Init(CustomUICollectionManager collectionManager)
     {
-        _collectionsManager = collectionManager;
-        
         Dropdown1 = transform.Find("Dropdown").Find("Dropdown1").GetComponent<TMP_Dropdown>();
         Dropdown1.ClearOptions();
         
@@ -20,9 +18,6 @@ public class CustomDropdownNoiseParameterManager : CustomSingleDropdownAbstractM
         }
         
         input.Init(collectionManager);
-        
-        _rectTransform = transform.GetComponent<RectTransform>();
-        _height = _rectTransform.rect.height;
     }
     
     public override string ToCWorld()

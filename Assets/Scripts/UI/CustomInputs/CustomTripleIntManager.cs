@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CustomTripleIntManager : MonoBehaviour, I_CustomUi
+public class CustomTripleIntManager : CustomUI
 {
     [Header("Properties")] 
     public TypeOrText name;
@@ -16,7 +16,7 @@ public class CustomTripleIntManager : MonoBehaviour, I_CustomUi
     private RectTransform _rectTransform;
     private float _height;
 
-    public void Init(CustomUICollectionManager collectionManager)
+    public override void Init(CustomUICollectionManager collectionManager)
     {
         _text = transform.Find("Text").GetComponent<TMP_Text>();
         _text.text = name.type;
@@ -29,7 +29,7 @@ public class CustomTripleIntManager : MonoBehaviour, I_CustomUi
         _height = _rectTransform.rect.height;
     }
 
-    public float Align(Vector3 position)
+    public override float Align(Vector3 position)
     {
         Debug.Log("Double: " + position);
         
@@ -37,7 +37,7 @@ public class CustomTripleIntManager : MonoBehaviour, I_CustomUi
         return _height;
     }
 
-    public string ToCWorld()
+    public override string ToCWorld()
     {
         int a = int.Parse(_fieldA.text);
         int b = int.Parse(_fieldB.text);

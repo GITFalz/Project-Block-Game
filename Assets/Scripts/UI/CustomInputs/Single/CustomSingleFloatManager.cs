@@ -20,8 +20,8 @@ public class CustomSingleFloatManager : CustomSingleAbstractManager
     public override string ToCWorld()
     {
         if (!isChecked) return "";
-        
-        float a = float.Parse(_fieldA.text, CultureInfo.InvariantCulture);
+        string stringA = _fieldA.text.Replace(',', '.');
+        float a = float.Parse(stringA, CultureInfo.InvariantCulture);
         string aStr = a.ToString(CultureInfo.InvariantCulture);
         return $"{name.text} {aStr}\n";
     }

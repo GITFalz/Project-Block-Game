@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
+public class CustomNodeGroupManager : CustomUI
 {
     [Header("Parameters")] 
     public TypeOrText name;
@@ -20,14 +20,13 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
     public TMP_Text _text;
     
     private Transform _content;
-    private CustomUiUpdater _updater;
     
     private float _height;
     private RectTransform _rectTransform;
 
     private int _index;
 
-    public void Init(CustomUICollectionManager collectionManager)
+    public override void Init(CustomUICollectionManager collectionManager)
     {
         collectionsManager = collectionManager;
         
@@ -39,6 +38,7 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
         
         _inputField = transform.Find("Panel").Find("Under").Find("Input").GetComponent<TMP_InputField>();
         _inputField.onValueChanged.AddListener((value) => OnChange());
+       
         
         _content = transform.Find("Content");
         _rectTransform = transform.Find("Panel").Find("Under").GetComponent<RectTransform>();
@@ -50,7 +50,7 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
         
         foreach (Transform p in _content)
         {
-            I_CustomUi cI = p.GetComponent<I_CustomUi>();
+            CustomUI cI = p.GetComponent<CustomUI>();
             
             if (cI == null || cI.Equals(null))
                 continue;
@@ -58,8 +58,6 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
             cI.Init(collectionManager);
             parameters.Add(p.gameObject);
         }
-
-        _updater = GameObject.Find("Managers").GetComponent<CustomUiUpdater>();
     }
 
     public void OnChange()
@@ -76,12 +74,9 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
         }
         
         collectionsManager.AlignCollections();
-
-        _updater.go = this.gameObject;
-        _updater.count = 3;
     }
 
-    public float Align(Vector3 pos)
+    public override float Align(Vector3 pos)
     {
         Debug.Log("Node Group: " + pos);
         
@@ -98,7 +93,7 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
             if (parameter.activeSelf == false)
                 continue;
             
-            I_CustomUi cI = parameter.GetComponent<I_CustomUi>();
+            CustomUI cI = parameter.GetComponent<CustomUI>();
             
             if (cI == null || cI.Equals(null))
                 continue;
@@ -111,7 +106,7 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
         return height;
     }
     
-    public string ToCWorld()
+    public override string ToCWorld()
     {
         string text = $"{name.text} ( name = {_inputField.text} )\n{{\n";
         foreach (var parameter in parameters)
@@ -119,7 +114,7 @@ public class CustomNodeGroupManager : MonoBehaviour, I_CustomUi
             if (parameter.activeSelf == false)
                 continue;
             
-            I_CustomUi cI = parameter.GetComponent<I_CustomUi>();
+            CustomUI cI = parameter.GetComponent<CustomUI>();
             
             if (cI == null || cI.Equals(null))
                 continue;
