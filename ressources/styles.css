@@ -365,21 +365,43 @@ nav .nav-box:hover {
 
 .mobile-menu {
     display: none;
-    z-index: 9999;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 999;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-.mobile-menu.active {
-    display: none;
-    position: absolute;
-    top: 90px;
-    right: 10px;
-    background-color: #333333;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    width: 150px;
-    transition: all 0.3s ease;
-    z-index: 9999;
+.mobile-menu a {
+    color: white;
+    font-size: 24px;
+    margin: 10px;
+    text-decoration: none;
+}
+
+.mobile-menu a:hover {
+    text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+    .mobile-menu {
+        display: none !important;
+    }
+}
+
+.show-menu {
+    display: flex !important;
+}
+
+.section {
+    padding-right: 100px;
+    padding-left: 100px;
+    padding-top: 20px;
 }
 
 .h-box {
@@ -430,6 +452,7 @@ footer {
     justify-content: center;
     align-items: center;
     gap: 20px;
+    padding-bottom: 120px;
 }
 
 .cv img
