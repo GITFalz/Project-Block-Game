@@ -199,12 +199,12 @@ nav .nav-box:hover {
 }
 
 .top-plans {
-    margin-top: 10px;
-    padding-right: 100px;
+    padding: 20px 0;
     display: flex;
     justify-content: start;
-    margin-left: 400px;
-    margin-bottom: 100px;
+    margin: 0 auto;
+    max-width: 700px;
+    width: 100%;
 }
 
 #profile-picture {
@@ -220,9 +220,9 @@ nav .nav-box:hover {
     display: flex;
     gap: 40px;
     box-sizing: border-box;
-    margin-right: 100px;
-    margin-left: 100px;
-    margin-bottom: 200px;
+    margin: 0 auto;
+    max-width: 700px;
+    width: 100%;
 }
 
 .about, .education {
@@ -398,10 +398,18 @@ nav .nav-box:hover {
     display: flex !important;
 }
 
+#bio {
+    padding: 20px;
+    height: 100%;
+    margin-bottom: 100px;
+}
+
 .section {
-    padding-right: 100px;
-    padding-left: 100px;
-    padding-top: 20px;
+    padding: 30px 20px;
+}
+
+.section:last-child {
+    margin-bottom: 200px;
 }
 
 .h-box {
@@ -420,7 +428,7 @@ nav .nav-box:hover {
 }
 
 .h-box a:hover {
-    background-color: #444444; /* Darker background on hover */
+    background-color: #444444;
     transform: scale(1.05);
 }
 
@@ -434,12 +442,13 @@ nav .nav-box:hover {
     transition: background-color 0.3s;
 }
 
-/* Close button hover effect */
+
 .h-box .close-btn:hover {
     background-color: #555555;
 }
 
 footer {
+    padding-top: 20px;
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -453,12 +462,42 @@ footer {
     align-items: center;
     gap: 20px;
     padding-bottom: 120px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.cv iframe
+{
+    max-width: 1000px;
+    width: 100%;
 }
 
 .cv img
 {
     padding-bottom: 200px;
     width: 500px;
+}
+
+@media (min-width: 768px) {
+    .section {
+        display: flex;
+        width: 700px;
+        height: 100%;
+        flex-direction: column;
+        align-items: start;
+        margin: 0 auto;
+    }
+
+    .section:last-child {
+        margin-bottom: 100px;
+    }
+
+    .seperator {
+        width: 700px;
+        flex-direction: column;
+        align-items: start;
+        margin: 0 auto;
+    }
 }
 
 @media screen and (max-width: 1280px) and (min-width: 768px) {
@@ -499,6 +538,7 @@ footer {
     .socials {
         flex-direction: row;
         gap: 10px;
+        margin: 0 auto;
     }
 
     .email {
@@ -523,6 +563,11 @@ footer {
     #name {
         left: 610px;
         width: 600px;
+    }
+
+    #bio
+    {
+        padding: 0;
     }
 }
 
@@ -619,6 +664,11 @@ footer {
         width: 280px;
         top: 30px;
         left: 50%;
+    }
+
+    #bio
+    {
+        padding: 0;
     }
 }
 
