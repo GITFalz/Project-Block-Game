@@ -150,35 +150,49 @@
                 <h1>Avancées</h1>
                 <div class="seperator"></div>
 
-                <p>Actuellement, le 12 janvier 2024 et après 1 mois et demi de travail, le projet fait environ 11 000
-                    lignes de code et a reçu une quantité énorme de fonctionnalités, telles que :</p>
+                <p>Actuellement, le 25 avril 2025, et après 5 mois et demi de travail, le projet compte entre 17 000 et 25 000 lignes de code et a acquis une quantité impressionnante de fonctionnalités, telles que :</p>
 
-                <p>- Un système de UI pour afficher des informations à l'écran.</p>
+                <ul>
+                    <li>Un système de UI permettant d'afficher des informations à l'écran. Il prend en charge le texte et les images, ainsi que des modules appelés “collections” et des paramètres d'alignement, permettant de positionner l'UI comme souhaité sans avoir à placer chaque élément individuellement.</li>
+                    <li>Un système de génération de terrain voxel, similaire à celui montré sur l’image ci-dessus. Ce système est accompagné d’une fenêtre permettant de personnaliser la génération du terrain via un système de "node", qui utilise le UI mentionné précédemment (vous pouvez voir un aperçu ci-contre). Un outil de création de formes géométriques est prévu, permettant aux joueurs de créer leur propre monde ainsi que des structures, comme des maisons et des végétaux.</li>
+                    <li>Un script de joueur permettant de parcourir le monde, ainsi que de placer ou casser des blocs. Un système d’inventaire basique est en cours de développement. Un outil pour la création de capacités (courir, sauter, attaquer) est aussi planifié, offrant aux joueurs la possibilité de créer des capacités uniques.</li>
+                    <li>Un système de modélisation 3D permettant de créer des objets, ainsi qu’un système d'animation pour animer ces objets créés avec le modeleur 3D (en cours de développement). Une fenêtre pour créer des textures et les appliquer directement sur le modèle 3D est aussi en préparation.</li>
+                </ul>
 
-                <p>- Un système de génération de terrain voxel, similaire à celui montré sur l’image ci-dessus.</p>
+                <p>Je tiens à préciser que, mis à part la base d’OpenTK pour afficher les modèles 3D, tout le reste a été codé par mes soins, sans l’utilisation de bibliothèques externes pour me faciliter la tâche. Pour le UI, il m'a fallu de nombreuses semaines sans répit pour apprendre les shaders, l'affichage sous diverses formes, la gestion des textures, afin de parvenir à un système presque optimisé.</p>
 
-                <p>- Un script de joueur pour pouvoir parcourir le monde.</p>
+                <p>Pour le modélisateur, je me suis inspiré de Blender, un outil très utilisé dans l’industrie. Plutôt que de créer un simple système d'importation, j'ai choisi de tout créer moi-même. Ce n'était peut-être pas la solution idéale, mais cela m’a permis d'apprendre énormément sur le code.</p>
 
-                <p>- Un système de modélisation 3D permettant de créer des objets (comme des épées, par exemple), bien
-                    que ce système ne soit pas encore totalement fonctionnel.</p>
+                <p>Encore une fois, le but de ce projet n'était pas uniquement de créer un jeu le plus facilement possible, mais aussi d'apprendre les bases de la programmation graphique. Cela me permettra de créer un moteur de jeu dans le futur, pour développer le jeu que je souhaite. C’est pourquoi je n’ai jamais eu l'envie d’utiliser d’autres bibliothèques, comme imGUI par exemple, pour me faciliter la tâche, bien qu’elles existent.</p>
 
-                <p>- Un système d'animation permettant d'animer les objets créés avec le modeleur 3D. (en cours de développement)</p>
 
-                <p>- Un éditeur de UI permettant de créer des interfaces directement dans le jeu, sans avoir à écrire
-                    de code très spécifique. Ces éléments sont maintenant sauvegardés dans un format spécial, tout
-                    comme les modèles 3D.</p>
-
-                <p>Je tiens à préciser que tout ce qui est affichage, à part la base de OpenTK pour afficher les
-                    modèles 3D, tout le reste a été codé par moi-même sans utiliser différents packages pour me
-                    faciliter la tâche. Pour le UI, il m'a fallu de nombreuses journées sans repos pour apprendre
-                    les shaders, l’affichage de différentes façons, la gestion de textures, pour enfin avoir un
-                    système presque optimisé.</p>
-
-                <p>Pour le modélisateur, j’ai pris inspiration de Blender, un outil très utilisé dans l’industrie.
-                    Au lieu de créer un système d’importation, j’ai décidé de créer tout moi-même, ce qui, en fin
-                    de compte, n’est pas la meilleure solution, mais qui m’a quand même fait apprendre plein de
-                    choses sur le code.</p>
-
+            </div>
+            <div class="image-list">
+                <div style="height: 50px;"> </div>
+                <div class="video-box">
+                    <div style="height: 50px;">System de node</div>
+                    <div class="image-container" onclick="enlargeImage('../ressources/images/Node-system.PNG')">
+                        <img src="../ressources/images/Node-system.PNG" alt="pbg" class="fixed-size-image">
+                    </div>
+                </div>
+                <div class="video-box">
+                    <div style="height: 50px;">Génération de monde basé sur les paramètres des nodes</div>
+                    <div class="image-container" onclick="enlargeImage('../ressources/images/Node-world.PNG')">
+                        <img src="../ressources/images/Node-world.PNG" alt="pbg" class="fixed-size-image">
+                    </div>
+                </div>
+                <div class="video-box">
+                    <div style="height: 50px;">Exemple de modèle 3D créer avec mon logiciel</div>
+                    <div class="image-container" onclick="enlargeImage('../ressources/images/Model-model.PNG')">
+                        <img src="../ressources/images/Model-model.PNG" alt="pbg" class="fixed-size-image">
+                    </div>
+                </div>
+                <div class="video-box">
+                    <div style="height: 50px;">Interface de dessin</div>
+                    <div class="image-container" onclick="enlargeImage('../ressources/images/Model-color.PNG')">
+                        <img src="../ressources/images/Model-color.PNG" alt="pbg" class="fixed-size-image">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
