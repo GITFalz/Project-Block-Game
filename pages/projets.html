@@ -156,7 +156,7 @@
                     <li>Un système de UI permettant d'afficher des informations à l'écran. Il prend en charge le texte et les images, ainsi que des modules appelés “collections” et des paramètres d'alignement, permettant de positionner l'UI comme souhaité sans avoir à placer chaque élément individuellement.</li>
                     <li>Un système de génération de terrain voxel, similaire à celui montré sur l’image ci-dessus. Ce système est accompagné d’une fenêtre permettant de personnaliser la génération du terrain via un système de "node", qui utilise le UI mentionné précédemment (vous pouvez voir un aperçu ci-contre). Un outil de création de formes géométriques est prévu, permettant aux joueurs de créer leur propre monde ainsi que des structures, comme des maisons et des végétaux.</li>
                     <li>Un script de joueur permettant de parcourir le monde, ainsi que de placer ou casser des blocs. Un système d’inventaire basique est en cours de développement. Un outil pour la création de capacités (courir, sauter, attaquer) est aussi planifié, offrant aux joueurs la possibilité de créer des capacités uniques.</li>
-                    <li>Un système de modélisation 3D permettant de créer des objets, ainsi qu’un système d'animation pour animer ces objets créés avec le modeleur 3D (en cours de développement). Une fenêtre pour créer des textures et les appliquer directement sur le modèle 3D est aussi en préparation.</li>
+                    <li>Un système de modélisation 3D permettant de créer des objets, ainsi qu’un système d'animation pour animer ces objets créés avec le modeleur 3D (en cours de développement). Il y a aussi une fenêtre pour créer des textures et les appliquer directement sur le modèle 3D, accompagnée d’un système d’édition UV pour aligner les textures comme on le souhaite.</li>
                 </ul>
 
                 <p>Je tiens à préciser que, mis à part la base d’OpenTK pour afficher les modèles 3D, tout le reste a été codé par mes soins, sans l’utilisation de bibliothèques externes pour me faciliter la tâche. Pour le UI, il m'a fallu de nombreuses semaines sans répit pour apprendre les shaders, l'affichage sous diverses formes, la gestion des textures, afin de parvenir à un système presque optimisé.</p>
@@ -169,28 +169,30 @@
             </div>
             <div class="image-list">
                 <div style="height: 50px;"> </div>
+                <div style="height: 50px;">(images cliquable)</div>
+                <div style="height: 50px;">System de node</div>
                 <div class="video-box">
-                    <div style="height: 50px;">System de node</div>
                     <div class="image-container" onclick="enlargeImage('../ressources/images/Node-system.PNG')">
                         <img src="../ressources/images/Node-system.PNG" alt="pbg" class="fixed-size-image">
                     </div>
                 </div>
+                <div style="height: 50px;">Génération de monde basé sur les paramètres des nodes</div>
                 <div class="video-box">
-                    <div style="height: 50px;">Génération de monde basé sur les paramètres des nodes</div>
                     <div class="image-container" onclick="enlargeImage('../ressources/images/Node-world.PNG')">
                         <img src="../ressources/images/Node-world.PNG" alt="pbg" class="fixed-size-image">
                     </div>
                 </div>
+                <div style="height: 50px;">Exemple de modèle 3D créer avec mon logiciel</div> 
                 <div class="video-box">
-                    <div style="height: 50px;">Exemple de modèle 3D créer avec mon logiciel</div>
-                    <div class="image-container" onclick="enlargeImage('../ressources/images/Model-model.PNG')">
-                        <img src="../ressources/images/Model-model.PNG" alt="pbg" class="fixed-size-image">
+                    <div class="image-container" onclick="enlargeImage('../ressources/images/Model_no_texture.PNG')">
+                        <img src="../ressources/images/Model_no_texture.PNG" alt="pbg" class="fixed-size-image">
                     </div>
                 </div>
-                <div class="video-box">
-                    <div style="height: 50px;">Interface de dessin</div>
-                    <div class="image-container" onclick="enlargeImage('../ressources/images/Model-color.PNG')">
-                        <img src="../ressources/images/Model-color.PNG" alt="pbg" class="fixed-size-image">
+                <div style="height: 50px;">Creation de texture</div>
+                <div class="video-box" style="display: flex; align-items: flex-start; justify-content: flex-start;">
+                    <div style="display: flex; flex-direction: row;" class="image-container">
+                        <img style="width: 50%; height: 50%;" src="../ressources/images/Model_create_texture.PNG" alt="pbg" class="fixed-size-image" onclick="enlargeImage('../ressources/images/Model_create_texture.PNG')">
+                        <img style="width: 50%; height: 50%;" src="../ressources/images/Model_applied_texture.png" alt="pbg" class="fixed-size-image" onclick="enlargeImage('../ressources/images/Model_applied_texture.png')">
                     </div>
                 </div>
             </div>
