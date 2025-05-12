@@ -424,5 +424,20 @@
             }
         }
     </style>
+    <script>
+        const modal = document.getElementById("image-modal");
+        const modalImage = document.getElementById("modal-image");
+        
+        function enlargeImage(source) {
+            modal.style.display = "flex";
+            modalImage.src = source;
+        }
+        
+        modal.addEventListener("click", function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        });
+    </script>
 </body>
 </html>
