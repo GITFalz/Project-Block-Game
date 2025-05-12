@@ -3,291 +3,426 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Page</title>
+    <title>Schinkel Björnar | Projets</title>
+    <meta name="description" content="Portfolio de Schinkel Björnar, développeur de jeux vidéo indépendant">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../ressources/styles.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <script src="../assets/js/main.js" defer></script>
 </head>
 <body>
-<div class="content">
-    <div class="top-content">
-        <nav>
-            <div id="acceuil">
-                <a href="../index.html">
-                    <img src="../ressources/images/acceuil.png" alt="Home" class="home-icon">
-                </a>
-            </div>
-            <div class="nav-items">
-                <ul>
-                    <li>
-                        <div class="nav-box">
-                            <a href="Bio.html">Bio</a>
+    <div class="container">
+        <header class="top-content">
+            <nav class="main-nav">
+                <div id="home-link">
+                    <a href="../index.html" aria-label="Accueil">
+                        <img src="../assets/images/acceuil.png" alt="Accueil" class="home-icon">
+                    </a>
+                </div>
+                
+                <div class="nav-items">
+                    <ul>
+                        <li><div class="nav-box"><a href="Bio.html">Bio</a></div></li>
+                        <li><div class="nav-box"><a href="cv.html">CV</a></div></li>
+                        <li><div class="nav-box"><a href="projets.html">Projets</a></div></li>
+                    </ul>
+                </div>
+                
+                <button id="hamburger-menu" class="hamburger-menu" aria-label="Menu" aria-expanded="false">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+                
+                <div id="mobile-menu" class="mobile-menu">
+                    <a href="Bio.html">Bio</a>
+                    <a href="cv.html">CV</a>
+                    <a href="projets.html">Projets</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <div class="main-content">
+                <!-- Project 1 -->
+                <div class="project-section">
+                    <div class="bio-container">
+                        <div class="projet-box">
+                            <h2 class="section-title">Projet unity (interrompu)</h2>
+                            
+                            <div class="project-content">
+                                <div class="project-media">
+                                    <iframe width="100%" height="400"
+                                        src="https://youtube.com/embed/n_V5ylPPw4Y"
+                                        title="YouTube video player"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        frameborder="0" allowfullscreen>
+                                    </iframe>
+                                    <p class="media-caption">Petite présentation du projet (en anglais, Novembre 2024)</p>
+                                </div>
+                                
+                                <div class="project-description">
+                                    <p>Ce projet a débuté au début du mois de septembre 2024, et j'y ai travaillé dès que possible pendant environ
+                                        3 à 4 mois.</p>
+
+                                    <p>L'objectif était de développer un moteur de jeu voxel permettant aux joueurs de concevoir leur propre jeu à
+                                        l'aide d'un système personnalisé basé sur des "Nodes".</p>
+
+                                    <p>Le moteur aurait inclus des éditeurs intégrés pour créer des blocs, des arbres, des terrains, des monstres,
+                                        des structures, etc. L'idée était de donner aux joueurs la liberté de créer de vastes paysages, qu'il s'agisse
+                                        de terrains complexes générés de manière procédurale ou de villes flottant dans le ciel. Le but était d'offrir
+                                        aux joueurs la possibilité de construire et de partager leurs mondes uniques avec leurs amis, tout en
+                                        encourageant la créativité et la collaboration.</p>
+
+                                    <p>Avec ce type de création de mondes, le joueur aurait pu créer et explorer son propre monde sans s'ennuyer.
+                                        En cas d'ennui, il lui aurait suffi de télécharger les « WorldPacks » créés par d'autres joueurs !</p>
+                                </div>
+                            </div>
                         </div>
-                    </li>
-                    <li>
-                        <div class="nav-box">
-                            <a href="cv.html">CV</a>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="project-section">
+                    <div class="separator-wrapper">
+                        <div class="separator"></div>
+                    </div>
+                    
+                    <div class="bio-container">
+                        <div class="projet-box">
+                            <h2 class="section-title">Application d'orientation étudiant</h2>
+                            
+                            <div class="project-content">
+                                <div class="project-description">
+                                    <p>Cette application a été réalisée sur une période de 3 à 4 mois dans le cadre d'un projet universitaire.</p> 
+
+                                    <p>L'objectif était de développer une application d'orientation pour les étudiants, visant à faciliter la consultation 
+                                        et la gestion des dossiers académiques.</p> 
+
+                                    <p>Le site propose plusieurs fonctionnalités, notamment une base de données qui stocke les informations de tous les 
+                                        étudiants. Il permet une navigation selon trois profils : étudiant, responsable de poursuite d'études (RPE) et école.</p> 
+
+                                    <p>Les responsables de poursuite d'études (RPE) sont chargés de gérer les notes des étudiants, d'émettre un avis sur leur 
+                                        dossier et de les partager avec les écoles partenaires. Ils jouent un rôle clé dans le suivi académique et l'orientation 
+                                        des étudiants.</p> 
+                                        
+                                    <p>En tant qu'étudiant, il est possible de consulter ses propres notes et de partager son dossier avec les écoles inscrites 
+                                        sur la plateforme. Cela facilite les candidatures et améliore la visibilité auprès des établissements.</p> 
+                                    
+                                    <p>Les écoles, quant à elles, ont la possibilité de consulter les dossiers et les avis des étudiants qui leur ont partagé 
+                                        leurs informations. Cela leur permet d'évaluer les candidatures et de sélectionner les profils correspondant à leurs critères.</p>
+                                </div>
+                                
+                                <div class="project-media">
+                                    <div class="image-container" onclick="enlargeImage('../assets/images/SiteWeb.PNG')">
+                                        <img src="../assets/images/SiteWeb.PNG" alt="Capture d'écran de l'application" class="fixed-size-image">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </li>
-                    <li>
-                        <div class="nav-box">
-                            <a href="projets.html">Projets</a>
+                    </div>
+                </div>
+
+                <!-- Project 3 -->
+                <div class="project-section">
+                    <div class="separator-wrapper">
+                        <div class="separator"></div>
+                    </div>
+                    
+                    <div class="bio-container">
+                        <div class="projet-box">
+                            <h2 class="section-title">Projet moteur de jeu (en cours)</h2>
+                            
+                            <div class="project-content">
+                                <div class="project-media">
+                                    <div class="image-container" onclick="enlargeImage('../assets/images/PBG-world.PNG')">
+                                        <img src="../assets/images/PBG-world.PNG" alt="Capture d'écran du monde du jeu" class="fixed-size-image">
+                                    </div>
+                                </div>
+                                
+                                <div class="project-description">
+                                    <p>Le projet de moteur de jeu a débuté après que j'ai arrêté de travailler sérieusement sur le projet Unity.
+                                        Pourquoi ? Parce que je trouvais que je m'appuyais trop sur un moteur de jeu déjà existant, et je
+                                        voulais étendre mes horizons en créant mon propre moteur de jeu, avec succès !</p>
+
+                                    <p>Tout d'abord, il faut savoir que le but de ce projet n'est pas de recréer un tout nouveau jeu, mais de
+                                        transférer mon projet Unity vers un projet avec mon propre moteur de jeu.</p>
+
+                                    <p>Ce processus a requis énormément de connaissances dans le domaine de la 3D et des
+                                        shaders, utilisés pour afficher des objets à l'écran. Il m'a donc fallu apprendre à utiliser le .NET
+                                        Framework ainsi que le package OpenTK, qui est une version d'OpenGL écrite en C# au lieu de C++, et
+                                        qui est responsable de l'affichage.</p>
+                                </div>
+                            </div>
+                            
+                            <h3 class="subsection-title">Avancées</h3>
+                            
+                            <div class="project-content">
+                                <div class="project-description">
+                                    <p>Actuellement, le 25 avril 2025, et après 5 mois et demi de travail, le projet compte entre 17 000 et 25 000 lignes de code et a acquis une quantité impressionnante de fonctionnalités, telles que :</p>
+
+                                    <ul>
+                                        <li>Un système de UI permettant d'afficher des informations à l'écran. Il prend en charge le texte et les images, ainsi que des modules appelés "collections" et des paramètres d'alignement, permettant de positionner l'UI comme souhaité sans avoir à placer chaque élément individuellement.</li>
+                                        <li>Un système de génération de terrain voxel, similaire à celui montré sur l'image ci-dessus. Ce système est accompagné d'une fenêtre permettant de personnaliser la génération du terrain via un système de "node", qui utilise le UI mentionné précédemment. Un outil de création de formes géométriques est prévu, permettant aux joueurs de créer leur propre monde ainsi que des structures, comme des maisons et des végétaux.</li>
+                                        <li>Un script de joueur permettant de parcourir le monde, ainsi que de placer ou casser des blocs. Un système d'inventaire basique est en cours de développement. Un outil pour la création de capacités (courir, sauter, attaquer) est aussi planifié, offrant aux joueurs la possibilité de créer des capacités uniques.</li>
+                                        <li>Un système de modélisation 3D permettant de créer des objets, ainsi qu'un système d'animation pour animer ces objets créés avec le modeleur 3D (en cours de développement). Il y a aussi une fenêtre pour créer des textures et les appliquer directement sur le modèle 3D, accompagnée d'un système d'édition UV pour aligner les textures comme on le souhaite.</li>
+                                    </ul>
+
+                                    <p>Je tiens à préciser que, mis à part la base d'OpenTK pour afficher les modèles 3D, tout le reste a été codé par mes soins, sans l'utilisation de bibliothèques externes pour me faciliter la tâche. Pour le UI, il m'a fallu de nombreuses semaines sans répit pour apprendre les shaders, l'affichage sous diverses formes, la gestion des textures, afin de parvenir à un système presque optimisé.</p>
+
+                                    <p>Pour le modélisateur, je me suis inspiré de Blender, un outil très utilisé dans l'industrie. Plutôt que de créer un simple système d'importation, j'ai choisi de tout créer moi-même. Ce n'était peut-être pas la solution idéale, mais cela m'a permis d'apprendre énormément sur le code.</p>
+
+                                    <p>Encore une fois, le but de ce projet n'était pas uniquement de créer un jeu le plus facilement possible, mais aussi d'apprendre les bases de la programmation graphique. Cela me permettra de créer un moteur de jeu dans le futur, pour développer le jeu que je souhaite. C'est pourquoi je n'ai jamais eu l'envie d'utiliser d'autres bibliothèques, comme imGUI par exemple, pour me faciliter la tâche, bien qu'elles existent.</p>
+                                </div>
+                                
+                                <div class="project-gallery">
+                                    <h4>Captures d'écran du projet (cliquez pour agrandir)</h4>
+                                    
+                                    <div class="gallery-item">
+                                        <p>Système de node</p>
+                                        <div class="image-container" onclick="enlargeImage('../assets/images/Node-system.PNG')">
+                                            <img src="../assets/images/Node-system.PNG" alt="Système de node" class="fixed-size-image">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="gallery-item">
+                                        <p>Génération de monde basé sur les paramètres des nodes</p>
+                                        <div class="image-container" onclick="enlargeImage('../assets/images/Node-world.PNG')">
+                                            <img src="../assets/images/Node-world.PNG" alt="Monde généré par nodes" class="fixed-size-image">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="gallery-item">
+                                        <p>Exemple de modèle 3D créé avec mon logiciel</p>
+                                        <div class="image-container" onclick="enlargeImage('../assets/images/Model_no_texture.PNG')">
+                                            <img src="../assets/images/Model_no_texture.PNG" alt="Modèle 3D sans texture" class="fixed-size-image">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="gallery-item">
+                                        <p>Création de texture et application sur le modèle</p>
+                                        <div class="dual-image-container">
+                                            <div class="image-half" onclick="enlargeImage('../assets/images/Model_create_texture.PNG')">
+                                                <img src="../assets/images/Model_create_texture.PNG" alt="Création de texture" class="fixed-size-image">
+                                            </div>
+                                            <div class="image-half" onclick="enlargeImage('../assets/images/Model_applied_texture.PNG')">
+                                                <img src="../assets/images/Model_applied_texture.PNG" alt="Texture appliquée" class="fixed-size-image">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </li>
-                </ul>
+                    </div>
+                </div>
             </div>
-            <div id="hamburger-menu" onclick="toggle()" class="hamburger-menu">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
-            <div id="hamburger-menu-items" class="mobile-menu">
-                <a href="Bio.html">Bio</a>
-                <a href="cv.html">CV</a>
-                <a href="projets.html">Projets</a>
-            </div>
-        </nav>
-    </div>
-    <div class="videos">
-        <div class="video-description">
-            <div class="video-box">
-                <iframe width="600" height="400"
-                        src="https://youtube.com/embed/n_V5ylPPw4Y"
-                        title="YouTube video player"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        frameborder="0" allowfullscreen>
-                </iframe>
-                <div class="video-title">
-                    <a href="https://youtube.com/embed/n_V5ylPPw4Y">
-                        <p>Petite présentation du projet (en anglais, Novembre 2024)</p>
+        </main>
+
+        <footer>
+            <div class="contact">
+                <div class="contact-heading">
+                    <h2>Contactez moi</h2>
+                </div>
+                <div class="email">
+                    <p>bjornarvalkea@gmail.com</p>
+                </div>
+                <div class="socials">
+                    <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/" aria-label="LinkedIn Profile">
+                        <img src="../assets/images/linkedIn.png" alt="LinkedIn">
                     </a>
                 </div>
             </div>
-            <div class="full-description">
-                <h1>Projet unity (interrompu)</h1>
-                <div class="seperator"></div>
-
-                <p>Ce projet a débuté au début du mois de septembre 2024, et j'y ai travaillé dès que possible pendant environ
-                    3 à 4 mois.</p>
-
-                <p>L'objectif était de développer un moteur de jeu voxel permettant aux joueurs de concevoir leur propre jeu à
-                    l'aide d'un système personnalisé basé sur des "Nodes".</p>
-
-                <p>Le moteur aurait inclus des éditeurs intégrés pour créer des blocs, des arbres, des terrains, des monstres,
-                    des structures, etc. L'idée était de donner aux joueurs la liberté de créer de vastes paysages, qu'il s'agisse
-                    de terrains complexes générés de manière procédurale ou de villes flottant dans le ciel. Le but était d'offrir
-                    aux joueurs la possibilité de construire et de partager leurs mondes uniques avec leurs amis, tout en
-                    encourageant la créativité et la collaboration.</p>
-
-                <p>Avec ce type de création de mondes, le joueur aurait pu créer et explorer son propre monde sans s'ennuyer.
-                    En cas d'ennui, il lui aurait suffi de télécharger les « WorldPacks » créés par d'autres joueurs !</p>
-            </div>
+        </footer>
+    </div>
+    
+    <div id="image-modal" class="modal">
+        <div class="modal-content">
+            <img id="modal-image" src="" alt="Enlarged Image">
         </div>
     </div>
-    <div class="seperator" id="project-seperator"></div>
-    <div class="videos">
-        <div class="video-description">
-            <div class="full-description">
-                <h1>Application d'orientation étudiant</h1>
-                <div class="seperator"></div>
 
-                <p>Cette application a été réalisée sur une période de 3 à 4 mois dans le cadre d’un projet universitaire.</p> 
-
-                <p>L'objectif était de développer une application d’orientation pour les étudiants, visant à faciliter la consultation 
-                    et la gestion des dossiers académiques.</p> 
-
-                <p>Le site propose plusieurs fonctionnalités, notamment une base de données qui stocke les informations de tous les 
-                    étudiants. Il permet une navigation selon trois profils : étudiant, responsable de poursuite d'études (RPE) et école.</p> 
-
-                <p>Les responsables de poursuite d'études (RPE) sont chargés de gérer les notes des étudiants, d’émettre un avis sur leur 
-                    dossier et de les partager avec les écoles partenaires. Ils jouent un rôle clé dans le suivi académique et l’orientation 
-                    des étudiants.</p> 
-                    
-                <p>En tant qu'étudiant, il est possible de consulter ses propres notes et de partager son dossier avec les écoles inscrites 
-                    sur la plateforme. Cela facilite les candidatures et améliore la visibilité auprès des établissements.</p> 
-                
-                <p>Les écoles, quant à elles, ont la possibilité de consulter les dossiers et les avis des étudiants qui leur ont partagé 
-                    leurs informations. Cela leur permet d’évaluer les candidatures et de sélectionner les profils correspondant à leurs critères.</p>
-
-            </div>
-            <div class="video-box">
-                <div class="image-container" onclick="enlargeImage('../ressources/images/SiteWeb.PNG')">
-                    <img src="../ressources/images/SiteWeb.PNG" alt="pbg" class="fixed-size-image">
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="seperator" id="project-seperator"></div>
-    <div class="videos2">
-        <div class="video-description">
-            <div class="video-box">
-                <div class="image-container" onclick="enlargeImage('../ressources/images/PBG-world.PNG')">
-                    <img src="../ressources/images/PBG-world.PNG" alt="pbg" class="fixed-size-image">
-                </div>
-            </div>
-            <div class="right-description">
-                <h1>Projet moteur de jeu (en cours)</h1>
-                <div class="seperator"></div>
-
-                <p>Le projet de moteur de jeu a débuté après que j'ai arrêté de travailler sérieusement sur le projet Unity.
-                    Pourquoi ? Parce que je trouvais que je m'appuyais trop sur un moteur de jeu déjà existant, et je
-                    voulais étendre mes horizons en créant mon propre moteur de jeu, avec
-                    succès !
-                </p>
-
-                <p>Tout d'abord, il faut savoir que le but de ce projet n'est pas de recréer un tout nouveau jeu, mais de
-                    transférer mon projet Unity vers un projet avec mon propre moteur de jeu.
-                </p>
-
-                <p>Ce processus a requis énormément de connaissances dans le domaine de la 3D et des
-                    shaders, utilisés pour afficher des objets à l'écran. Il m'a donc fallu apprendre à utiliser le .NET
-                    Framework ainsi que le package OpenTK, qui est une version d'OpenGL écrite en C# au lieu de C++, et
-                    qui est responsable de l'affichage.
-                </p>
-            </div>
-        </div>
-        <div class="video-description">
-            <div class="left-description">
-                <h1>Avancées</h1>
-                <div class="seperator"></div>
-
-                <p>Actuellement, le 25 avril 2025, et après 5 mois et demi de travail, le projet compte entre 17 000 et 25 000 lignes de code et a acquis une quantité impressionnante de fonctionnalités, telles que :</p>
-
-                <ul>
-                    <li>Un système de UI permettant d'afficher des informations à l'écran. Il prend en charge le texte et les images, ainsi que des modules appelés “collections” et des paramètres d'alignement, permettant de positionner l'UI comme souhaité sans avoir à placer chaque élément individuellement.</li>
-                    <li>Un système de génération de terrain voxel, similaire à celui montré sur l’image ci-dessus. Ce système est accompagné d’une fenêtre permettant de personnaliser la génération du terrain via un système de "node", qui utilise le UI mentionné précédemment (vous pouvez voir un aperçu ci-contre). Un outil de création de formes géométriques est prévu, permettant aux joueurs de créer leur propre monde ainsi que des structures, comme des maisons et des végétaux.</li>
-                    <li>Un script de joueur permettant de parcourir le monde, ainsi que de placer ou casser des blocs. Un système d’inventaire basique est en cours de développement. Un outil pour la création de capacités (courir, sauter, attaquer) est aussi planifié, offrant aux joueurs la possibilité de créer des capacités uniques.</li>
-                    <li>Un système de modélisation 3D permettant de créer des objets, ainsi qu’un système d'animation pour animer ces objets créés avec le modeleur 3D (en cours de développement). Il y a aussi une fenêtre pour créer des textures et les appliquer directement sur le modèle 3D, accompagnée d’un système d’édition UV pour aligner les textures comme on le souhaite.</li>
-                </ul>
-
-                <p>Je tiens à préciser que, mis à part la base d’OpenTK pour afficher les modèles 3D, tout le reste a été codé par mes soins, sans l’utilisation de bibliothèques externes pour me faciliter la tâche. Pour le UI, il m'a fallu de nombreuses semaines sans répit pour apprendre les shaders, l'affichage sous diverses formes, la gestion des textures, afin de parvenir à un système presque optimisé.</p>
-
-                <p>Pour le modélisateur, je me suis inspiré de Blender, un outil très utilisé dans l’industrie. Plutôt que de créer un simple système d'importation, j'ai choisi de tout créer moi-même. Ce n'était peut-être pas la solution idéale, mais cela m’a permis d'apprendre énormément sur le code.</p>
-
-                <p>Encore une fois, le but de ce projet n'était pas uniquement de créer un jeu le plus facilement possible, mais aussi d'apprendre les bases de la programmation graphique. Cela me permettra de créer un moteur de jeu dans le futur, pour développer le jeu que je souhaite. C’est pourquoi je n’ai jamais eu l'envie d’utiliser d’autres bibliothèques, comme imGUI par exemple, pour me faciliter la tâche, bien qu’elles existent.</p>
-
-
-            </div>
-            <div class="image-list">
-                <div style="height: 50px;"> </div>
-                <div style="height: 50px;">(images cliquable)</div>
-                <div style="height: 50px;">System de node</div>
-                <div class="video-box">
-                    <div class="image-container" onclick="enlargeImage('../ressources/images/Node-system.PNG')">
-                        <img src="../ressources/images/Node-system.PNG" alt="pbg" class="fixed-size-image">
-                    </div>
-                </div>
-                <div style="height: 50px;">Génération de monde basé sur les paramètres des nodes</div>
-                <div class="video-box">
-                    <div class="image-container" onclick="enlargeImage('../ressources/images/Node-world.PNG')">
-                        <img src="../ressources/images/Node-world.PNG" alt="pbg" class="fixed-size-image">
-                    </div>
-                </div>
-                <div style="height: 50px;">Exemple de modèle 3D créer avec mon logiciel</div> 
-                <div class="video-box">
-                    <div class="image-container" onclick="enlargeImage('../ressources/images/Model_no_texture.PNG')">
-                        <img src="../ressources/images/Model_no_texture.PNG" alt="pbg" class="fixed-size-image">
-                    </div>
-                </div>
-                <div style="height: 50px;">Creation de texture</div>
-                <div class="video-box" style="display: flex; align-items: flex-start; justify-content: flex-start;">
-                    <div style="display: flex; flex-direction: row;" class="image-container">
-                        <img style="width: 50%; height: 50%;" src="../ressources/images/Model_create_texture.PNG" alt="pbg" class="fixed-size-image" onclick="enlargeImage('../ressources/images/Model_create_texture.PNG')">
-                        <img style="width: 50%; height: 50%;" src="../ressources/images/Model_applied_texture.PNG" alt="pbg" class="fixed-size-image" onclick="enlargeImage('../ressources/images/Model_applied_texture.PNG')">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div id="image-modal" class="modal">
-    <div class="modal-content">
-        <img id="modal-image" src="" alt="Enlarged Image">
-    </div>
-</div>
-</body>
-<style>
-    .image-container
-    {
-        width: 600px;
-        height: 400px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-    }
-
-    .fixed-size-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        overflow: hidden;
-    }
-
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(5px);
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-
-    .modal-content {
-        max-width: 90%;
-        max-height: 90%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .modal-content img {
-        max-width: 100%;
-        max-height: 100%;
-        border-radius: 10px;
-    }
-</style>
-<footer>
-    <div class="contact">
-        <div id="contact-text">
-            <h1>Contactez moi</h1>
-        </div>
-        <div class="email">
-            <h2>bjornarvalkea@gmail.com</h2>
-        </div>
-        <div class="socials">
-            <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/">
-                <img src="../ressources/images/linkedIn.png" alt="linkedIn-profil" >
-            </a>
-        </div>
-    </div>
-</footer>
-</html>
-
-<script>
-    const modal = document.getElementById("image-modal");
-    const modalImage = document.getElementById("modal-image");
-
-    const siteWebImage = document.querySelector('.image-container');
-
-    function enlargeImage(source)
-    {
-        modal.style.display = "flex";
-        modalImage.src = source;
-    }
-
-    modal.addEventListener("click", function(event) {
-        if (event.target === modal) {
-            modal.style.display = "none";
+    <style>
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
         }
-    });
+        
+        .project-section {
+            margin: var(--spacing-lg) 0;
+        }
+        
+        .project-content {
+            display: flex;
+            flex-direction: row;
+            gap: var(--spacing-lg);
+            margin: var(--spacing-md) 0;
+        }
+        
+        .project-media, .project-description {
+            flex: 1;
+        }
+        
+        .project-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .gallery-item {
+            max-width: 500px;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .media-caption {
+            text-align: center;
+            margin-top: var(--spacing-sm);
+            font-style: italic;
+        }
+        
+        .subsection-title {
+            margin: var(--spacing-lg) 0 var(--spacing-md);
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .image-container {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            aspect-ratio: 3/2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            cursor: pointer;
+            border-radius: 4px;
+            box-shadow: var(--box-shadow);
+            transition: transform var(--transition-speed);
+        }
+        
+        .image-container:hover {
+            transform: scale(1.02);
+        }
+        
+        .fixed-size-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .dual-image-container {
+            display: flex;
+            gap: var(--spacing-sm);
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .image-half {
+            flex: 1;
+            height: auto;
+            aspect-ratio: 3/2;
+            overflow: hidden;
+            cursor: pointer;
+            border-radius: 4px;
+            box-shadow: var(--box-shadow);
+            transition: transform var(--transition-speed);
+        }
+        
+        .image-half:hover {
+            transform: scale(1.02);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
 
-    function toggle() {
-        let menu = document.getElementById("hamburger-menu-items");
-        menu.classList.toggle("show-menu");
-    }
-</script>
+        @media screen and (max-width: 1300px) {
+            .main-content {
+                padding-left: 50px;
+                padding-right: 50px;
+            }
+        }
+        
+        /* Media queries for responsive design */
+        @media screen and (max-width: 1000px) {
+            .image-container, .dual-image-container {
+                max-width: 700px;
+            }
+        }
+        
+        @media screen and (max-width: 900px) {
+            .project-content {
+                flex-direction: column;
+            }
+
+            .image-container, .dual-image-container {
+                max-width: 100%;
+            }
+            
+            .project-description ul {
+                padding-left: 20px;
+            }
+
+        }
+        
+        @media screen and (max-width: 600px) {
+
+            .project-description p, 
+            .project-description li {
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            
+            .subsection-title {
+                font-size: 18px;
+            }
+            
+            .project-content {
+                gap: var(--spacing-md);
+            }
+            
+            .dual-image-container {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+
+            .main-content {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .seperator-wrapper {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+    </style>
+</body>
+</html>

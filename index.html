@@ -3,109 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Page</title>
+    <title>Schinkel Björnar | Portfolio</title>
+    <meta name="description" content="Portfolio de Schinkel Björnar, développeur de jeux vidéo indépendant">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="ressources/styles.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <script src="assets/js/main.js" defer></script>
 </head>
 <body>
-<div class="content">
-    <div class="top-content">
-        <nav>
-            <div id="acceuil">
-                <a href="index.html">
-                    <img src="ressources/images/acceuil.png" alt="Home" class="home-icon">
-                </a>
+    <div class="container">
+        <header class="top-content">
+            <nav class="main-nav">
+                <div id="home-link">
+                    <a href="index.html" aria-label="Accueil">
+                        <img src="assets/images/acceuil.png" alt="Accueil" class="home-icon">
+                    </a>
+                </div>
+                
+                <div class="nav-items">
+                    <ul>
+                        <li><div class="nav-box"><a href="pages/Bio.html">Bio</a></div></li>
+                        <li><div class="nav-box"><a href="pages/cv.html">CV</a></div></li>
+                        <li><div class="nav-box"><a href="pages/projets.html">Projets</a></div></li>
+                    </ul>
+                </div>
+                
+                <button id="hamburger-menu" class="hamburger-menu" aria-label="Menu" aria-expanded="false">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+                
+                <div id="mobile-menu" class="mobile-menu">
+                    <a href="pages/Bio.html">Bio</a>
+                    <a href="pages/cv.html">CV</a>
+                    <a href="pages/projets.html">Projets</a>
+                </div>
+            </nav>
+            
+            <div class="hero">
+                <div id="profile-container" class="profile-container">
+                    <img id="profile-picture" src="assets/images/profile-photo.png" alt="Photo de Schinkel Björnar">
+                </div>
+                <div id="name" class="name">
+                    <h1>SCHINKEL Björnar</h1>
+                </div>
             </div>
-            <div class="nav-items">
-                <ul>
-                    <li>
-                        <div class="nav-box">
-                            <a href="pages/Bio.html">Bio</a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="nav-box">
-                            <a href="pages/cv.html">CV</a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="nav-box">
-                            <a href="pages/projets.html">Projets</a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            <div id="hamburger-menu" onclick="toggle()" class="hamburger-menu">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
-            <div id="hamburger-menu-items" class="mobile-menu">
-                <a href="pages/Bio.html">Bio</a>
-                <a href="pages/cv.html">CV</a>
-                <a href="pages/projets.html">Projets</a>
-            </div>
-        </nav>
-        <div class="top">
-            <div id="profile-container" class="top-box">
-                <img id="profile-picture"  src="ressources/images/profile-photo.png" alt="Photo Schinkel Björnar">
-            </div>
-            <div id="name">
-                <h1>SCHINKEL Björnar</h1>
-            </div>
-        </div>
-    </div>
-    <div id="plans-fr" class="top-plans">
-        <p>
-            Je m'appelle Schinkel Björnar et mon objectif est de devenir développeur de jeux vidéo indépendant. À long terme, je souhaite créer un
-            studio de développement ou collaborer avec une équipe pour concevoir des jeux favorisant l'exploration et
-            la créativité.
-        </p>
-    </div>
-    <div class="seperator"></div>
-    <div class="presentation">
-        <div id="about-fr" class="presentaion-box about">
-            <div class="pres-title">
-                <h2>Sur moi</h2>
-            </div>
-            <p>
-                Je suis un étudiant en informatique et je suis passionné par le développement de jeux vidéo et la programmation depuis mon
-                enfance. Actuellement, je travaille sur un moteur de jeu voxel personnalisé. J'ai exploré divers langages
-                comme C#, Java, Python et PHP.
-            </p>
-        </div>
-        <div id="education-fr" class="presentaion-box education">
-            <div class="pres-title">
-                <h2>Education</h2>
-            </div>
-            <p>2023 - Présent : BUT Informatique (spécialisation en développement d’application).</p>
-            <p>  2021 - 2023 : Baccalauréat en sciences et technologies de l'industrie et du développement durable.</p>
-            <p>  Compétences : Programmation orientée objet, développement web, gestion de projet, et création d’interfaces utilisateur.            </p>
-        </div>
-    </div>
+        </header>
 
-</div>
+        <main>
+            <div class="main-content">
+                <section class="intro">
+                    <div class="intro-text">
+                        <p>
+                            Je m'appelle Schinkel Björnar et mon objectif est de devenir développeur de jeux vidéo indépendant. 
+                            À long terme, je souhaite créer un studio de développement ou collaborer avec une équipe pour 
+                            concevoir des jeux favorisant l'exploration et la créativité.
+                        </p>
+                    </div>
+                </section>
+                
+                <div class="separator-wrapper"><div class="separator"></div></div>
+                
+                <section class="about-section">
+                    <div class="about-container">
+                        <div class="about-box">
+                            <div class="section-title">
+                                <h2>Sur moi</h2>
+                            </div>
+                            <p>
+                                Je suis un étudiant en informatique et je suis passionné par le développement de jeux vidéo 
+                                et la programmation depuis mon enfance. Actuellement, je travaille sur un moteur de jeu voxel 
+                                personnalisé. J'ai exploré divers langages comme C#, Java, Python et PHP.
+                            </p>
+                        </div>
+                        
+                        <div class="education-box">
+                            <div class="section-title">
+                                <h2>Education</h2>
+                            </div>
+                            <p>2023 - Présent : BUT Informatique (spécialisation en développement d'application).</p>
+                            <p>2021 - 2023 : Baccalauréat en sciences et technologies de l'industrie et du développement durable.</p>
+                            <p>Compétences : Programmation orientée objet, développement web, gestion de projet, et création d'interfaces utilisateur.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer>
+            <div class="contact">
+                <div class="contact-heading">
+                    <h2>Contactez moi</h2>
+                </div>
+                <div class="email">
+                    <p>bjornarvalkea@gmail.com</p>
+                </div>
+                <div class="socials">
+                    <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/" aria-label="LinkedIn Profile">
+                        <img src="assets/images/linkedIn.png" alt="LinkedIn">
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
 </body>
-<footer>
-    <div class="contact">
-        <div id="contact-text">
-            <h1>Contactez moi</h1>
-        </div>
-        <div class="email">
-            <h2>bjornarvalkea@gmail.com</h2>
-        </div>
-        <div class="socials">
-            <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/">
-                <img src="ressources/images/linkedIn.png" alt="linkedIn-profil" >
-            </a>
-        </div>
-    </div>
-</footer>
 </html>
-
-<script>
-    function toggle() {
-        let menu = document.getElementById("hamburger-menu-items");
-        menu.classList.toggle("show-menu");
-    }
-</script>

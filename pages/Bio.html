@@ -1,108 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Page</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../ressources/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Schinkel Björnar | Bio</title>
+  <meta name="description" content="Portfolio de Schinkel Björnar, développeur de jeux vidéo indépendant" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/styles.css"/>
+  <script src="../assets/js/main.js" defer></script>
 </head>
 <body>
-<div class="content">
-    <div class="top-content">
-        <nav>
-            <div id="acceuil">
-                <a href="../index.html">
-                    <img src="../ressources/images/acceuil.png" alt="Home" class="home-icon">
+  <div class="container">
+    <header class="top-content">
+        <nav class="main-nav">
+            <div id="home-link">
+                <a href="../index.html" aria-label="Accueil">
+                    <img src="../assets/images/acceuil.png" alt="Accueil" class="home-icon">
                 </a>
             </div>
+            
             <div class="nav-items">
                 <ul>
-                    <li>
-                        <div class="nav-box">
-                            <a href="Bio.html">Bio</a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="nav-box">
-                            <a href="cv.html">CV</a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="nav-box">
-                            <a href="projets.html">Projets</a>
-                        </div>
-                    </li>
+                    <li><div class="nav-box"><a href="Bio.html">Bio</a></div></li>
+                    <li><div class="nav-box"><a href="cv.html">CV</a></div></li>
+                    <li><div class="nav-box"><a href="projets.html">Projets</a></div></li>
                 </ul>
             </div>
-            <div id="hamburger-menu" onclick="toggle()" class="hamburger-menu">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
-            <div id="hamburger-menu-items" class="mobile-menu">
+            
+            <button id="hamburger-menu" class="hamburger-menu" aria-label="Menu" aria-expanded="false">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+            
+            <div id="mobile-menu" class="mobile-menu">
                 <a href="Bio.html">Bio</a>
                 <a href="cv.html">CV</a>
                 <a href="projets.html">Projets</a>
             </div>
         </nav>
-    </div>
+    </header>
 
-    <div id="bio">
-        <div class="section">
-            <h1>Biographie</h1>
-            <p>Passionné par le développement de jeux vidéo et la programmation depuis mon plus jeune âge, j'ai toujours
-                aimé créer des projets issus de mon imagination, que ce soit avec des LEGO Mindstorms, des programmes sur
-                ma calculatrice NumWorks, ou un moteur de jeu personnalisé. Mon intérêt m'a conduit à explorer divers
-                langages de programmation, notamment C#, Java, python, et PHP. Je suis actuellement étudiant en développement
-                informatique et je travaille sur un moteur de jeu voxel entièrement personnalisé.</p>
+    <main>
+        <section class="bio-section">
+            <div class = "bio-container">
+                <div class="bio-box">
+                    <div class="section-title">
+                        <h2>Biographie</h2>
+                    </div>
+                    <p>
+                        Passionné par le développement de jeux vidéo et la programmation depuis mon plus jeune âge, j'ai toujours
+                        aimé créer des projets issus de mon imagination, que ce soit avec des LEGO Mindstorms, des programmes sur
+                        ma calculatrice NumWorks, ou un moteur de jeu personnalisé. Mon intérêt m'a conduit à explorer divers
+                        langages de programmation, notamment C#, Java, Python, et PHP. Je suis actuellement étudiant en développement
+                        informatique et je travaille sur un moteur de jeu voxel entièrement personnalisé.
+                    </p>
+                </div>
+
+                <div class="separator-wrapper"><div class="separator"></div></div>
+
+                <div class="formation-box">
+                    <div class="section-title">
+                        <h2>Parcours de Formation</h2>
+                    </div>
+                    <p>
+                    2023 - Présent : BUT Informatique, spécialisation en développement d’application.<br/>
+                    2021 - 2023 : Baccalauréat de sciences et technologies de l'industrie et du développement durable.<br/>
+                    Compétences développées : Programmation orientée objet (C#, Java), développement web (PHP, SQL, HTML/CSS),
+                    gestion de projet, et création d'interfaces utilisateur.
+                    </p>
+                </div>
+
+                <div class="separator-wrapper"><div class="separator"></div></div>
+
+                <div class="projet-box">
+                    <div class="section-title">
+                        <h2>Projets Professionnels</h2>
+                    </div>
+                    <p>
+                    Mon objectif est de devenir développeur de jeux vidéo. Bien que l'idéal serait de devenir développeur de
+                    jeux indépendant, cela ne me dérange pas d'intégrer une entreprise pour travailler sur des projets créatifs.
+                    En tant que développeur indépendant, je souhaiterais offrir aux joueurs la possibilité de concevoir leurs
+                    propres mondes avec des outils puissants et accessibles. À long terme, avec mon moteur voxel, je prévois
+                    de fonder mon propre studio de développement avec un ami ou de collaborer avec une équipe pour créer des
+                    titres innovants qui favorisent l'exploration, la créativité et la collaboration.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="contact">
+            <div class="contact-heading">
+                <h2>Contactez moi</h2>
+            </div>
+            <div class="email">
+                <p>bjornarvalkea@gmail.com</p>
+            </div>
+            <div class="socials">
+                <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/" aria-label="LinkedIn Profile">
+                    <img src="assets/images/linkedIn.png" alt="LinkedIn">
+                </a>
+            </div>
         </div>
-
-        <div class="seperator"></div>
-
-        <div class="section">
-            <h1>Parcours de Formation</h1>
-            <p>2023 - Présent : BUT Informatique, spécialisation en développement d’application.
-                2021 - 2023 : Baccalauréat de sciences et technologies de l'industrie et du développement durable.
-                Compétences développées : Programmation orientée objet (C#, Java), développement web (PHP, SQL, HTML/CSS),
-                gestion de projet, et création d'interfaces utilisateur.
-            </p>
-        </div>
-
-        <div class="seperator"></div>
-
-        <div class="section">
-            <h1>Projets Professionnels</h1>
-            <p>Mon objectif est de devenir développeur de jeux vidéo. Bien que l'idéal serait de devenir développeur de
-                jeux indépendant, cela ne me dérange pas d'intégrer une entreprise pour travailler sur des projets créatifs.
-                En tant que développeur indépendant, je souhaiterais offrir aux joueurs la possibilité de concevoir leurs
-                propres mondes avec des outils puissants et accessibles. À long terme, avec mon moteur voxel, je prévois
-                de fonder mon propre studio de développement avec un ami ou de collaborer avec une équipe pour créer des
-                titres innovants qui favorisent l'exploration, la créativité et la collaboration.</p>
-        </div>
-    </div>
-</div>
+    </footer>
+  </div>
 </body>
-<footer>
-    <div class="contact">
-        <div id="contact-text">
-            <h1>Contactez moi</h1>
-        </div>
-        <div class="email">
-            <h2>bjornarvalkea@gmail.com</h2>
-        </div>
-        <div class="socials">
-            <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/">
-                <img src="../ressources/images/linkedIn.png" alt="linkedIn-profil" >
-            </a>
-        </div>
-    </div>
-</footer>
 </html>
-
-<script>
-    function toggle() {
-        let menu = document.getElementById("hamburger-menu-items");
-        menu.classList.toggle("show-menu");
-    }
-</script>

@@ -3,79 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Page</title>
+    <title>Schinkel Björnar | CV</title>
+    <meta name="description" content="Portfolio de Schinkel Björnar, développeur de jeux vidéo indépendant">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../ressources/styles.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <script src="../assets/js/main.js" defer></script>
 </head>
 <body>
-<div class="content">
-    <div class="top-content">
-        <nav>
-            <div id="acceuil">
-                <a href="../index.html">
-                    <img src="../ressources/images/acceuil.png" alt="Home" class="home-icon">
+<div class="container">
+    <header class="top-content">
+        <nav class="main-nav">
+            <div id="home-link">
+                <a href="../index.html" aria-label="Accueil">
+                    <img src="../assets/images/acceuil.png" alt="Accueil" class="home-icon">
                 </a>
             </div>
+            
             <div class="nav-items">
                 <ul>
-                    <li>
-                        <div class="nav-box">
-                            <a href="Bio.html">Bio</a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="nav-box">
-                            <a href="cv.html">CV</a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="nav-box">
-                            <a href="projets.html">Projets</a>
-                        </div>
-                    </li>
+                    <li><div class="nav-box"><a href="Bio.html">Bio</a></div></li>
+                    <li><div class="nav-box"><a href="cv.html">CV</a></div></li>
+                    <li><div class="nav-box"><a href="projets.html">Projets</a></div></li>
                 </ul>
             </div>
-            <div id="hamburger-menu" onclick="toggle()" class="hamburger-menu">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
-            <div id="hamburger-menu-items" class="mobile-menu">
+            
+            <button id="hamburger-menu" class="hamburger-menu" aria-label="Menu" aria-expanded="false">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+            
+            <div id="mobile-menu" class="mobile-menu">
                 <a href="Bio.html">Bio</a>
                 <a href="cv.html">CV</a>
                 <a href="projets.html">Projets</a>
             </div>
         </nav>
-    </div>
+    </header>
     <div class="cv">
-        <iframe src="../ressources/images/CV.pdf" width="1000px" height="1000px" style="border: none;">
+        <iframe src="../assets/images/CV.pdf" style="border: none;">
             Your browser does not support iframes.
-            <a href="../ressources/images/CV.pdf">Download the PDF here</a>.
+            <a href="../assets/images/CV.pdf">Download the PDF here</a>.
         </iframe>
     </div>
 </div>
 </body>
 <footer>
     <div class="contact">
-        <div id="contact-text">
-            <h1>Contactez moi</h1>
+        <div class="contact-heading">
+            <h2>Contactez moi</h2>
         </div>
         <div class="email">
-            <h2>bjornarvalkea@gmail.com</h2>
+            <p>bjornarvalkea@gmail.com</p>
         </div>
         <div class="socials">
-            <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/">
-                <img src="../ressources/images/linkedIn.png" alt="linkedIn-profil" >
+            <a href="https://www.linkedin.com/in/björnar-schinkel-3264912ab/" aria-label="LinkedIn Profile">
+                <img src="assets/images/linkedIn.png" alt="LinkedIn">
             </a>
         </div>
     </div>
 </footer>
 </html>
-
-
-<script>
-    function toggle() {
-        let menu = document.getElementById("hamburger-menu-items");
-        menu.classList.toggle("show-menu");
-    }
-</script>
